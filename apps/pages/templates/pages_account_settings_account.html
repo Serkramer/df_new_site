@@ -36,7 +36,7 @@
   <div class="col-md-12">
     <div class="nav-align-top">
       <ul class="nav nav-pills flex-column flex-md-row mb-6 gap-2 gap-lg-0">
-        <li class="nav-item"><a class="nav-link active" href="javascript:void(0);"><i class="ri-group-line me-2"></i>Account</a></li>
+        <li class="nav-item"><a class="nav-link active" href="javascript:void(0);"><i class="ri-group-line me-2"></i>Акаунт</a></li>
         <li class="nav-item"><a class="nav-link" href="{% url 'pages-account-settings-security' %}"><i class="ri-lock-line me-2"></i>Security</a></li>
         <li class="nav-item"><a class="nav-link" href="{% url 'pages-account-settings-billing' %}"><i class="ri-bookmark-line me-2"></i>Billing & Plans</a></li>
         <li class="nav-item"><a class="nav-link" href="{% url 'pages-account-settings-notifications' %}"><i class="ri-notification-4-line me-2"></i>Notifications</a></li>
@@ -50,16 +50,16 @@
           <img src="{% static 'img/avatars/1.png' %}" alt="user-avatar" class="d-block w-px-100 h-px-100 rounded-4" id="uploadedAvatar" />
           <div class="button-wrapper">
             <label for="upload" class="btn btn-primary me-3 mb-4" tabindex="0">
-              <span class="d-none d-sm-block">Upload new photo</span>
+              <span class="d-none d-sm-block">Завантажити нове фото</span>
               <i class="ri-upload-2-line d-block d-sm-none"></i>
               <input type="file" id="upload" class="account-file-input" hidden accept="image/png, image/jpeg" />
             </label>
             <button type="button" class="btn btn-outline-danger account-image-reset mb-4">
               <i class="ri-refresh-line d-block d-sm-none"></i>
-              <span class="d-none d-sm-block">Reset</span>
+              <span class="d-none d-sm-block">Видалити</span>
             </button>
 
-            <div>Allowed JPG, GIF or PNG. Max size of 800K</div>
+            <div>Дозволені формати JPG, GIF чи PNG. Максимальний розмір 800K</div>
           </div>
         </div>
       </div>

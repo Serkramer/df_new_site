@@ -1,6 +1,7 @@
 from django.contrib import admin
 from .models import Profile
 
+
 # Register your models here.
 class Member(admin.ModelAdmin):
     list_display = (
@@ -11,4 +12,10 @@ class Member(admin.ModelAdmin):
     )
 
 
-admin.site.register(Profile, Member)
+# admin.site.register(Profile, Member)
+
+
+@admin.register(Profile)
+class ProfileAdmin(admin.ModelAdmin):
+    list_display = ('id', 'user', 'first_name', 'last_name', 'company', 'phone_number', 'email', 'is_worker',
+                    'is_verified', 'created_at')

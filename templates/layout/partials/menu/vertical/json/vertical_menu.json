@@ -1,6 +1,12 @@
 {
   "menu": [
     {
+      "url": "app-email",
+      "name": "1C",
+      "icon": "menu-icon tf-icons ri-mail-open-line",
+      "slug": "app-email"
+    },
+    {
       "name": "Dashboards",
       "icon": "menu-icon tf-icons ri-home-smile-line",
       "slug": "dashboard",
