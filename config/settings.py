@@ -30,17 +30,14 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.environ.get("SECRET_KEY", default='')
 
-
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get("DEBUG", 'True').lower() in ['true', 'yes', '1']
-
 
 # https://docs.djangoproject.com/en/dev/ref/settings/#allowed-hosts
 ALLOWED_HOSTS = ["localhost", "0.0.0.0", "127.0.0.1"]
 
 # Current DJANGO_ENVIRONMENT
 ENVIRONMENT = os.environ.get("DJANGO_ENVIRONMENT", default="local")
-
 
 # Application definition
 
@@ -80,7 +77,10 @@ INSTALLED_APPS = [
     "apps.charts",
     "apps.maps",
     "apps.transactions",
-    "auth.apps.AuthConfig"
+    "auth.apps.AuthConfig",
+    "OneC.apps.OnecConfig",
+    "custom.apps.CustomConfig",
+    "store.apps.StoreConfig",
 ]
 
 MIDDLEWARE = [
@@ -128,17 +128,33 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "config.wsgi.application"
 
-
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
+
 
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
         "NAME": BASE_DIR / "db.sqlite3",
+    },
+    'store': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'store',
+        'USER': 'root',
+        'PASSWORD': os.environ.get("STORE_DB_PASS", default=''),
+        'HOST': '127.0.0.1',
+        'PORT': '3306',
+    },
+    'custom': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'custom',
+        'USER': 'root',
+        'PASSWORD': os.environ.get("CUSTOM_DB_PASS", default=''),
+        'HOST': '127.0.0.1',
+        'PORT': '3306',
     }
-}
 
+}
 
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
@@ -157,7 +173,6 @@ AUTH_PASSWORD_VALIDATORS = [
         "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
     },
 ]
-
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.0/topics/i18n/
@@ -199,7 +214,6 @@ STATICFILES_DIRS = [
 # Default URL on which Django application runs for specific environment
 BASE_URL = os.environ.get("BASE_URL", default="http://127.0.0.1:8000")
 
-
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
@@ -227,7 +241,6 @@ EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", default='')
 LOGIN_URL = "/login/"
 LOGOUT_REDIRECT_URL = "/login/"
 
-
 # Session
 # ------------------------------------------------------------------------------
 
@@ -242,6 +255,13 @@ CSRF_TRUSTED_ORIGINS = [
     "http://localhost:5050",
 ]
 
-
 # Your stuff...
 # ------------------------------------------------------------------------------
+
+DATABASE_APPS_MAPPING = {
+    'custom': 'custom',
+    'store': 'store'
+}
+
+DATABASE_ROUTERS = ['custom.router.CustomDatabaseRouter', 'store.router.StoreDatabaseRouter']
+
