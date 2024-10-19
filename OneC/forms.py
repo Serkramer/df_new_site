@@ -64,7 +64,6 @@ class PriceForm(forms.ModelForm):
             # Установите начальное значение для поля company
             self.initial['company'] = Companies.objects.using('custom').get(id=self.instance.company_id)
 
-            print(f'Initialized thickness list: {self.instance.thickness_list}')
 
 
 class CompanyWithNuancesForm(forms.ModelForm):
@@ -89,7 +88,7 @@ class CompanyWithNuancesForm(forms.ModelForm):
 
         # Проверка на существование записи с таким же company_id
         if company and CompanyWithNuances.objects.filter(company_id=company.id).exclude(pk=self.instance.pk).exists():
-            self.add_error('company', ValidationError('Запись для данной компании уже существует.'))
+            self.add_error('company', ValidationError('Запис для цієї компанії вже існує.'))
 
         return cleaned_data
 

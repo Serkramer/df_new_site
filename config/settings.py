@@ -183,13 +183,14 @@ LANGUAGES = [
     ("fr", _("French")),
     ("ar", _("Arabic")),
     ("de", _("German")),
-    ("uk", _("Ukrainian"))
+    # ("uk", _("Ukrainian"))
     # Add more languages as needed
 ]
 
 # Set default language
 # ! Make sure you have cleared the browser cache after changing the default language
-LANGUAGE_CODE = "uk-uk"
+# LANGUAGE_CODE = "uk-uk"
+LANGUAGE_CODE = "en"
 
 TIME_ZONE = "Europe/Kiev"
 

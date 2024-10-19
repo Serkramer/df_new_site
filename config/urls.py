@@ -112,7 +112,7 @@ urlpatterns = [
     # transaction urls
     path("", include("apps.transactions.urls")),
 
-    path("1C/", include("OneC.urls", namespace="1C"))
+    path("1C/", include("OneC.urls"))
 ]
 
 handler404 = SystemView.as_view(template_name="pages_misc_error.html", status=404)

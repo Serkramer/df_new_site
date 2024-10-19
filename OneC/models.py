@@ -38,7 +38,7 @@ class Price(models.Model):
 
 
 class CompanyWithNuances(models.Model):
-    company_id = models.IntegerField(verbose_name="ID компании", unique=True)
+    company_id = models.IntegerField(verbose_name="ID компаниї", unique=True)
     check_with_cents = models.BooleanField(verbose_name="Разунок з копійками", default=False)
     name_order_in_check = models.BooleanField(verbose_name="Назва замовлення в рахунку", default=True)
     group_orders = models.BooleanField(verbose_name="Групувати замовлення в один рахунок", default=False)
@@ -56,3 +56,15 @@ class CompanyWithNuances(models.Model):
     class Meta:
         verbose_name = "Компанія, для якої є нюанси в рахунках"
         verbose_name_plural = "Компанія, для яких є нюанси в рахунках"
+
+
+class Check(models.Model):
+    one_c_number = models.IntegerField(verbose_name="Номер рахунку в 1С")
+    client_company_id = models.IntegerField(verbose_name="ID компаниї замовника")
+    order_list = models.JSONField(verbose_name="Список замовлень", default=list)
+    exchange = models.FloatField(verbose_name="Курс євро")
+    check_price = models.FloatField(verbose_name="Вартість кліше")
+
+    class Meta:
+        verbose_name = "Рахунок"
+        verbose_name_plural = "Рахунки"

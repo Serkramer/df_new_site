@@ -1,10 +1,17 @@
 {
   "menu": [
     {
-      "url": "app-email",
+      "url": "1C",
       "name": "1C",
       "icon": "menu-icon tf-icons ri-mail-open-line",
-      "slug": "app-email"
+      "slug": "check-list",
+      "submenu": [
+        {
+          "url": "check-list",
+          "name": "Рахунки",
+          "slug": "check-list"
+        }
+      ]
     },
     {
       "name": "Dashboards",
