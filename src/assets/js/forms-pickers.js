@@ -6,6 +6,7 @@
 
 (function () {
   // Flat Picker
+
   // --------------------------------------------------------------------
   const flatpickrDate = document.querySelector('#flatpickr-date'),
     flatpickrTime = document.querySelector('#flatpickr-time'),
@@ -50,7 +51,7 @@
   }
 
   // Range
-  if (typeof flatpickrRange != undefined) {
+  if (flatpickrRange) {
     flatpickrRange.flatpickr({
       mode: 'range'
     });
@@ -203,7 +204,7 @@ $(function () {
       timePicker: true,
       timePickerIncrement: 30,
       locale: {
-        format: 'MM/DD/YYYY h:mm A'
+        format: 'DD/MM/YYYY h:mm A'
       },
       opens: isRtl ? 'left' : 'right'
     });

@@ -45,6 +45,7 @@ class CompanyWithNuances(models.Model):
     text_before = models.CharField(verbose_name="Текст перед назвою роботи", max_length=255, null=True, blank=True,
                                    default="Кліше")
     unique_order_name = models.BooleanField(verbose_name="Є нюанси в назві замовлення", default=False)
+    add_prepress_in_square = models.BooleanField(verbose_name="Додавати додруківку у площу", default=True)
 
     def get_company(self):
         return Companies.objects.using('custom').get(id=self.company_id)
@@ -64,7 +65,12 @@ class Check(models.Model):
     order_list = models.JSONField(verbose_name="Список замовлень", default=list)
     exchange = models.FloatField(verbose_name="Курс євро")
     check_price = models.FloatField(verbose_name="Вартість кліше")
+    prepress = models.FloatField(verbose_name="Додруківська підготовка")
 
     class Meta:
         verbose_name = "Рахунок"
         verbose_name_plural = "Рахунки"
+
+
+class OrderCheck(models.Model):
+    pass

@@ -1,0 +1,185 @@
+{% extends layout_path %}
+
+{% load static %}
+{% load i18n %}
+
+{% block title %}Validation - Forms{% endblock %}
+
+
+{% block vendor_css %}
+  {{ block.super }}
+
+
+  <link rel="stylesheet" href="{% static 'vendor/libs/bootstrap-datepicker/bootstrap-datepicker.css' %}" />
+  <link rel="stylesheet" href="{% static 'vendor/libs/bootstrap-daterangepicker/bootstrap-daterangepicker.css' %}" />
+  <link rel="stylesheet" href="{% static 'vendor/libs/jquery-timepicker/jquery-timepicker.css' %}" />
+  <link rel="stylesheet" href="{% static 'vendor/libs/pickr/pickr-themes.css' %}" />
+
+  <link rel="stylesheet" href="{% static 'vendor/libs/typeahead-js/typeahead.css' %}" />
+  <link rel="stylesheet" href="{% static 'vendor/libs/bootstrap-select/bootstrap-select.css' %}" />
+  <link rel="stylesheet" href="{% static 'vendor/libs/select2/select2.css' %}" />
+  <link rel="stylesheet" href="{% static 'vendor/libs/flatpickr/flatpickr.css' %}" />
+  <link rel="stylesheet" href="{% static 'vendor/libs/tagify/tagify.css' %}" />
+  <link rel="stylesheet" href="{% static 'vendor/libs/@form-validation/form-validation.css' %}" />
+{% endblock vendor_css %}
+
+{% block vendor_js %}
+  {{ block.super }}
+  <script src="{% static 'vendor/libs/typeahead-js/typeahead.js' %}"></script>
+  <script src="{% static 'vendor/libs/bloodhound/bloodhound.js' %}"></script>
+  <script src="{% static 'vendor/libs/select2/select2.js' %}"></script>
+  <script src="{% static 'vendor/libs/bootstrap-select/bootstrap-select.js' %}"></script>
+  <script src="{% static 'vendor/libs/moment/moment.js' %}"></script>
+  <script src="{% static 'vendor/libs/flatpickr/flatpickr.js' %}"></script>
+  <script src="{% static 'vendor/libs/tagify/tagify.js' %}"></script>
+  <script src="{% static 'vendor/libs/@form-validation/popular.js' %}"></script>
+  <script src="{% static 'vendor/libs/@form-validation/bootstrap5.js' %}"></script>
+  <script src="{% static 'vendor/libs/@form-validation/auto-focus.js' %}"></script>
+
+
+
+
+  <script src="{% static 'vendor/libs/bootstrap-datepicker/bootstrap-datepicker.js' %}"></script>
+  <script src="{% static 'vendor/libs/bootstrap-daterangepicker/bootstrap-daterangepicker.js' %}"></script>
+  <script src="{% static 'vendor/libs/jquery-timepicker/jquery-timepicker.js' %}"></script>
+  <script src="{% static 'vendor/libs/pickr/pickr.js' %}"></script>
+{% endblock vendor_js %}
+
+{% block page_js %}
+  {{ block.super }}
+  <script src="{% static 'js/forms-selects.js' %}"></script>
+  <script src="{% static 'js/forms-typeahead.js' %}"></script>
+  <script src="{% static 'js/forms-pickers.js' %}"></script>
+
+  <script>
+    $(document).ready(function() {
+      $('#select2Basic').on('change', function() {
+        let clientId = $(this).val();
+        let dateRange = $('#bs-rangepicker-basic').val().split(' - '); // Assuming the format is "YYYY-MM-DD - YYYY-MM-DD"
+        let startDay = dateRange[0] || ''; // Extract the start date
+        let endDay = dateRange[1] || '';   // Extract the end date
+
+        if (clientId !== -1) {
+          $.ajax({
+            type: 'POST',
+            url: 'get_orders_from_clients_and_dates', // Replace with your actual URL path
+            data: JSON.stringify({
+              company_id: clientId,
+              start_day: startDay,
+              end_day: endDay
+            }),
+            contentType: 'application/json; charset=utf-8',
+            dataType: 'json',
+            headers: {
+              'X-CSRFToken': '{{ csrf_token }}' // Ensure you include the CSRF token
+            },
+            success: function(response) {
+
+              // Clear the current options in the selectpicker
+              let $select = $('#selectpickerSelectOrders');
+              $select.empty();
+
+              let $ourCompanySelect = $('#selectOurCompany');
+
+
+              // Check if there are any orders returned
+              if (response.orders && response.orders.length > 0) {
+                // Append new options to the selectpicker
+                $.each(response.orders, function(index, order) {
+
+                  $select.append(new Option(order.name, order.id));
+
+                });
+              }
+
+              // Refresh the selectpicker to reflect the changes
+              $select.selectpicker('refresh');
+
+              if (response.company_our_brand !== -1){
+                 $ourCompanySelect.val(response.company_our_brand).trigger('change');
+
+              }
+              else {
+                 $ourCompanySelect.val('-1').trigger('change');
+              }
+              $('#inlineRadio1').prop('checked', true);
+
+
+            },
+            error: function(error) {
+              console.log('Error:', error);
+            }
+          });
+        }
+      });
+    });
+  </script>
+{% endblock page_js %}
+
+{% block content %}
+  <div class="row mb-6">
+
+    <!-- Bootstrap Validation -->
+    <div class="col-md">
+      <div class="card">
+        <h5 class="card-header">Створити рахунок</h5>
+        <div class="card-body">
+          <form class="needs-validation" novalidate>
+            <div class="form-floating form-floating-outline mb-6">
+              <input type="text" id="bs-rangepicker-basic" class="form-control" />
+              <label for="bs-rangepicker-basic">Дата</label>
+            </div>
+
+            <div class="form-floating form-floating-outline mb-6">
+              <select id="select2Basic" class="select2 form-select form-select-lg" data-allow-clear="true">
+                <option value="-1">------</option>
+                {% for client in clients %}
+                  <option value="{{ client.id.id }}">{{ client.id.name }}</option>
+                {% endfor %}
+              </select>
+              <label for="select2Basic">Клієнт</label>
+            </div>
+
+            <div class="form-floating form-floating-outline mb-6">
+              <select id="selectOurCompany" class="select2 form-select form-select-lg" data-allow-clear="true">
+              <option value="-1">------</option>
+                {% for our_company in our_companies %}
+                  <option value="{{ our_company.id.id }}">{{ our_company.id.name }}</option>
+                {% endfor %}
+              </select>
+              <label for="selectOurCompany">З якої компанії виставляти рахунок</label>
+            </div>
+
+            <div class="form-floating form-floating-outline mb-6">
+              <div class="form-check form-check-inline mt-4">
+                <input class="form-check-input" type="radio" name="inlineRadioOptions" id="inlineRadio1"
+                       value="option1" />
+                <label class="form-check-label" for="inlineRadio1">усі замовлення за цей період</label>
+              </div>
+              <div class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" name="inlineRadioOptions" id="inlineRadio2"
+                       value="option2" />
+                <label class="form-check-label" for="inlineRadio2">вибрати зі списку</label>
+              </div>
+            </div>
+            <div class="form-floating form-floating-outline mb-6" >
+              <select id="selectpickerSelectOrders" class="selectpicker w-100" data-style="btn-default" multiple
+                      data-actions-box="true">
+              </select>
+              <label for="selectpickerSelectOrders">Вибрати роботи</label>
+            </div>
+
+
+            <div class="row">
+              <div class="col-12">
+                <button type="submit" class="btn btn-primary">Виставити рахунок</button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+    <!-- /Bootstrap Validation -->
+  </div>
+
+{% endblock %}

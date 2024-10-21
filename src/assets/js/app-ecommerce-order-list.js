@@ -21,7 +21,7 @@ $(function () {
 
   // Variable declaration for table
 
-  var dt_order_table = $('.datatables-order'),
+  let dt_order_table = $('.datatables-order'),
     statusObj = {
       1: { title: 'Dispatched', class: 'bg-label-warning' },
       2: { title: 'Delivered', class: 'bg-label-success' },
@@ -38,7 +38,7 @@ $(function () {
   // E-commerce Products datatable
 
   if (dt_order_table.length) {
-    var dt_products = dt_order_table.DataTable({
+    let dt_products = dt_order_table.DataTable({
       ajax: assetsPath + 'json/ecommerce-customer-order.json', // JSON file to add data
       columns: [
         // columns according to JSON

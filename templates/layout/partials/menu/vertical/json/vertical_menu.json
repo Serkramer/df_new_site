@@ -10,6 +10,11 @@
           "url": "check-list",
           "name": "Рахунки",
           "slug": "check-list"
+        },
+        {
+          "url": "create-check",
+          "name": "Створити рахунок",
+          "slug": "create-check"
         }
       ]
     },
