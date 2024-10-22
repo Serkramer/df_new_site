@@ -72,25 +72,32 @@ def get_orders_from_clients_and_dates(request):
 @csrf_exempt
 def generate_check(request):
     if request.method == 'POST':
-        body_unicode = request.body.decode('utf-8')
-        body_data = json.loads(body_unicode)
-        company_id = int(body_data.get('company_id'))
-        start_day = body_data.get('start_day')
-        end_day = body_data.get('end_day')
-        order_id_list = body_data.get('order_id_list')
-        if company_id and start_day and end_day and order_id_list:
-            start_date = datetime.datetime.strptime(start_day, '%m/%d/%Y')
-            end_date = datetime.datetime.strptime(end_day, '%m/%d/%Y')
+        client_id = int(request.POST.get('client_id'))
+        date_str = request.POST.get('date')
+        our_company_id = int(request.POST.get('our_company_id'))
+        inlineRadioOptions = request.POST.get('inlineRadioOptions')
+        selected_orders = request.POST.getlist('selected_orders')
+        if client_id and date_str and our_company_id and inlineRadioOptions:
+            date = date_str.split(' - ')
+            client_company = CompanyClients.objects.filter(id__id=client_id).first()
+            start_date = datetime.datetime.strptime(date[0], '%m/%d/%Y')
+            end_date = datetime.datetime.strptime(date[1], '%m/%d/%Y')
             end_date = end_date.replace(hour=23, minute=59, second=59)
 
-            company_price = Price.objects.filter(company_id=company_id).first()
+            orders = Orders.objects.filter(company_client__id__id=client_id, launch_date__gte=start_date,
+                                           launch_date__lte=end_date)
+            if inlineRadioOptions == 'select_orders':
+                # orders = orders.objects.filter()
+                pass
+
+            company_price = Price.objects.filter(company_id=client_id).first()
             if not company_price:
                 return JsonResponse({'error': 'В таблиці немає ціни для цього замовника'})
-            company_nuances = CompanyWithNuances.objects.filter(company_id=company_id).first()
+            company_nuances = CompanyWithNuances.objects.filter(company_id=client_id).first()
 
             check = Check()
-            check.client_company_id = company_id
-            check.order_list = order_id_list
+            check.client_company_id = client_id
+            check.order_list = client_id
             check.exchange = get_exchange_rate()
             if not check.exchange:
                 return JsonResponse({'error': 'Не вдалося отримати курс'})

@@ -4,7 +4,7 @@ from django.contrib.auth import views as auth_views
 
 from .views import *
 
-
+# app_name = '1C'
 
 urlpatterns = [
     path('check', CheckView.as_view(), name="check"),
@@ -22,5 +22,9 @@ urlpatterns = [
     ),
 
     path("get_orders_from_clients_and_dates", get_orders_from_clients_and_dates,
-         name="get_orders_from_clients_and_dates")
+         name="get_orders_from_clients_and_dates"),
+
+    path("generate_check", generate_check, name="generate_check"),
+
+
 ]

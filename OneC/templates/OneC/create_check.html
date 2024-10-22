@@ -52,64 +52,120 @@
   <script src="{% static 'js/forms-pickers.js' %}"></script>
 
   <script>
+
+    function getOrders(startDay, endDay, clientId) {
+      console.log(startDay, endDay, clientId);
+      $.ajax({
+        type: 'POST',
+        url: 'get_orders_from_clients_and_dates', // Replace with your actual URL path
+        data: JSON.stringify({
+          company_id: clientId,
+          start_day: startDay,
+          end_day: endDay
+        }),
+        contentType: 'application/json; charset=utf-8',
+        dataType: 'json',
+        headers: {
+          'X-CSRFToken': '{{ csrf_token }}' // Ensure you include the CSRF token
+        },
+        success: function(response) {
+          console.log(response);
+          // Clear the current options in the selectpicker
+          let $select = $('#selectpickerSelectOrders');
+          $select.empty();
+
+          let $ourCompanySelect = $('#selectOurCompany');
+
+
+          // Check if there are any orders returned
+          if (response.orders && response.orders.length > 0) {
+            console.log(response.orders);
+            $select.empty();
+            // Append new options to the selectpicker
+            $.each(response.orders, function(index, order) {
+
+              $select.append(new Option(order.name, order.id));
+
+            });
+            $('#buttonBlock').show();
+          } else {
+            $('#buttonBlock').hide();
+          }
+
+          // Refresh the selectpicker to reflect the changes
+          $select.selectpicker('refresh');
+
+          if (response.company_our_brand !== -1) {
+            $ourCompanySelect.val(response.company_our_brand).trigger('change');
+
+          } else {
+            $ourCompanySelect.val('-1').trigger('change');
+          }
+          $('#inlineRadio1').prop('checked', true);
+
+
+        },
+        error: function(error) {
+          console.log('Error:', error);
+        }
+      });
+
+    }
+
     $(document).ready(function() {
-      $('#select2Basic').on('change', function() {
+
+      let $ourCompanyBlock = $('#ourCompanyBlock');
+      let $radioButtonOrdersBlock = $('#radioButtonOrdersBlock');
+      let $ordersBlock = $('#ordersBlock');
+      let $buttonBlock = $('#buttonBlock');
+      $ourCompanyBlock.hide();
+      $radioButtonOrdersBlock.hide();
+      $ordersBlock.hide();
+      $buttonBlock.hide();
+
+      $('#bs-rangepicker-basic').on('change', function() {
+        let dateRange = $(this).val().split(' - ');
+        let startDay = dateRange[0] || ''; // Extract the start date
+        let endDay = dateRange[1] || '';   // Extract the end date
+        let clientId = $('#selectCompanyClient').val();
+        console.log(clientId);
+        if (startDay && endDay && clientId && clientId !== '-1') {
+          getOrders(startDay, endDay, clientId);
+        }
+      });
+
+
+      $('#selectOurCompany').on('change', function() {
+        let ourCompanyID = $(this).val();
+        if (ourCompanyID && ourCompanyID !== '-1') {
+          $radioButtonOrdersBlock.show();
+          $buttonBlock.show();
+        } else {
+          $radioButtonOrdersBlock.hide();
+          $buttonBlock.hide();
+        }
+      });
+
+      $('input[name="inlineRadioOptions"]').on('change', function() {
+        if ($('#inlineRadio1').is(':checked')) {
+          $ordersBlock.hide();
+        } else if ($('#inlineRadio2').is(':checked')) {
+          $ordersBlock.show();
+        }
+      });
+
+
+      $('#selectCompanyClient').on('change', function() {
         let clientId = $(this).val();
         let dateRange = $('#bs-rangepicker-basic').val().split(' - '); // Assuming the format is "YYYY-MM-DD - YYYY-MM-DD"
         let startDay = dateRange[0] || ''; // Extract the start date
         let endDay = dateRange[1] || '';   // Extract the end date
 
         if (clientId !== -1) {
-          $.ajax({
-            type: 'POST',
-            url: 'get_orders_from_clients_and_dates', // Replace with your actual URL path
-            data: JSON.stringify({
-              company_id: clientId,
-              start_day: startDay,
-              end_day: endDay
-            }),
-            contentType: 'application/json; charset=utf-8',
-            dataType: 'json',
-            headers: {
-              'X-CSRFToken': '{{ csrf_token }}' // Ensure you include the CSRF token
-            },
-            success: function(response) {
-
-              // Clear the current options in the selectpicker
-              let $select = $('#selectpickerSelectOrders');
-              $select.empty();
-
-              let $ourCompanySelect = $('#selectOurCompany');
-
-
-              // Check if there are any orders returned
-              if (response.orders && response.orders.length > 0) {
-                // Append new options to the selectpicker
-                $.each(response.orders, function(index, order) {
-
-                  $select.append(new Option(order.name, order.id));
-
-                });
-              }
-
-              // Refresh the selectpicker to reflect the changes
-              $select.selectpicker('refresh');
-
-              if (response.company_our_brand !== -1){
-                 $ourCompanySelect.val(response.company_our_brand).trigger('change');
-
-              }
-              else {
-                 $ourCompanySelect.val('-1').trigger('change');
-              }
-              $('#inlineRadio1').prop('checked', true);
-
-
-            },
-            error: function(error) {
-              console.log('Error:', error);
-            }
-          });
+          $ourCompanyBlock.show();
+          getOrders(startDay, endDay, clientId);
+        } else {
+          $ourCompanySelect.hide();
         }
       });
     });
@@ -122,27 +178,29 @@
     <!-- Bootstrap Validation -->
     <div class="col-md">
       <div class="card">
-        <h5 class="card-header">Створити рахунок</h5>
+        <h5 class="card-header">Виставити рахунок</h5>
         <div class="card-body">
-          <form class="needs-validation" novalidate>
+          <form class="needs-validation" novalidate method="post" action="/1C/generate_check">
             <div class="form-floating form-floating-outline mb-6">
-              <input type="text" id="bs-rangepicker-basic" class="form-control" />
+              <input type="text" id="bs-rangepicker-basic" class="form-control" name="date" />
               <label for="bs-rangepicker-basic">Дата</label>
             </div>
 
             <div class="form-floating form-floating-outline mb-6">
-              <select id="select2Basic" class="select2 form-select form-select-lg" data-allow-clear="true">
+              <select id="selectCompanyClient" class="select2 form-select form-select-lg" data-allow-clear="true"
+                      name="client_id">
                 <option value="-1">------</option>
                 {% for client in clients %}
                   <option value="{{ client.id.id }}">{{ client.id.name }}</option>
                 {% endfor %}
               </select>
-              <label for="select2Basic">Клієнт</label>
+              <label for="selectCompanyClient">Клієнт</label>
             </div>
 
-            <div class="form-floating form-floating-outline mb-6">
-              <select id="selectOurCompany" class="select2 form-select form-select-lg" data-allow-clear="true">
-              <option value="-1">------</option>
+            <div class="form-floating form-floating-outline mb-6" id="ourCompanyBlock">
+              <select id="selectOurCompany" class="select2 form-select form-select-lg" data-allow-clear="true"
+                      name="our_company_id">
+                <option value="-1">------</option>
                 {% for our_company in our_companies %}
                   <option value="{{ our_company.id.id }}">{{ our_company.id.name }}</option>
                 {% endfor %}
@@ -150,27 +208,27 @@
               <label for="selectOurCompany">З якої компанії виставляти рахунок</label>
             </div>
 
-            <div class="form-floating form-floating-outline mb-6">
+            <div class="form-floating form-floating-outline mb-6" id="radioButtonOrdersBlock">
               <div class="form-check form-check-inline mt-4">
                 <input class="form-check-input" type="radio" name="inlineRadioOptions" id="inlineRadio1"
-                       value="option1" />
+                       value="all_orders" />
                 <label class="form-check-label" for="inlineRadio1">усі замовлення за цей період</label>
               </div>
               <div class="form-check form-check-inline">
                 <input class="form-check-input" type="radio" name="inlineRadioOptions" id="inlineRadio2"
-                       value="option2" />
+                       value="select_orders" />
                 <label class="form-check-label" for="inlineRadio2">вибрати зі списку</label>
               </div>
             </div>
-            <div class="form-floating form-floating-outline mb-6" >
+            <div class="form-floating form-floating-outline mb-6" id="ordersBlock">
               <select id="selectpickerSelectOrders" class="selectpicker w-100" data-style="btn-default" multiple
-                      data-actions-box="true">
+                      data-actions-box="true" name="selected_orders">
               </select>
               <label for="selectpickerSelectOrders">Вибрати роботи</label>
             </div>
 
 
-            <div class="row">
+            <div class="row" id="buttonBlock">
               <div class="col-12">
                 <button type="submit" class="btn btn-primary">Виставити рахунок</button>
               </div>
