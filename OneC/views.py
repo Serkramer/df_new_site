@@ -5,10 +5,11 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import TemplateView
 import json
 from OneC.functions import get_exchange_rate
-from OneC.models import Price, CompanyWithNuances, Check
+from OneC.models import Price, CompanyWithNuances, Check, PriceType
 from custom.models import CompanyClients, Orders, CompanyOurBrands
 from web_project import TemplateLayout
 import datetime
+
 
 class CheckView(TemplateView):
     template_name = "OneC/check_view.html"
@@ -77,6 +78,7 @@ def generate_check(request):
         our_company_id = int(request.POST.get('our_company_id'))
         inlineRadioOptions = request.POST.get('inlineRadioOptions')
         selected_orders = request.POST.getlist('selected_orders')
+        check_date_str = request.POST.get('check_date')
         if client_id and date_str and our_company_id and inlineRadioOptions:
             date = date_str.split(' - ')
             client_company = CompanyClients.objects.filter(id__id=client_id).first()
@@ -84,15 +86,21 @@ def generate_check(request):
             end_date = datetime.datetime.strptime(date[1], '%m/%d/%Y')
             end_date = end_date.replace(hour=23, minute=59, second=59)
 
+            check_date = datetime.datetime.strptime(check_date_str, '%m/%d/%Y')
+
             orders = Orders.objects.filter(company_client__id__id=client_id, launch_date__gte=start_date,
                                            launch_date__lte=end_date)
             if inlineRadioOptions == 'select_orders':
-                # orders = orders.objects.filter()
-                pass
+                orders = orders.filter(id__in=selected_orders)
 
-            company_price = Price.objects.filter(company_id=client_id).first()
+            # orders_with_fartuk = orders.filter(ar)
+
+            company_price = Price.objects.filter(company_id=client_id, price_type=PriceType.PRICE_MATERIAL)
             if not company_price:
                 return JsonResponse({'error': 'В таблиці немає ціни для цього замовника'})
+
+
+
             company_nuances = CompanyWithNuances.objects.filter(company_id=client_id).first()
 
             check = Check()

@@ -1,0 +1,198 @@
+{% extends layout_path %}
+
+{% load static %}
+{% load i18n %}
+
+{% block title %}Інформація про матеріали{% endblock %}
+
+{% block vendor_css %}
+  {{ block.super }}
+  <link rel="stylesheet" href="{% static 'vendor/libs/datatables-bs5/datatables.bootstrap5.css' %}" />
+  <link rel="stylesheet" href="{% static 'vendor/libs/datatables-responsive-bs5/responsive.bootstrap5.css' %}" />
+  <link rel="stylesheet" href="{% static 'vendor/libs/datatables-select-bs5/select.bootstrap5.css' %}" />
+  <link rel="stylesheet" href="{% static 'vendor/libs/datatables-checkboxes-jquery/datatables.checkboxes.css' %}" />
+  <link rel="stylesheet" href="{% static 'vendor/libs/datatables-fixedcolumns-bs5/fixedcolumns.bootstrap5.css' %}" />
+  <link rel="stylesheet" href="{% static 'vendor/libs/datatables-fixedheader-bs5/fixedheader.bootstrap5.css' %}" />
+{% endblock vendor_css %}
+
+{% block vendor_js %}
+  {{ block.super }}
+  <script src="{% static 'vendor/libs/datatables-bs5/datatables-bootstrap5.js' %}"></script>
+{% endblock vendor_js %}
+
+{% block page_js %}
+  {{ block.super }}
+  {#<script>#}
+  {#/**#}
+  {# * DataTables Extensions (jquery)#}
+  {# */#}
+  {##}
+  {#'use strict';#}
+  {##}
+  {#$(function () {#}
+  {#  var dt_fixedcolumns_table = $('.dt-fixedcolumns')#}
+  {##}
+  {#  // FixedColumns#}
+  {#  // --------------------------------------------------------------------#}
+  {##}
+  {#  if (dt_fixedcolumns_table.length) {#}
+  {#    var dt_fixedcolumns = dt_fixedcolumns_table.DataTable({#}
+  {#      ajax: assetsPath + 'json/table-datatable.json',#}
+  {#      columns: [#}
+  {#        { data: 'full_name' },#}
+  {#        { data: 'post' },#}
+  {#        { data: 'email' },#}
+  {#        { data: 'city' },#}
+  {#        { data: 'start_date' },#}
+  {#        { data: 'salary' },#}
+  {#        { data: 'age' },#}
+  {#        { data: 'experience' },#}
+  {#        { data: 'status' },#}
+  {#        { data: 'id' },#}
+  {#        { data: 'id' },#}
+  {#        { data: 'id' },#}
+  {##}
+  {#      ],#}
+  {#      columnDefs: [#}
+  {#        {#}
+  {#          // Label#}
+  {#          targets: -2,#}
+  {#          render: function (data, type, full, meta) {#}
+  {#            var $status_number = full['status'];#}
+  {#            var $status = {#}
+  {#              1: { title: 'Current', class: 'bg-label-primary' },#}
+  {#              2: { title: 'Professional', class: ' bg-label-success' },#}
+  {#              3: { title: 'Rejected', class: ' bg-label-danger' },#}
+  {#              4: { title: 'Resigned', class: ' bg-label-warning' },#}
+  {#              5: { title: 'Applied', class: ' bg-label-info' }#}
+  {#            };#}
+  {#            if (typeof $status[$status_number] === 'undefined') {#}
+  {#              return data;#}
+  {#            }#}
+  {#            return (#}
+  {#              '<span class="badge rounded-pill ' +#}
+  {#              $status[$status_number].class +#}
+  {#              '">' +#}
+  {#              $status[$status_number].title +#}
+  {#              '</span>'#}
+  {#            );#}
+  {#          }#}
+  {#        },#}
+  {#        {#}
+  {#          // Actions#}
+  {#          targets: -1,#}
+  {#          title: 'Actions',#}
+  {#          searchable: false,#}
+  {#          orderable: false,#}
+  {#          render: function (data, type, full, meta) {#}
+  {#            return (#}
+  {#              '<div class="d-inline-block">' +#}
+  {#              '<a href="javascript:;" class="btn btn-sm btn-text-secondary rounded-pill btn-icon dropdown-toggle hide-arrow" data-bs-toggle="dropdown"><i class="ri-more-2-line"></i></a>' +#}
+  {#              '<div class="dropdown-menu dropdown-menu-end m-0">' +#}
+  {#              '<a href="javascript:;" class="dropdown-item">Details</a>' +#}
+  {#              '<a href="javascript:;" class="dropdown-item">Archive</a>' +#}
+  {#              '<div class="dropdown-divider"></div>' +#}
+  {#              '<a href="javascript:;" class="dropdown-item text-danger delete-record"></i>Delete</a>' +#}
+  {#              '</div>' +#}
+  {#              '</div>' +#}
+  {#              '<a href="javascript:;" class="btn btn-sm btn-text-secondary rounded-pill btn-icon item-edit"><i class="ri-edit-box-line"></i></a>'#}
+  {#            );#}
+  {#          }#}
+  {#        }#}
+  {#      ],#}
+  {#      dom: '<"d-flex justify-content-between align-items-center row"<"col-sm-12 col-md-2 d-flex"f><"col-sm-12 col-md-10 d-none"i>>t',#}
+  {#      scrollY: 800,#}
+  {#      scrollX: true,#}
+  {#      scrollCollapse: true,#}
+  {#      paging: false,#}
+  {#      info: false,#}
+  {#      // Fixed column option#}
+  {#      fixedColumns: true,#}
+  {#      initComplete: function (settings, json) {#}
+  {#        // Add the mti-n1 class to the first row in tbody#}
+  {#        dt_fixedcolumns_table.find('tbody tr:first').addClass('border-top-0');#}
+  {#      }#}
+  {#    });#}
+  {#  }#}
+  {##}
+  {#});#}
+  {##}
+  {#</script>#}
+
+  <script>
+    $(document).ready(function() {
+      $('.dt-fixedcolumns').DataTable({
+        scrollY: 700,
+        scrollX: true,
+        scrollCollapse: true,
+        paging: false,
+        info: false,
+        fixedColumns: true
+      });
+    });
+  </script>
+{% endblock page_js %}
+
+{% block content %}
+
+
+  <!-- Fixed Columns -->
+  <div class="card">
+    <h5 class="card-header pb-0">Інформація про матеріали</h5>
+    <div class="card-datatable text-nowrap pb-0">
+      <table class="dt-fixedcolumns table table-bordered">
+        <thead>
+        <tr>
+          <th>Матеріал</th>
+          <th>товщ</th>
+          <th>розмір листа</th>
+          <th>кіл-сть листів</th>
+          <th>м2 в листах</th>
+          <th>витрата</th>
+          <th>брудна витрата</th>
+          <th>запас, міс.</th>
+          <th>запас, днів</th>
+          <th>Дата закінчення</th>
+          <th>Дія</th>
+
+        </tr>
+        </thead>
+        <tbody>
+        {% for material in materials %}
+          <tr>
+            <td>{{ material.name }}</td>
+            <td>{{ material.thickness }}</td>
+            <!-- Размеры листов -->
+            <td>
+              {% for sheet in material.materialsheets_set.all %}
+                {{ sheet.height }} x {{ sheet.width }} <br>
+              {% endfor %}
+            </td>
+
+            <!-- Количество листов -->
+            <td>{{ material.sheet_count|default:0 }}</td>
+            <td>{{ material.sheet_area }}</td>
+            <td>{{ material.consumption }}</td>
+            <td>{{ material.gross_consumption }}</td>
+            <td>{{ material.stock_months }}</td>
+            <td>{{ material.stock_days }}</td>
+            <td>{{ material.end_date }}</td>
+            <td>
+              {#            <!-- Действия с материалом, например, кнопки редактирования/удаления -->#}
+              {#            <a href="#" class="btn btn-sm btn-primary">Редактировать</a>#}
+              {#            <a href="#" class="btn btn-sm btn-danger">Удалить</a>#}
+            </td>
+          </tr>
+        {% empty %}
+          <tr>
+            <td colspan="12">Матеріали не знайдені</td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <!--/ Fixed Columns -->
+
+
+{% endblock %}

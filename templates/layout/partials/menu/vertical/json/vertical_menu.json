@@ -1,6 +1,19 @@
 {
   "menu": [
     {
+      "url": "materials",
+      "name": "materials",
+      "icon": "menu-icon tf-icons ri-mail-open-line",
+      "slug": "materials",
+      "submenu": [
+        {
+          "url": "material-info-table",
+          "name": "Інформація про матеріали",
+          "slug": "material-info-table"
+        }
+        ]
+    },
+    {
       "url": "1C",
       "name": "1C",
       "icon": "menu-icon tf-icons ri-mail-open-line",

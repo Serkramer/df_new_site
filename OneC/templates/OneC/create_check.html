@@ -181,9 +181,19 @@
         <h5 class="card-header">Виставити рахунок</h5>
         <div class="card-body">
           <form class="needs-validation" novalidate method="post" action="/1C/generate_check">
-            <div class="form-floating form-floating-outline mb-6">
-              <input type="text" id="bs-rangepicker-basic" class="form-control" name="date" />
-              <label for="bs-rangepicker-basic">Дата</label>
+            <div class="row">
+              <div class="col-md-6 col-6 mb-6">
+                <div class="form-floating form-floating-outline">
+                  <input type="text" id="bs-rangepicker-basic" class="form-control" name="date" />
+                  <label for="bs-rangepicker-basic">Дата запуску робіт</label>
+                </div>
+              </div>
+              <div class="col-md-6 col-6 mb-6">
+                <div class="form-floating form-floating-outline">
+                  <input type="text" id="bs-rangepicker-single" class="form-control" name="check_date" />
+                  <label for="bs-rangepicker-single">Дата виставлення рахунку</label>
+                </div>
+              </div>
             </div>
 
             <div class="form-floating form-floating-outline mb-6">

@@ -16,7 +16,7 @@ class PriceForm(forms.ModelForm):
     # Поле для выбора материалов
     materials = forms.ModelMultipleChoiceField(
         queryset=Materials.objects.using('store').all(),
-        label="Материалы",
+        label="Материали",
         required=False,
         widget=Select2MultipleWidget  # Применяем виджет Select2
     )
@@ -34,16 +34,21 @@ class PriceForm(forms.ModelForm):
         model = Price
         fields = ['company', 'price', 'price_type', 'thickness', 'materials', ]
 
+    class Media:
+        js = ('admin/js/price_form.js',)
+
     def save(self, commit=True):
         instance = super().save(commit=False)
 
         # Сохраняем ID компании, не показывая поле company_id в форме
-        instance.company_id = self.cleaned_data['company'].id
+        instance.company_id = self.cleaned_data['company'].id.id
 
-        # Сохраняем ID материалов
-        instance.material_ids = [material.id for material in self.cleaned_data['materials']]
+        if instance.price_type == 'PRICE_MATERIAL':
 
-        instance.thickness_list = [float(thickness) for thickness in self.cleaned_data['thickness']]
+            # Сохраняем ID материалов
+            instance.material_ids = [material.id for material in self.cleaned_data['materials']]
+
+            instance.thickness_list = [float(thickness) for thickness in self.cleaned_data['thickness']]
 
         if commit:
             instance.save()
@@ -65,7 +70,6 @@ class PriceForm(forms.ModelForm):
             self.initial['company'] = Companies.objects.using('custom').get(id=self.instance.company_id)
 
 
-
 class CompanyWithNuancesForm(forms.ModelForm):
     company = forms.ModelChoiceField(
         queryset=Companies.objects.using('custom').all(),
@@ -75,7 +79,7 @@ class CompanyWithNuancesForm(forms.ModelForm):
     class Meta:
         model = CompanyWithNuances
         fields = ['company', 'check_with_cents', 'name_order_in_check', 'group_orders', 'text_before',
-                  'unique_order_name']
+                  'unique_order_name', 'prepress']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

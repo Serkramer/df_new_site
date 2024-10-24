@@ -17,7 +17,8 @@ class Price(models.Model):
     price = models.FloatField(verbose_name="Ціна в євро")
     thickness_list = models.JSONField(verbose_name="Товщини", default=list, null=True, blank=True)
     material_ids = models.JSONField(verbose_name="ID материалов", default=list, blank=True)
-    price_type = models.CharField(verbose_name='Ціна для', choices=PriceType.choices, default=PriceType.PRICE_MATERIAL, max_length=14)
+    price_type = models.CharField(verbose_name='Ціна для', choices=PriceType.choices, default=PriceType.PRICE_MATERIAL,
+                                  max_length=14)
 
     def get_company(self):
         # Получаем объект компании из базы custom
@@ -46,6 +47,7 @@ class CompanyWithNuances(models.Model):
                                    default="Кліше")
     unique_order_name = models.BooleanField(verbose_name="Є нюанси в назві замовлення", default=False)
     add_prepress_in_square = models.BooleanField(verbose_name="Додавати додруківку у площу", default=True)
+    prepress = models.BooleanField(verbose_name="Включати в площу додрукарську підготовку", default=True)
 
     def get_company(self):
         return Companies.objects.using('custom').get(id=self.company_id)
