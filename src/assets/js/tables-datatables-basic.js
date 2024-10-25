@@ -103,7 +103,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
       flatpickrDate.flatpickr({
         enableTime: false,
         // See https://flatpickr.js.org/formatting/
-        dateFormat: 'd/m/Y',
+        dateFormat: 'm/d/Y',
         // After selecting a date, we need to revalidate the field
         onChange: function () {
           fv.revalidateField('basicDate');
