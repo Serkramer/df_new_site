@@ -12,7 +12,6 @@ The init() function will be called in web_project/__init__.py
 """
 
 
-
 class TemplateBootstrapLayoutVertical:
     def init(context):
         context.update(
