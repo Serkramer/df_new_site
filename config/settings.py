@@ -143,7 +143,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'store',
         'USER': 'root',
-        'PASSWORD': os.environ.get("STORE_DB_PASS", default='Lbaaepbz22'),
+        'PASSWORD': os.environ.get("STORE_DB_PASS", default=''),
         'HOST': '127.0.0.1',
         'PORT': '3306',
     },
@@ -151,7 +151,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'custom',
         'USER': 'root',
-        'PASSWORD': os.environ.get("CUSTOM_DB_PASS", default='Lbaaepbz22'),
+        'PASSWORD': os.environ.get("CUSTOM_DB_PASS", default=''),
         'HOST': '127.0.0.1',
         'PORT': '3306',
     }
