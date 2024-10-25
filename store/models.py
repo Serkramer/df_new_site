@@ -45,7 +45,7 @@ class Barcodes(models.Model):
 
 class CellBranches(models.Model):
     id = models.BigAutoField(primary_key=True)
-    settlement_name = models.CharField(max_length=100, blank=True, null=True, verbose_name="Населенний пункт")
+    cell_branch = models.CharField(max_length=100, blank=True, null=True, verbose_name="Населенний пункт")
     is_own = models.BooleanField(blank=True, null=True, verbose_name='Наш / не наш')  # This field type is a guess.
     short_name = models.CharField(max_length=10, blank=True, null=True, verbose_name="Скорочена назва")
 
@@ -345,6 +345,9 @@ class MaterialSheetStores(models.Model):
         managed = False
         db_table = 'material_sheet_stores'
 
+    def __str__(self):
+        return f"{self.material_sheet} - {self.count} "
+
 
 class MaterialSheets(models.Model):
     id = models.BigAutoField(primary_key=True)
@@ -359,6 +362,9 @@ class MaterialSheets(models.Model):
         db_table = 'material_sheets'
         verbose_name = 'Лист материала'
         verbose_name_plural = 'Листи материала'
+
+    def __str__(self):
+        return f"{self.material} {self.width}x{self.height}"
 
 
 class MaterialSlices(models.Model):
