@@ -16,7 +16,7 @@ class PriceForm(forms.ModelForm):
     # Поле для выбора материалов
     materials = forms.ModelMultipleChoiceField(
         queryset=Materials.objects.using('store').all(),
-        label="Материали",
+        label="Матеріали",
         required=False,
         widget=Select2MultipleWidget  # Применяем виджет Select2
     )

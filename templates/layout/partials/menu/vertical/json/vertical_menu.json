@@ -4,7 +4,7 @@
   "menu": [
     {
       "url": "materials",
-      "name": "materials",
+      "name": "Матеріали",
       "icon": "menu-icon tf-icons ri-mail-open-line",
       "slug": "materials",
       "submenu": [
@@ -14,9 +14,9 @@
           "slug": "material-info-table"
         },
         {
-          "url": "charts-chartjs",
+          "url": "materials-charts",
           "name": "Графіки",
-          "slug": "charts-chartjs"
+          "slug": "materials-charts"
         }
         ]
     },
