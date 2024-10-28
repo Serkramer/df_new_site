@@ -3,7 +3,7 @@
 {% load static %}
 {% load i18n %}
 
-{% block title %}Chart.js - Charts{% endblock %}
+{% block title %}Графіки по матеріалам{% endblock %}
 
 {% block vendor_css %}
   {{ block.super }}
@@ -34,7 +34,7 @@
 {% block content %}
   <div class="row">
     <div class="card mb-6">
-      <h5 class="card-header">Multi Column with Form Separator</h5>
+      <h5 class="card-header">Вибрати за яким діапазоном показувати графіки</h5>
       <form class="card-body" method="post">
         {% csrf_token %}
         <div class="row g-12">
@@ -50,19 +50,7 @@
               <label for="{{ form.end_date.id_for_label }}">{{ form.end_date.label }}</label>
             </div>
           </div>
-          <div class="col-md-6">
-            <small class="text-light fw-medium d-block">{{ form.material_type.label }}</small>
-            <div class="form-check form-check-inline mt-4">
-              {% for radio in form.material_type %}
-                <div class="form-check form-check-inline">
-                  {{ radio.tag }}
-                  <label class="form-check-label" for="{{ radio.id_for_label }}">
-                    {{ radio.choice_label }}
-                  </label>
-                </div>
-              {% endfor %}
-            </div>
-          </div>
+
         </div>
         <div class="row g-6">
           <div class="col-md-6">
@@ -81,12 +69,9 @@
               <label for="{{ form.materials.id_for_label }}">{{ form.materials.label }}</label>
             </div>
           </div>
-
-
         </div>
         <div class="pt-6">
           <button type="submit" class="btn btn-primary me-4">Показати</button>
-          <button type="reset" class="btn btn-outline-secondary">Cancel</button>
         </div>
       </form>
     </div>
@@ -98,23 +83,8 @@
     <div class="col-xl-12 col-12 mb-12">
       <div class="card">
         <div class="card-header header-elements">
-          <h5 class="card-title mb-0">Latest Statistics</h5>
+          <h5 class="card-title mb-0">Статистика</h5>
           <div class="card-action-element ms-auto py-0">
-            <div class="dropdown">
-              <button type="button" class="btn dropdown-toggle px-0" data-bs-toggle="dropdown" aria-expanded="false"><i
-                class="ri-calendar-2-line"></i></button>
-              <ul class="dropdown-menu dropdown-menu-end">
-                <li><a href="javascript:void(0);" class="dropdown-item d-flex align-items-center">Today</a></li>
-                <li><a href="javascript:void(0);" class="dropdown-item d-flex align-items-center">Yesterday</a></li>
-                <li><a href="javascript:void(0);" class="dropdown-item d-flex align-items-center">Last 7 Days</a></li>
-                <li><a href="javascript:void(0);" class="dropdown-item d-flex align-items-center">Last 30 Days</a></li>
-                <li>
-                  <hr class="dropdown-divider">
-                </li>
-                <li><a href="javascript:void(0);" class="dropdown-item d-flex align-items-center">Current Month</a></li>
-                <li><a href="javascript:void(0);" class="dropdown-item d-flex align-items-center">Last Month</a></li>
-              </ul>
-            </div>
           </div>
         </div>
         <div class="card-body">

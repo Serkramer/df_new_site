@@ -10,6 +10,7 @@ from django.utils import timezone
 from datetime import timedelta
 
 
+
 class MaterialInfoView(TemplateView):
     # Predefined function
     def get_context_data(self, **kwargs):
@@ -124,9 +125,19 @@ class MaterialInfoView(TemplateView):
         return context
 
 
+
+
 class MaterialsChartsView(TemplateView):
     def get_context_data(self, **kwargs):
         context = TemplateLayout.init(self, super().get_context_data(**kwargs))
         form = MaterialChartsForm()
         context['form'] = form
         return context
+
+    def post(self, request, *args, **kwargs):
+        form = MaterialChartsForm(request)
+        if form.is_valid():
+            pass
+        else:
+            # Если форма не прошла валидацию
+            return self.render_to_response({'form': form})
