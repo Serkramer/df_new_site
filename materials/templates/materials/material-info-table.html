@@ -159,33 +159,24 @@
         </thead>
         <tbody>
         {% for material in materials %}
-          <tr
-            {% if material.stock_days < 15 %} style="background-color: rgba(255,135,135,0.48);" {% endif %}
-            {% if material.stock_days < 45 %} style="background-color: rgba(255,192,96,0.53)"  {% endif %}
-          >
-
-            <td  {% if material.stock_days < 15 %} style="background-color: rgba(255,135,135);" {% endif %}
-              {% if material.stock_days < 45 %}
-                                                   style="background-color: rgb(255,176,55)"  {% endif %}>{{ material.name }}</td>
+          <tr>
+            <td>{{ material.name }}</td>
             <td>{{ material.thickness }}</td>
             <!-- Размеры листов -->
             <td>
-              {% for sheet_info in material.sheets_info %}
-                {{ sheet_info.height }} x {{ sheet_info.width }} <br>
+              {% for sheet in material.materialsheets_set.all %}
+                {{ sheet.height }} x {{ sheet.width }} <br>
               {% endfor %}
             </td>
 
             <!-- Количество листов -->
-            <td> {% for sheet_info in material.sheets_info %}
-                {{ sheet_info.count }} <br>
-              {% endfor %}</td>
-
-            <td>{{ material.square }}</td>
-            <td>{{ material.orders_square }}</td>
-            <td>{{ material.black_orders_square }}</td>
+            <td>{{ material.sheet_count|default:0 }}</td>
+            <td>{{ material.sheet_area }}</td>
+            <td>{{ material.consumption }}</td>
+            <td>{{ material.gross_consumption }}</td>
             <td>{{ material.stock_months }}</td>
             <td>{{ material.stock_days }}</td>
-            <td>{{ material.end_date | date:"d.m.Y" }}</td>
+            <td>{{ material.end_date }}</td>
             <td>
               {#            <!-- Действия с материалом, например, кнопки редактирования/удаления -->#}
               {#            <a href="#" class="btn btn-sm btn-primary">Редактировать</a>#}
