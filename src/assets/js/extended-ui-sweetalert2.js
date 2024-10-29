@@ -414,7 +414,7 @@
         inputAttributes: {
           required: true
         },
-        validationMessage: 'This field is required'
+        validationMessage: 'Це поле обо`язкове'
       });
 
       async function backAndForward() {

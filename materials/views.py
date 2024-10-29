@@ -1,14 +1,14 @@
 from django.shortcuts import render
 from django.views.generic import TemplateView
-from django.db.models import Prefetch, Sum, F, FloatField, ExpressionWrapper
-
-from custom.models import Orders
+from django.db.models import Prefetch, Sum, F, FloatField, ExpressionWrapper, Count
+from collections import defaultdict
+from custom.models import Orders, OrderStatusList
 from materials.forms import MaterialChartsForm
 from store.models import Materials, MaterialSheets, MaterialSheetStores
 from web_project import TemplateLayout
 from django.utils import timezone
-from datetime import timedelta
-
+from datetime import timedelta, datetime, time
+from django.db.models.functions import TruncMonth
 
 
 class MaterialInfoView(TemplateView):
@@ -125,19 +125,58 @@ class MaterialInfoView(TemplateView):
         return context
 
 
-
-
 class MaterialsChartsView(TemplateView):
+    template_name = "materials/materials_charts.html"
+
     def get_context_data(self, **kwargs):
         context = TemplateLayout.init(self, super().get_context_data(**kwargs))
-        form = MaterialChartsForm()
-        context['form'] = form
+        context['form'] = kwargs.get('form', MaterialChartsForm())
         return context
 
     def post(self, request, *args, **kwargs):
-        form = MaterialChartsForm(request)
+        form = MaterialChartsForm(request.POST)
+        context = TemplateLayout.init(self, super().get_context_data(**kwargs))
         if form.is_valid():
-            pass
+            start_date = form.cleaned_data['start_date']
+            end_date = form.cleaned_data['end_date']
+            thickness = form.cleaned_data['thickness']
+            materials = form.cleaned_data['materials']
+
+            start_datetime = datetime.combine(start_date, time.min)
+            end_datetime = datetime.combine(end_date, time.max)
+
+            not_use_status_list = [OrderStatusList.NONE, OrderStatusList.ERROR_FILE_COUNT, OrderStatusList.CANCEL,
+                                   OrderStatusList.STOP_BY_CLIENT, OrderStatusList.STOP]
+
+            orders = Orders.objects.filter(launch_date__gte=start_datetime, launch_date__lte=end_datetime).exclude(
+                status__in=not_use_status_list)
+
+            if thickness:
+                # orders = orders.filter()
+                pass
+
+            if materials:
+                material_ids = list(materials.values_list('id', flat=True))
+                orders = orders.filter(material_id__in=material_ids)
+
+            area_sum_by_month = defaultdict(lambda: 0)
+
+            for order in orders:
+                launch_date = timezone.localtime(order.launch_date)
+                # Извлекаем месяц и год из даты
+                month = launch_date.strftime('%m/%Y')
+                if order.forms_area:
+                    area_sum_by_month[month] += order.forms_area
+
+            orders_in_month = [{'month': month, 'total_area': total_area, 'total_area_int': int(total_area)} for
+                               month, total_area in
+                               sorted(area_sum_by_month.items())]
+
+            max_in_month = int(round(max((item['total_area'] for item in orders_in_month), default=0), -2))
+
+            return self.render_to_response(self.get_context_data(form=form, orders_in_month=orders_in_month,
+                                                                 max_in_month=max_in_month, show_modal=True))
+
         else:
             # Если форма не прошла валидацию
-            return self.render_to_response({'form': form})
+            return self.render_to_response(self.get_context_data(form=form))

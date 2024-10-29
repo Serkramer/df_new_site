@@ -1217,6 +1217,19 @@ TemplateCustomizer.DIRECTIONS = [
 
 // Theme setting language
 TemplateCustomizer.LANGUAGES = {
+  uk: {
+    panel_header: 'Настроювач шаблонів',
+    panel_sub_header: 'Налаштування та попередній перегляд у реальному часі',
+    theming_header: 'Тематизація',
+    style_label: 'Стиль (режим)',
+    theme_label: 'Теми',
+    layout_header: 'Макет',
+    layout_label: 'Меню (Навігація)',
+    layout_header_label: 'Типи заголовків',
+    content_label: 'Зміст',
+    layout_navbar_label: 'Тип панелі навігації',
+    direction_label: 'Напрямок'
+  },
   en: {
     panel_header: 'Template Customizer',
     panel_sub_header: 'Customize and preview in real time',

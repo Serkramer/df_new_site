@@ -181,18 +181,19 @@ AUTH_PASSWORD_VALIDATORS = [
 
 # Enable i18n and set the list of supported languages
 LANGUAGES = [
+    ('uk', _('Ukrainian')),
     ("en", _("English")),
     ("fr", _("French")),
     ("ar", _("Arabic")),
     ("de", _("German")),
-    # ("uk", _("Ukrainian"))
+
     # Add more languages as needed
 ]
 
 # Set default language
 # ! Make sure you have cleared the browser cache after changing the default language
 # LANGUAGE_CODE = "uk-uk"
-LANGUAGE_CODE = "en"
+LANGUAGE_CODE = "uk-uk"
 
 TIME_ZONE = "Europe/Kiev"
 

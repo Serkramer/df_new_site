@@ -18,67 +18,67 @@ document.addEventListener('DOMContentLoaded', function (e) {
           username: {
             validators: {
               notEmpty: {
-                message: 'Please enter username'
+                message: 'Будь ласка ввведіть логін'
               },
               stringLength: {
                 min: 4,
-                message: 'Username must be more than 4 characters'
+                message: 'Логін має бути більш ніж 4 символа'
               }
             }
           },
           email: {
             validators: {
               notEmpty: {
-                message: 'Please enter your email'
+                message: 'Будь ласка введіть свій email'
               },
               emailAddress: {
-                message: 'Please enter valid email address'
+                message: 'Будь ласка введіть вірний email'
               }
             }
           },
           'email-username': {
             validators: {
               notEmpty: {
-                message: 'Please enter email / username'
+                message: 'Будь ласка введіть логін / username'
               },
               stringLength: {
                 min: 4,
-                message: 'Username must be more than 4 characters'
+                message: 'Логін має бути більш ніж 4 символа'
               }
             }
           },
           password: {
             validators: {
               notEmpty: {
-                message: 'Please enter your password'
+                message: 'Будь ласка введіть пароль'
               },
               stringLength: {
                 min: 4,
-                message: 'Password must be more than 4 characters'
+                message: 'Пароль має бути більш ніж 4 символа'
               }
             }
           },
           'confirm-password': {
             validators: {
               notEmpty: {
-                message: 'Please confirm password'
+                message: 'Повторіть пароль'
               },
               identical: {
                 compare: function () {
                   return formAuthentication.querySelector('[name="password"]').value;
                 },
-                message: 'The password and its confirm are not the same'
+                message: 'Паролі не співпадають'
               },
               stringLength: {
                 min: 4,
-                message: 'Password must be more than 4 characters'
+                message: 'Пароль має бути більш ніж 4 символа'
               }
             }
           },
           terms: {
             validators: {
               notEmpty: {
-                message: 'Please agree terms & conditions'
+                message: 'Будь ласка, погодьтеся з умовами'
               }
             }
           }
@@ -113,7 +113,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
             if (status === 'Valid') {
               // If the form is valid, show loading state
               btnSubmit.classList.add('disabled');
-              btnText.textContent = 'Sending email... ';
+              btnText.textContent = 'Відправка email... ';
               btnLoader.classList.remove('visually-hidden');
             }
           });

@@ -70,6 +70,11 @@
             </a>
             <ul class="dropdown-menu dropdown-menu-end">
               <li>
+                <a class="dropdown-item {% if LANGUAGE_CODE == 'uk' %}active{% endif %}" href="{% current_url request %}" data-language="uk" data-text-direction="ltr">
+                  <span class="align-middle">{% trans "Ukrainian"%}</span>
+                </a>
+              </li>
+              <li>
                 <a class="dropdown-item {% if LANGUAGE_CODE == 'en' %}active{% endif %}" href="{% current_url request %}" data-language="en" data-text-direction="ltr">
                   <span class="align-middle">{% trans "English"%}</span>
                 </a>

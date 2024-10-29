@@ -11,6 +11,12 @@
   <link rel="stylesheet" href="{% static 'vendor/libs/tagify/tagify.css' %}" />
   <link rel="stylesheet" href="{% static 'vendor/libs/bootstrap-select/bootstrap-select.css' %}" />
   <link rel="stylesheet" href="{% static 'vendor/libs/typeahead-js/typeahead.css' %}" />
+
+  <link rel="stylesheet" href="{% static 'vendor/libs/flatpickr/flatpickr.css' %}" />
+  <link rel="stylesheet" href="{% static 'vendor/libs/bootstrap-datepicker/bootstrap-datepicker.css' %}" />
+  <link rel="stylesheet" href="{% static 'vendor/libs/bootstrap-daterangepicker/bootstrap-daterangepicker.css' %}" />
+  <link rel="stylesheet" href="{% static 'vendor/libs/jquery-timepicker/jquery-timepicker.css' %}" />
+  <link rel="stylesheet" href="{% static 'vendor/libs/pickr/pickr-themes.css' %}" />
 {% endblock vendor_css %}
 
 {% block vendor_js %}
@@ -21,13 +27,125 @@
   <script src="{% static 'vendor/libs/bootstrap-select/bootstrap-select.js' %}"></script>
   <script src="{% static 'vendor/libs/typeahead-js/typeahead.js' %}"></script>
   <script src="{% static 'vendor/libs/bloodhound/bloodhound.js' %}"></script>
+
+  <script src="{% static 'vendor/libs/moment/moment.js' %}"></script>
+  <script src="{% static 'vendor/libs/flatpickr/flatpickr.js' %}"></script>
+  <script src="{% static 'vendor/libs/bootstrap-datepicker/bootstrap-datepicker.js' %}"></script>
+  <script src="{% static 'vendor/libs/bootstrap-daterangepicker/bootstrap-daterangepicker.js' %}"></script>
+  <script src="{% static 'vendor/libs/jquery-timepicker/jquery-timepicker.js' %}"></script>
+  <script src="{% static 'vendor/libs/pickr/pickr.js' %}"></script>
 {% endblock vendor_js %}
 
 {% block page_js %}
   {{ block.super }}
-  <script src="{% static 'js/charts-chartjs.js' %}"></script>
   <script src="{% static 'js/forms-selects.js' %}"></script>
   <script src="{% static 'js/forms-typeahead.js' %}"></script>
+
+
+  <script>
+    let starDate = document.querySelector('#id_start_date');
+    let endDate = document.querySelector('#id_end_date');
+    if (starDate) {
+      starDate.flatpickr({
+        monthSelectorType: 'static',
+        dateFormat: 'Y-m-d'
+      });
+    }
+    if (endDate) {
+      endDate.flatpickr({
+        monthSelectorType: 'static',
+        dateFormat: 'Y-m-d'
+      });
+    }
+    const orangeLightColor = '#ffcf5c';
+    const barChart = document.getElementById('barChart');
+
+
+    let cardColor, headingColor, labelColor, borderColor, legendColor;
+
+    if (isDarkStyle) {
+      cardColor = config.colors_dark.cardColor;
+      headingColor = config.colors_dark.headingColor;
+      labelColor = config.colors_dark.textMuted;
+      legendColor = config.colors_dark.bodyColor;
+      borderColor = config.colors_dark.borderColor;
+    } else {
+      cardColor = config.colors.cardColor;
+      headingColor = config.colors.headingColor;
+      labelColor = config.colors.textMuted;
+      legendColor = config.colors.bodyColor;
+      borderColor = config.colors.borderColor;
+    }
+
+    if (barChart) {
+      const barChartVar = new Chart(barChart, {
+        type: 'bar',
+        data: {
+          labels: [  {% for material in orders_in_month %}  '{{ material.month }}', {% endfor %}
+          ],
+          datasets: [
+            {
+              data: [ {% for material in orders_in_month %} {{ material.total_area_int }}, {% endfor %}],
+              backgroundColor: orangeLightColor,
+              borderColor: 'transparent',
+              maxBarThickness: 15,
+              borderRadius: {
+                topRight: 15,
+                topLeft: 15
+              }
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          animation: {
+            duration: 500
+          },
+          plugins: {
+            tooltip: {
+              rtl: isRtl,
+              backgroundColor: cardColor,
+              titleColor: headingColor,
+              bodyColor: legendColor,
+              borderWidth: 1,
+              borderColor: borderColor
+            },
+            legend: {
+              display: false
+            }
+          },
+          scales: {
+            x: {
+              grid: {
+                color: borderColor,
+                drawBorder: false,
+                borderColor: borderColor
+              },
+              ticks: {
+                color: labelColor
+              }
+            },
+            y: {
+              min: 0,
+              max:  {% if max_in_month %}{{ max_in_month }}{% else %} 20 {% endif %},
+              grid: {
+                color: borderColor,
+                drawBorder: false,
+                borderColor: borderColor
+              },
+              ticks: {
+                stepSize: 100,
+                color: labelColor
+              }
+            }
+          }
+        }
+      });
+    }
+
+
+  </script>
 
 {% endblock page_js %}
 
@@ -37,21 +155,44 @@
       <h5 class="card-header">Вибрати за яким діапазоном показувати графіки</h5>
       <form class="card-body" method="post">
         {% csrf_token %}
+        {% if form.non_field_errors %}
+          <div class="alert alert-danger">
+            {% for error in form.non_field_errors %}
+              <p>{{ error }}</p>
+            {% endfor %}
+          </div>
+        {% endif %}
+
         <div class="row g-12">
           <div class="col-md-6 col-6 mb-6">
             <div class="form-floating form-floating-outline">
               {{ form.start_date }}
-              <label for="{{ form.start_date.id_for_label }}"> {{ form.start_date.label }}</label>
+              <label for="{{ form.start_date.id_for_label }}">{{ form.start_date.label }}</label>
+              {% if form.start_date.errors %}
+                <div class="text-danger">
+                  {% for error in form.start_date.errors %}
+                    <p>{{ error }}</p>
+                  {% endfor %}
+                </div>
+              {% endif %}
             </div>
           </div>
+
           <div class="col-md-6 col-6 mb-6">
             <div class="form-floating form-floating-outline">
               {{ form.end_date }}
               <label for="{{ form.end_date.id_for_label }}">{{ form.end_date.label }}</label>
+              {% if form.end_date.errors %}
+                <div class="text-danger">
+                  {% for error in form.end_date.errors %}
+                    <p>{{ error }}</p>
+                  {% endfor %}
+                </div>
+              {% endif %}
             </div>
           </div>
-
         </div>
+
         <div class="row g-6">
           <div class="col-md-6">
             <div class="form-floating form-floating-outline">
@@ -59,17 +200,33 @@
                 {{ form.thickness }}
               </div>
               <label for="{{ form.thickness.id_for_label }}">{{ form.thickness.label }}</label>
+              {% if form.thickness.errors %}
+                <div class="text-danger">
+                  {% for error in form.thickness.errors %}
+                    <p>{{ error }}</p>
+                  {% endfor %}
+                </div>
+              {% endif %}
             </div>
           </div>
+
           <div class="col-md-6">
             <div class="form-floating form-floating-outline">
               <div class="select2-primary">
                 {{ form.materials }}
               </div>
               <label for="{{ form.materials.id_for_label }}">{{ form.materials.label }}</label>
+              {% if form.materials.errors %}
+                <div class="text-danger">
+                  {% for error in form.materials.errors %}
+                    <p>{{ error }}</p>
+                  {% endfor %}
+                </div>
+              {% endif %}
             </div>
           </div>
         </div>
+
         <div class="pt-6">
           <button type="submit" class="btn btn-primary me-4">Показати</button>
         </div>
@@ -78,19 +235,20 @@
   </div>
 
 
-  <div id="charts_block" >
+
+  <div id="charts_block">
     <!-- Bar Charts -->
     <div class="col-xl-12 col-12 mb-12">
-      <div class="card">
+
         <div class="card-header header-elements">
           <h5 class="card-title mb-0">Статистика</h5>
           <div class="card-action-element ms-auto py-0">
           </div>
         </div>
         <div class="card-body">
-          <canvas id="barChart" class="chartjs" data-height="400"></canvas>
+          <canvas id="barChart" class="chartjs" data-height="1000"></canvas>
         </div>
-      </div>
+
     </div>
     <!-- /Bar Charts -->
 

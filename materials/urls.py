@@ -13,7 +13,7 @@ urlpatterns = [
 
     path(
         "material-charts",
-        login_required(MaterialsChartsView.as_view(template_name="materials/materials_charts.html")),
+        login_required(MaterialsChartsView.as_view()),
         name="materials-charts"
     ),
 
