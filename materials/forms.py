@@ -55,3 +55,10 @@ class MaterialChartsForm(forms.Form):
         self.fields['start_date'].initial = one_year_ago
 
         self.fields['end_date'].initial = date.today()
+
+    def get_materials_data(self):
+        return [
+            {'id': material.id, 'name': material.name, 'thickness': material.thickness}
+            for material in self.fields['materials'].queryset
+        ]
+

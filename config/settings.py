@@ -83,6 +83,7 @@ INSTALLED_APPS = [
     "store.apps.StoreConfig",
     'django_select2',
     "materials.apps.MaterialsConfig",
+    "info.apps.InfoConfig"
 ]
 
 MIDDLEWARE = [
@@ -195,7 +196,7 @@ LANGUAGES = [
 # LANGUAGE_CODE = "uk-uk"
 LANGUAGE_CODE = "uk-uk"
 
-TIME_ZONE = "Europe/Kiev"
+TIME_ZONE = "UTC"
 
 USE_I18N = True
 

@@ -114,6 +114,8 @@ urlpatterns = [
 
     path("1C/", include("OneC.urls")),
 
+    path("", include("info.urls")),
+
     path("materials/", include("materials.urls"))
 ]
 

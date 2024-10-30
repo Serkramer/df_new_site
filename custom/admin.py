@@ -12,6 +12,17 @@ class PaperSizesAdmin(admin.ModelAdmin):
     search_fields = ('type', 'height', 'width', 'cost')
 
 
+@admin.register(PrintingMachineShafts)
+class PrintingMachineShaftsAdmin(admin.ModelAdmin):
+    list_display = ('id', 'diameter', 'quantity', 'width', 'printing_machine', 'thickness', 'date_create',
+                    'input_value', 'input_value_type', 'contact', 'printing_width', 'description')
+
+
+@admin.register(PrintingMachines)
+class PrintingMachinesAdmin(admin.ModelAdmin):
+    list_display = ('id', 'material_thickness', 'name', 'fartuk', 'printing_company', 'section', 'module')
+
+
 @admin.register(CompanyClients)
 class CompanyClientsAdmin(admin.ModelAdmin):
     list_display = ('id', 'custom_is_banned', 'debt', 'company_our_brand', 'document_delivery_type', 'is_prepayment')

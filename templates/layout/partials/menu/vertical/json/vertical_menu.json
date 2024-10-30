@@ -39,6 +39,12 @@
       ]
     },
     {
+      "url": "printing-rollers",
+      "icon": "menu-icon tf-icons ri-table-alt-line",
+      "name": "Вали",
+      "slug": "printing-rollers"
+    },
+    {
       "name": "Dashboards",
       "icon": "menu-icon tf-icons ri-home-smile-line",
       "slug": "dashboard",

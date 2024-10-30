@@ -20,19 +20,19 @@ class LoginView(AuthView):
             password = request.POST.get("password")
 
             if not (username and password):
-                messages.error(request, "Please enter your username and password.")
+                messages.error(request, "Введіть логін і пароль.")
                 return redirect("login")
 
             if "@" in username:
                 user_email = User.objects.filter(email=username).first()
                 if user_email is None:
-                    messages.error(request, "Please enter a valid email.")
+                    messages.error(request, "Будь ласка введіть коректний email.")
                     return redirect("login")
                 username = user_email.username
 
             user_email = User.objects.filter(username=username).first()
             if user_email is None:
-                messages.error(request, "Please enter a valid username.")
+                messages.error(request, "Будь ласка введіть коректні дані")
                 return redirect("login")
 
             authenticated_user = authenticate(request, username=username, password=password)
@@ -46,5 +46,5 @@ class LoginView(AuthView):
                 else: # Redirect to the home page or another appropriate page
                     return redirect("index")
             else:
-                messages.error(request, "Please enter a valid username.")
+                messages.error(request, "Будь ласка введіть коректні дані.")
                 return redirect("login")

@@ -1,3 +1,5 @@
+import json
+
 from django.shortcuts import render
 from django.views.generic import TemplateView
 from django.db.models import Prefetch, Sum, F, FloatField, ExpressionWrapper, Count
@@ -8,7 +10,7 @@ from store.models import Materials, MaterialSheets, MaterialSheetStores
 from web_project import TemplateLayout
 from django.utils import timezone
 from datetime import timedelta, datetime, time
-from django.db.models.functions import TruncMonth
+from django.db.models.functions import TruncMonth, ExtractWeek, Extract, TruncWeek, TruncDay
 
 
 class MaterialInfoView(TemplateView):
@@ -130,12 +132,16 @@ class MaterialsChartsView(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = TemplateLayout.init(self, super().get_context_data(**kwargs))
+        form = kwargs.get('form', MaterialChartsForm())
         context['form'] = kwargs.get('form', MaterialChartsForm())
+
+        # Собираем данные материалов для передачи в шаблон
+        context['materials_data'] = form
+
         return context
 
     def post(self, request, *args, **kwargs):
         form = MaterialChartsForm(request.POST)
-        context = TemplateLayout.init(self, super().get_context_data(**kwargs))
         if form.is_valid():
             start_date = form.cleaned_data['start_date']
             end_date = form.cleaned_data['end_date']
@@ -149,34 +155,111 @@ class MaterialsChartsView(TemplateView):
                                    OrderStatusList.STOP_BY_CLIENT, OrderStatusList.STOP]
 
             orders = Orders.objects.filter(launch_date__gte=start_datetime, launch_date__lte=end_datetime).exclude(
-                status__in=not_use_status_list)
+                status__in=not_use_status_list).exclude(launch_date__isnull=True)
 
             if thickness:
-                # orders = orders.filter()
-                pass
+                material_ids = list(Materials.objects.using('store').filter(thickness__in=thickness).values_list('id',
+                                                                                                            flat=True))
+                orders = orders.filter(material_id__in=material_ids)
 
             if materials:
                 material_ids = list(materials.values_list('id', flat=True))
                 orders = orders.filter(material_id__in=material_ids)
 
-            area_sum_by_month = defaultdict(lambda: 0)
+            area_sum_by_month = (
+                orders
+                .annotate(month=TruncMonth('launch_date'))
+                .values('month')
+                .annotate(total_area=Sum('forms_area'))
+                .order_by('month')
+            )
 
-            for order in orders:
-                launch_date = timezone.localtime(order.launch_date)
-                # Извлекаем месяц и год из даты
-                month = launch_date.strftime('%m/%Y')
-                if order.forms_area:
-                    area_sum_by_month[month] += order.forms_area
-
-            orders_in_month = [{'month': month, 'total_area': total_area, 'total_area_int': int(total_area)} for
-                               month, total_area in
-                               sorted(area_sum_by_month.items())]
+            orders_in_month = [
+                {
+                    'month': f"{month_data['month'].strftime('%m')}.{month_data['month'].year}",
+                    'total_area': month_data['total_area'],
+                    'total_area_int': int(month_data['total_area'] or 0)
+                }
+                for month_data in area_sum_by_month
+            ]
 
             max_in_month = int(round(max((item['total_area'] for item in orders_in_month), default=0), -2))
 
+            area_sum_by_week = (
+                orders
+                .annotate(week=TruncWeek('launch_date'))
+                .values('week')
+                .annotate(total_area=Sum('forms_area'))
+                .order_by('week')
+            )
+
+            orders_in_week = [
+                {
+                    'week': f"{week_data['week'].isocalendar()[1]:02d}.{week_data['week'].year}",
+                    'total_area': week_data['total_area'],
+                    'total_area_int': int(week_data['total_area'] or 0)
+                }
+                for week_data in area_sum_by_week
+            ]
+
+            max_in_week = int(round(max((item['total_area'] for item in orders_in_week), default=0), -2))
+
+            area_sum_by_day = (
+                orders
+                .annotate(day=TruncDay('launch_date'))
+                .values('day')
+                .annotate(total_area=Sum('forms_area'))
+                .order_by('day')
+            )
+
+            orders_in_day = [
+                {
+                    'day': day_data['day'].strftime('%d.%m.%Y'),
+                    'total_area': day_data['total_area'],
+                    'total_area_int': int(day_data['total_area'] or 0)
+                }
+                for day_data in area_sum_by_day
+            ]
+            max_in_day = int(round(max((item['total_area'] for item in orders_in_day), default=0), -2))
+
+            # Фильтрация по компаниям и выборка нужных полей
+            orders_by_company = (
+                orders
+                .values('company_client__id', 'company_client__id__name')  # Группировка по id и названию компании
+                .annotate(total_forms_area=Sum('forms_area'))
+                .order_by('-total_forms_area')
+            )
+
+            # Преобразование данных для вывода
+            orders_with_area_company = [
+                {
+                    'company_name': order['company_client__id__name'],
+                    'forms_area': order['total_forms_area'],
+                    'forms_area_int': int(order['total_forms_area'] or 0)
+                }
+                for order in orders_by_company
+            ]
+
+            # Пример максимального значения для forms_area по выбранной компании
+            max_forms_area_company = int(round(max((item['forms_area'] for item in orders_with_area_company),
+                                                   default=0), -2))
+
+            company_count = len(orders_with_area_company)
+            height = company_count * 20 if company_count else 400
             return self.render_to_response(self.get_context_data(form=form, orders_in_month=orders_in_month,
-                                                                 max_in_month=max_in_month, show_modal=True))
+                                                                 max_in_month=max_in_month, show_modal=True,
+                                                                 orders_in_week=orders_in_week,
+                                                                 max_in_week=max_in_week,
+                                                                 orders_in_day=orders_in_day,
+                                                                 max_in_day=max_in_day,
+                                                                 max_forms_area_company=max_forms_area_company,
+                                                                 orders_with_area_company=orders_with_area_company,
+                                                                 company_count=company_count, height=height))
 
         else:
             # Если форма не прошла валидацию
             return self.render_to_response(self.get_context_data(form=form))
+
+
+
+

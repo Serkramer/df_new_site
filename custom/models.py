@@ -27,6 +27,10 @@ class OrderStatusList(models.TextChoices):
     DELIVERED = "DELIVERED", "Доставлено"
 
 
+class PrintingMachineShaftsInputValueTypeList(models.TextChoices):
+    pass
+
+
 class CustomManager(models.Manager):
     def get_queryset(self):
         return super().get_queryset().using('custom')
@@ -1272,7 +1276,11 @@ class PrintingMachineShafts(models.Model):
     class Meta:
         managed = False
         db_table = 'printing_machine_shafts'
+        verbose_name = 'Вал'
+        verbose_name_plural = 'Вали'
 
+    def __str__(self):
+        return f"{self.printing_machine.name} {self.diameter}"
 
 class PrintingMachineShaftsUseAdhesiveTapes(models.Model):
     printing_machine_shaft = models.OneToOneField(PrintingMachineShafts, models.DO_NOTHING,
@@ -1297,6 +1305,9 @@ class PrintingMachines(models.Model):
     class Meta:
         managed = False
         db_table = 'printing_machines'
+
+    def __str__(self):
+        return f"{self.printing_company} {self.name}"
 
 
 class PrintingMaterialColors(models.Model):
