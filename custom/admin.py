@@ -17,10 +17,29 @@ class PrintingMachineShaftsAdmin(admin.ModelAdmin):
     list_display = ('id', 'diameter', 'quantity', 'width', 'printing_machine', 'thickness', 'date_create',
                     'input_value', 'input_value_type', 'contact', 'printing_width', 'description')
 
+    autocomplete_fields = ['printing_machine', 'contact',]
+
+
+@admin.register(Contacts)
+class ContactsAdmin(admin.ModelAdmin):
+    list_display = ('id', 'first_name', 'last_name', 'middle_name', 'description')
+    search_fields = ('first_name', 'last_name')
+
+
+@admin.register(PrintingCompanies)
+class PrintingCompaniesAdmin(admin.ModelAdmin):
+    list_display = ('id', 'process_id', 'color_library')
+    search_fields = ('id__name',)
+
+    autocomplete_fields = ['id', ]
+
 
 @admin.register(PrintingMachines)
 class PrintingMachinesAdmin(admin.ModelAdmin):
-    list_display = ('id', 'material_thickness', 'name', 'fartuk', 'printing_company', 'section', 'module')
+    list_display = ('name', 'printing_company', 'material_thickness', 'fartuk', 'section', 'module')
+    search_fields = ('name', 'printing_company__id__name')
+
+    autocomplete_fields = ['printing_company',]
 
 
 @admin.register(CompanyClients)
