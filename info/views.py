@@ -15,6 +15,8 @@ class PrintingRollersView(TemplateView):
         context = TemplateLayout.init(self, super().get_context_data(**kwargs))
 
         shafts = PrintingMachineShafts.objects.all()
+        for shaft in shafts:
+            pass
         context['shafts'] = shafts
         return context
 

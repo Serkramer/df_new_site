@@ -3,6 +3,7 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.urls import reverse, path
 from django.utils.html import format_html
 
+from .admin_filters import PrintingCompanyWithShaftsFilter
 from .models import *
 
 
@@ -14,10 +15,14 @@ class PaperSizesAdmin(admin.ModelAdmin):
 
 @admin.register(PrintingMachineShafts)
 class PrintingMachineShaftsAdmin(admin.ModelAdmin):
-    list_display = ('id', 'diameter', 'quantity', 'width', 'printing_machine', 'thickness', 'date_create',
+    list_display = ('printing_machine', 'diameter', 'quantity', 'width', 'thickness', 'date_create',
                     'input_value', 'input_value_type', 'contact', 'printing_width', 'description')
 
     autocomplete_fields = ['printing_machine', 'contact',]
+
+    search_fields = ('printing_machine__printing_company__id__name', 'printing_machine__name')
+
+    list_filter = (PrintingCompanyWithShaftsFilter, )
 
 
 @admin.register(Contacts)
@@ -65,6 +70,8 @@ class CompanyOurBrandsAdmin(admin.ModelAdmin):
 class CompaniesAdmin(admin.ModelAdmin):
     list_display = ('name', 'okpo', 'full_name', 'company_group')
     search_fields = ('name', 'okpo', 'full_name')
+
+    autocomplete_fields = ['contact', ]
 
 
 @admin.register(AngleSetTypes)

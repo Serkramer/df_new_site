@@ -123,3 +123,5 @@ handler404 = SystemView.as_view(template_name="pages_misc_error.html", status=40
 handler403 = SystemView.as_view(template_name="pages_misc_not_authorized.html", status=403)
 handler400 = SystemView.as_view(template_name="pages_misc_error.html", status=400)
 handler500 = SystemView.as_view(template_name="pages_misc_error.html", status=500)
+
+admin.site.site_header = 'Друкарські форми'

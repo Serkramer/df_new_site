@@ -28,7 +28,12 @@ class OrderStatusList(models.TextChoices):
 
 
 class PrintingMachineShaftsInputValueTypeList(models.TextChoices):
-    pass
+    DIAMETER = "DIAMETER", "Діаметр"
+    RAPPORT = "RAPPORT", "Рапорт"
+    METAL_DIAMETER = "METAL_DIAMETER", "Діаметр по металу"
+    CIRCUMFERENCE = "CIRCUMFERENCE", "Довжина окружності"
+    NUMBER_OF_TEETH = "NUMBER_OF_TEETH", "Кількість зубів"
+    DISTORTION = "DISTORTION", "Компресія"
 
 
 class CustomManager(models.Manager):
@@ -58,6 +63,9 @@ class Addresses(models.Model):
     class Meta:
         managed = False
         db_table = 'addresses'
+
+    def __str__(self):
+        return f"{self.street} {self.build}"
 
 
 class AdhesiveTapeThicknesses(models.Model):
@@ -241,7 +249,8 @@ class ColorProfiles(models.Model):
     green_anilox_roll = models.ForeignKey(AniloxRolls, models.DO_NOTHING,
                                           related_name='colorprofiles_green_anilox_roll_set', blank=True, null=True)
     magenta_anilox_roll = models.ForeignKey(AniloxRolls, models.DO_NOTHING,
-                                            related_name='colorprofiles_magenta_anilox_roll_set', blank=True, null=True)
+                                            related_name='colorprofiles_magenta_anilox_roll_set', blank=True,
+                                            null=True)
     orange_anilox_roll = models.ForeignKey(AniloxRolls, models.DO_NOTHING,
                                            related_name='colorprofiles_orange_anilox_roll_set', blank=True, null=True)
     spot_anilox_roll = models.ForeignKey(AniloxRolls, models.DO_NOTHING,
@@ -428,7 +437,8 @@ class CompanyClients(models.Model):
     debt = models.DecimalField(max_digits=19, decimal_places=2, blank=True, null=True, verbose_name='Борг')
     company_our_brand = models.ForeignKey('CompanyOurBrands', models.DO_NOTHING, blank=True, null=True,
                                           verbose_name='З якою нашою компанією працюємо')
-    document_delivery_type = models.CharField(max_length=255, blank=True, null=True, verbose_name='Доставка документів')
+    document_delivery_type = models.CharField(max_length=255, blank=True, null=True,
+                                              verbose_name='Доставка документів')
     is_prepayment = models.BooleanField(blank=True, null=True,
                                         verbose_name='По передплаті')  # This field type is a guess.
 
@@ -525,17 +535,20 @@ class Contacts(models.Model):
     first_name = models.CharField(max_length=30, blank=True, null=True, verbose_name="Ім'я")
     last_name = models.CharField(max_length=30, blank=True, null=True, verbose_name="Прізвище")
     middle_name = models.CharField(max_length=30, blank=True, null=True, verbose_name="по-батькові")
-    contacts_detail = models.ForeignKey('ContactsDetails', models.DO_NOTHING, blank=True, null=True, verbose_name='контакти')
+    contacts_detail = models.ForeignKey('ContactsDetails', models.DO_NOTHING, blank=True, null=True,
+                                        verbose_name='контакти')
     mail_contacts_detail = models.ForeignKey('ContactsDetails', models.DO_NOTHING,
-                                             related_name='contacts_mail_contacts_detail_set', blank=True, null=True, verbose_name='пошти')
+                                             related_name='contacts_mail_contacts_detail_set', blank=True, null=True,
+                                             verbose_name='пошти')
     phone_contacts_detail = models.ForeignKey('ContactsDetails', models.DO_NOTHING,
-                                              related_name='contacts_phone_contacts_detail_set', blank=True, null=True, verbose_name= 'телефони')
+                                              related_name='contacts_phone_contacts_detail_set', blank=True, null=True,
+                                              verbose_name='телефони')
     bonus_area = models.DecimalField(max_digits=10, decimal_places=4, blank=True, null=True)
 
     class Meta:
         managed = False
         db_table = 'contacts'
-        verbose_name ='Контакт'
+        verbose_name = 'Контакт'
         verbose_name_plural = 'Контакти'
 
     def __str__(self):
@@ -604,17 +617,22 @@ class DeliveryPresetForOurCompanies(models.Model):
 
 class DeliveryPresets(models.Model):
     id = models.BigAutoField(primary_key=True)
-    description = models.CharField(max_length=255, blank=True, null=True)
-    name = models.CharField(max_length=100)
-    address = models.ForeignKey(Addresses, models.DO_NOTHING, blank=True, null=True)
-    company = models.ForeignKey(Companies, models.DO_NOTHING, blank=True, null=True)
-    delivery_type = models.ForeignKey('DeliveryTypes', models.DO_NOTHING, blank=True, null=True)
-    contact = models.ForeignKey(Contacts, models.DO_NOTHING, blank=True, null=True)
-    is_legal_address = models.BooleanField(blank=True, null=True)  # This field type is a guess.
+    description = models.CharField(max_length=255, blank=True, null=True, verbose_name='Коментар')
+    name = models.CharField(max_length=100, verbose_name="Назва доставки")
+    address = models.ForeignKey(Addresses, models.DO_NOTHING, blank=True, null=True, verbose_name="Адресса")
+    company = models.ForeignKey(Companies, models.DO_NOTHING, blank=True, null=True,  verbose_name="Компанія")
+    delivery_type = models.ForeignKey('DeliveryTypes', models.DO_NOTHING, blank=True, null=True, verbose_name='Тип доставки')
+    contact = models.ForeignKey(Contacts, models.DO_NOTHING, blank=True, null=True,  verbose_name="Контакт")
+    is_legal_address = models.BooleanField(blank=True, null=True,  verbose_name="Перевірена адреса")  # This field type is a guess.
 
     class Meta:
         managed = False
         db_table = 'delivery_presets'
+        verbose_name = "Доставка"
+        verbose_name_plural = "Доставки"
+
+    def __str__(self):
+        return f"{self.delivery_type} | {self.address}"
 
 
 class DeliveryTypes(models.Model):
@@ -624,6 +642,9 @@ class DeliveryTypes(models.Model):
     class Meta:
         managed = False
         db_table = 'delivery_types'
+
+    def __str__(self):
+        return self.type
 
 
 class Dyes(models.Model):
@@ -1017,7 +1038,8 @@ class OrderPlaneSliceChecks(models.Model):
     width = models.IntegerField(blank=True, null=True)
     order = models.ForeignKey('Orders', models.DO_NOTHING, blank=True, null=True)
     ruling = models.ForeignKey('Rulings', models.DO_NOTHING, blank=True, null=True)
-    ruling_0 = models.IntegerField(db_column='ruling', blank=True, null=True)  # Field renamed because of name conflict.
+    ruling_0 = models.IntegerField(db_column='ruling', blank=True,
+                                   null=True)  # Field renamed because of name conflict.
     file_name = models.CharField(max_length=255, blank=True, null=True)
 
     class Meta:
@@ -1218,10 +1240,14 @@ class PaperSizes(models.Model):
 class PrintingCompanies(models.Model):
     id = models.OneToOneField(Companies, models.DO_NOTHING, db_column='id', primary_key=True, verbose_name='Компанія')
     process_id = models.CharField(max_length=45, blank=True, null=True, verbose_name='process_id ???')
-    color_library = models.ForeignKey(ColorLibraries, models.DO_NOTHING, blank=True, null=True, verbose_name='Бібліотека кольорів')
-    need_printout = models.BooleanField(blank=True, null=True, verbose_name='Чи потрібны документи')  # This field type is a guess.
-    use_low_base = models.BooleanField(blank=True, null=True, verbose_name='Використовує занижений цоколь')  # This field type is a guess.
-    need_label = models.BooleanField(blank=True, null=True, verbose_name="Чи потрібен підпис")  # This field type is a guess.
+    color_library = models.ForeignKey(ColorLibraries, models.DO_NOTHING, blank=True, null=True,
+                                      verbose_name='Бібліотека кольорів')
+    need_printout = models.BooleanField(blank=True, null=True,
+                                        verbose_name='Чи потрібны документи')  # This field type is a guess.
+    use_low_base = models.BooleanField(blank=True, null=True,
+                                       verbose_name='Використовує занижений цоколь')  # This field type is a guess.
+    need_label = models.BooleanField(blank=True, null=True,
+                                     verbose_name="Чи потрібен підпис")  # This field type is a guess.
 
     class Meta:
         managed = False
@@ -1247,10 +1273,12 @@ class PrintingMachinePresets(models.Model):
     curve_strategy = models.ForeignKey(CurveStrategies, models.DO_NOTHING, blank=True, null=True)
     material = models.ForeignKey(Materials, models.DO_NOTHING, blank=True, null=True)
     plate_curve_strategy = models.ForeignKey(CurveStrategies, models.DO_NOTHING,
-                                             related_name='printingmachinepresets_plate_curve_strategy_set', blank=True,
+                                             related_name='printingmachinepresets_plate_curve_strategy_set',
+                                             blank=True,
                                              null=True)
     press_curve_strategy = models.ForeignKey(CurveStrategies, models.DO_NOTHING,
-                                             related_name='printingmachinepresets_press_curve_strategy_set', blank=True,
+                                             related_name='printingmachinepresets_press_curve_strategy_set',
+                                             blank=True,
                                              null=True)
     ruling = models.ForeignKey('Rulings', models.DO_NOTHING, blank=True, null=True)
     damper = models.DecimalField(max_digits=5, decimal_places=2, blank=True, null=True)
@@ -1271,12 +1299,15 @@ class PrintingMachineShafts(models.Model):
     diameter = models.DecimalField(max_digits=5, decimal_places=2, blank=True, null=True, verbose_name='діаметр')
     quantity = models.IntegerField(blank=True, null=True, verbose_name='кількість')
     width = models.IntegerField(blank=True, null=True, verbose_name='ширина валу')
-    printing_machine = models.ForeignKey('PrintingMachines', models.DO_NOTHING, blank=True, null=True, verbose_name='Друкарська машина')
-    thickness = models.DecimalField(max_digits=3, decimal_places=2, blank=True, null=True, verbose_name='Товшина ???')
+    printing_machine = models.ForeignKey('PrintingMachines', models.DO_NOTHING, blank=True, null=True,
+                                         verbose_name='Друкарська машина')
+    thickness = models.DecimalField(max_digits=3, decimal_places=2, blank=True, null=True, verbose_name='Товшина кліше')
     date_create = models.DateTimeField(blank=True, null=True, verbose_name='Дата створення')
-    input_value = models.DecimalField(max_digits=6, decimal_places=2, blank=True, null=True, verbose_name='значення заміру')
-    input_value_type = models.CharField(max_length=255, blank=True, null=True, verbose_name='Тип заміру')
-    contact = models.ForeignKey(Contacts, models.DO_NOTHING, blank=True, null=True, verbose_name='контакт' )
+    input_value = models.DecimalField(max_digits=6, decimal_places=2, blank=True, null=True,
+                                      verbose_name='значення заміру')
+    input_value_type = models.CharField(max_length=255, blank=True, null=True, verbose_name='Тип заміру',
+                                        choices=PrintingMachineShaftsInputValueTypeList.choices)
+    contact = models.ForeignKey(Contacts, models.DO_NOTHING, blank=True, null=True, verbose_name='контакт')
     printing_width = models.IntegerField(blank=True, null=True, verbose_name='Ширина валу')
     description = models.CharField(max_length=255, blank=True, null=True, verbose_name='Коментар')
 
@@ -1303,10 +1334,12 @@ class PrintingMachineShaftsUseAdhesiveTapes(models.Model):
 
 class PrintingMachines(models.Model):
     id = models.BigAutoField(primary_key=True)
-    material_thickness = models.DecimalField(max_digits=4, decimal_places=2, blank=True, null=True, verbose_name='Товщіна матеріалу')
+    material_thickness = models.DecimalField(max_digits=4, decimal_places=2, blank=True, null=True,
+                                             verbose_name='Товщіна матеріалу')
     name = models.CharField(max_length=75, blank=True, null=True, verbose_name='Назва')
     fartuk = models.ForeignKey(Fartuks, models.DO_NOTHING, blank=True, null=True, verbose_name='Фартук')
-    printing_company = models.ForeignKey(PrintingCompanies, models.DO_NOTHING, blank=True, null=True, verbose_name='Друкарська компанія')
+    printing_company = models.ForeignKey(PrintingCompanies, models.DO_NOTHING, blank=True, null=True,
+                                         verbose_name='Друкарська компанія')
     section = models.IntegerField(blank=True, null=True, verbose_name='Кількість секцій')
     module = models.DecimalField(max_digits=6, decimal_places=4, blank=True, null=True, verbose_name='модуль')
 
