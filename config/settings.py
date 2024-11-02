@@ -34,7 +34,7 @@ SECRET_KEY = os.environ.get("SECRET_KEY", default='')
 DEBUG = os.environ.get("DEBUG", 'True').lower() in ['true', 'yes', '1']
 
 # https://docs.djangoproject.com/en/dev/ref/settings/#allowed-hosts
-ALLOWED_HOSTS = ["localhost", "0.0.0.0", "127.0.0.1"]
+ALLOWED_HOSTS = ["localhost", "0.0.0.0", "127.0.0.1", "192.168.11.131:8000", "192.168.11.131"]
 
 # Current DJANGO_ENVIRONMENT
 ENVIRONMENT = os.environ.get("DJANGO_ENVIRONMENT", default="local")
@@ -83,7 +83,10 @@ INSTALLED_APPS = [
     "store.apps.StoreConfig",
     'django_select2',
     "materials.apps.MaterialsConfig",
-    "info.apps.InfoConfig"
+    "info.apps.InfoConfig",
+    "map.apps.MapConfig",
+    'dal',
+    'dal_select2',
 ]
 
 MIDDLEWARE = [
@@ -144,7 +147,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'store',
         'USER': 'root',
-        'PASSWORD': os.environ.get("STORE_DB_PASS", default=''),
+        'PASSWORD': os.environ.get("STORE_DB_PASS", default='Lbaaepbz22'),
         'HOST': '127.0.0.1',
         'PORT': '3306',
     },
@@ -152,7 +155,15 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'custom',
         'USER': 'root',
-        'PASSWORD': os.environ.get("CUSTOM_DB_PASS", default=''),
+        'PASSWORD': os.environ.get("CUSTOM_DB_PASS", default='Lbaaepbz22'),
+        'HOST': '127.0.0.1',
+        'PORT': '3306',
+    },
+    'map': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'map',
+        'USER': 'root',
+        'PASSWORD': os.environ.get("CUSTOM_DB_PASS", default='Lbaaepbz22'),
         'HOST': '127.0.0.1',
         'PORT': '3306',
     }
@@ -265,8 +276,11 @@ CSRF_TRUSTED_ORIGINS = [
 
 DATABASE_APPS_MAPPING = {
     'custom': 'custom',
-    'store': 'store'
+    'store': 'store',
+    'map': 'map'
 }
 
-DATABASE_ROUTERS = ['custom.router.CustomDatabaseRouter', 'store.router.StoreDatabaseRouter']
+DATABASE_ROUTERS = ['custom.router.CustomDatabaseRouter', 'store.router.StoreDatabaseRouter',
+                    'map.router.MapDatabaseRouter']
 
+DEFAULT_PRINTING_MACHINE_MODUL = 3.175

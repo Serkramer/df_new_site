@@ -3,6 +3,7 @@ from django.urls import path
 
 from info.views import PrintingRollersView
 
+
 urlpatterns = [
 
     path(

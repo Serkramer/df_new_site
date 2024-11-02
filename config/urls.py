@@ -116,7 +116,11 @@ urlpatterns = [
 
     path("", include("info.urls")),
 
-    path("materials/", include("materials.urls"))
+    path("materials/", include("materials.urls")),
+
+    path("map/", include("map.urls", namespace="map")),
+
+
 ]
 
 handler404 = SystemView.as_view(template_name="pages_misc_error.html", status=404)

@@ -6,140 +6,207 @@
 {% block title %}DataTables - Tables{% endblock %}
 
 {% block vendor_css %}
-{{ block.super }}
-<link rel="stylesheet" href="{% static 'vendor/libs/datatables-bs5/datatables.bootstrap5.css' %}" />
-<link rel="stylesheet" href="{% static 'vendor/libs/datatables-responsive-bs5/responsive.bootstrap5.css' %}" />
-<link rel="stylesheet" href="{% static 'vendor/libs/datatables-select-bs5/select.bootstrap5.css' %}" />
-<link rel="stylesheet" href="{% static 'vendor/libs/datatables-checkboxes-jquery/datatables.checkboxes.css' %}" />
-<link rel="stylesheet" href="{% static 'vendor/libs/datatables-fixedcolumns-bs5/fixedcolumns.bootstrap5.css' %}" />
-<link rel="stylesheet" href="{% static 'vendor/libs/datatables-fixedheader-bs5/fixedheader.bootstrap5.css' %}" />
+  {{ block.super }}
+  <link rel="stylesheet" href="{% static 'vendor/libs/datatables-bs5/datatables.bootstrap5.css' %}" />
+  <link rel="stylesheet" href="{% static 'vendor/libs/datatables-responsive-bs5/responsive.bootstrap5.css' %}" />
+  <link rel="stylesheet" href="{% static 'vendor/libs/datatables-select-bs5/select.bootstrap5.css' %}" />
+  <link rel="stylesheet" href="{% static 'vendor/libs/datatables-checkboxes-jquery/datatables.checkboxes.css' %}" />
+  <link rel="stylesheet" href="{% static 'vendor/libs/datatables-fixedcolumns-bs5/fixedcolumns.bootstrap5.css' %}" />
+  <link rel="stylesheet" href="{% static 'vendor/libs/datatables-fixedheader-bs5/fixedheader.bootstrap5.css' %}" />
 {% endblock vendor_css %}
 
 {% block vendor_js %}
-{{ block.super }}
-<script src="{% static 'vendor/libs/datatables-bs5/datatables-bootstrap5.js' %}"></script>
+  {{ block.super }}
+  <script src="{% static 'vendor/libs/datatables-bs5/datatables-bootstrap5.js' %}"></script>
 {% endblock vendor_js %}
 
 {% block page_js %}
-{{ block.super }}
-<script>
-/**
- * DataTables Extensions (jquery)
- */
+  {{ block.super }}
+  <script>
+    /**
+     * DataTables Extensions (jquery)
+     */
 
-'use strict';
+    'use strict';
+    {##}
+    {#$(function () {#}
+    {#  var dt_scrollable_table = $('.dt-scrollableTable')#}
 
-$(function () {
-  var dt_scrollable_table = $('.dt-scrollableTable')
 
+    // Scrollable
+    // --------------------------------------------------------------------
 
-  // Scrollable
-  // --------------------------------------------------------------------
-
-  if (dt_scrollable_table.length) {
-    var dt_scrollableTable = dt_scrollable_table.DataTable({
-      ajax: assetsPath + 'json/table-datatable.json',
-      columns: [
-        { data: 'full_name' },
-        { data: 'post' },
-        { data: 'email' },
-        { data: 'city' },
-        { data: 'start_date' },
-        { data: 'salary' },
-        { data: 'age' },
-        { data: 'experience' },
-        { data: '' },
-        { data: '' }
-      ],
-      columnDefs: [
-        {
-          // Label
-          targets: -2,
-          render: function (data, type, full, meta) {
-            var $status_number = full['status'];
-            var $status = {
-              1: { title: 'Current', class: 'bg-label-primary' },
-              2: { title: 'Professional', class: ' bg-label-success' },
-              3: { title: 'Rejected', class: ' bg-label-danger' },
-              4: { title: 'Resigned', class: ' bg-label-warning' },
-              5: { title: 'Applied', class: ' bg-label-info' }
-            };
-            if (typeof $status[$status_number] === 'undefined') {
-              return data;
-            }
-            return (
-              '<span class="badge rounded-pill ' +
-              $status[$status_number].class +
-              '">' +
-              $status[$status_number].title +
-              '</span>'
-            );
-          }
-        },
-        {
-          // Actions
-          targets: -1,
-          title: 'Actions',
-          searchable: false,
-          orderable: false,
-          render: function (data, type, full, meta) {
-            return (
-              '<div class="d-inline-block">' +
-              '<a href="javascript:;" class="btn btn-sm btn-text-secondary rounded-pill btn-icon dropdown-toggle hide-arrow" data-bs-toggle="dropdown"><i class="ri-more-2-line"></i></a>' +
-              '<div class="dropdown-menu dropdown-menu-end m-0">' +
-              '<a href="javascript:;" class="dropdown-item">Details</a>' +
-              '<a href="javascript:;" class="dropdown-item">Archive</a>' +
-              '<div class="dropdown-divider"></div>' +
-              '<a href="javascript:;" class="dropdown-item text-danger delete-record">Delete</a>' +
-              '</div>' +
-              '</div>' +
-              '<a href="javascript:;" class="btn btn-sm btn-text-secondary rounded-pill btn-icon item-edit"><i class="ri-edit-box-line"></i></a>'
-            );
-          }
-        }
-      ],
-      // Scroll options
-      scrollY: '300px',
-      scrollX: true,
-      dom: '<"row"<"col-sm-12 col-md-6"l><"col-sm-12 col-md-6 d-flex justify-content-center justify-content-md-end"f>>t<"row"<"col-sm-12 col-md-6"i><"col-sm-12 col-md-6"p>>',
-      language: {
-        paginate: {
-          next: '<i class="ri-arrow-right-s-line"></i>',
-          previous: '<i class="ri-arrow-left-s-line"></i>'
-        }
+    {#if (dt_scrollable_table.length) {#}
+    {#  var dt_scrollableTable = dt_scrollable_table.DataTable({#}
+    {#    ajax: '/shafts_data',#}
+    {#    columns: [#}
+    {#      { data: 'full_name' },#}
+    {#      { data: 'post' },#}
+    {#      { data: 'email' },#}
+    {#      { data: 'city' },#}
+    {#      { data: 'start_date' },#}
+    {#      { data: 'salary' },#}
+    {#      { data: 'age' },#}
+    {#      { data: 'experience' },#}
+    {#      { data: '' },#}
+    {#      { data: '' }#}
+    {#    ],#}
+    {#columnDefs: [#}
+    {#  {#}
+    // Label
+    {#  targets: -2,#}
+    {#  render: function(data, type, full, meta) {#}
+    {#    var $status_number = full['status'];#}
+    {#    var $status = {#}
+    {#      1: { title: 'Current', class: 'bg-label-primary' },#}
+    {#      2: { title: 'Professional', class: ' bg-label-success' },#}
+    {#      3: { title: 'Rejected', class: ' bg-label-danger' },#}
+    {#      4: { title: 'Resigned', class: ' bg-label-warning' },#}
+    {#      5: { title: 'Applied', class: ' bg-label-info' }#}
+    {#    };#}
+    {#    if (typeof $status[$status_number] === 'undefined') {#}
+    {#      return data;#}
+    {#    }#}
+    {#    return (#}
+    {#      '<span class="badge rounded-pill ' +#}
+    {#      $status[$status_number].class +#}
+    {#      '">' +#}
+    {#      $status[$status_number].title +#}
+    {#      '</span>'#}
+    {#    );#}
+    {#  }#}
+    {# },#}
+      {#{#}
+      {#        // Actions#}
+      {#        targets: -1,#}
+      {#        title: 'Actions',#}
+      {#        searchable: false,#}
+      {#        orderable: false,#}
+      {#        render: function (data, type, full, meta) {#}
+      {#          return (#}
+      {#            '<div class="d-inline-block">' +#}
+      {#            '<a href="javascript:;" class="btn btn-sm btn-text-secondary rounded-pill btn-icon dropdown-toggle hide-arrow" data-bs-toggle="dropdown"><i class="ri-more-2-line"></i></a>' +#}
+      {#            '<div class="dropdown-menu dropdown-menu-end m-0">' +#}
+      {#            '<a href="javascript:;" class="dropdown-item">Details</a>' +#}
+      {#            '<a href="javascript:;" class="dropdown-item">Archive</a>' +#}
+      {#            '<div class="dropdown-divider"></div>' +#}
+      {#            '<a href="javascript:;" class="dropdown-item text-danger delete-record">Delete</a>' +#}
+      {#            '</div>' +#}
+      {#            '</div>' +#}
+      {#            '<a href="javascript:;" class="btn btn-sm btn-text-secondary rounded-pill btn-icon item-edit"><i class="ri-edit-box-line"></i></a>'#}
+      {#          );#}
+      {#        }#}
+      {#      }#}
+      {#    ],#}
+      {#    // Scroll options#}
+      {#    scrollY: '300px',#}
+      {#    scrollX: true,#}
+      {#    dom: '<"row"<"col-sm-12 col-md-6"l><"col-sm-12 col-md-6 d-flex justify-content-center justify-content-md-end"f>>t<"row"<"col-sm-12 col-md-6"i><"col-sm-12 col-md-6"p>>',#}
+      {#    language: {#}
+      {#      paginate: {#}
+      {#        next: '<i class="ri-arrow-right-s-line"></i>',#}
+      {#        previous: '<i class="ri-arrow-left-s-line"></i>'#}
+      {#      }#}
+      {#    }#}
+      {#  });#}
+      {# }#}
+      {#{)#}
+      {#        ;#}
+      {#        #}
+    $(document).ready(function() {
+  $('.dt-scrollableTable').DataTable({
+    scrollY: 700,
+    scrollX: true,
+    scrollCollapse: true,
+    paging: true,  // Включаем пагинацию
+    info: true,    // Показываем информацию о количестве записей
+    pageLength: 100,
+    fixedColumns: false,
+    dom: '<"row"<"col-sm-12 col-md-6"l><"col-sm-12 col-md-6 d-flex justify-content-center justify-content-md-end"f>>t<"row"<"col-sm-12 col-md-6"i><"col-sm-12 col-md-6"p>>',
+    language: {
+      paginate: {
+        next: '<i class="ri-arrow-right-s-line"></i>',
+        previous: '<i class="ri-arrow-left-s-line"></i>'
       }
-    });
-  }
-
+    }
+  });
 });
 
-</script>
+
+
+  </script>
 {% endblock page_js %}
 
 {% block content %}
-<!-- Scrollable -->
-<div class="card">
-  <h5 class="card-header text-center text-md-start pb-md-0">Scrollable Table</h5>
-  <div class="card-datatable text-nowrap">
-    <table class="dt-scrollableTable table table-bordered">
-      <thead>
+  <!-- Scrollable -->
+  <div class="card">
+    <h5 class="card-header text-center text-md-start pb-md-0">Вали</h5>
+    <div class="card-datatable text-nowrap">
+      <table class="dt-scrollableTable table table-bordered">
+        <thead>
         <tr>
-          <th>Замовник</th>
-          <th>Друкарська машина</th>
+          <th>друкарська компанія</th>
+          <th>друкарська машина</th>
           <th>К-сть валів</th>
           <th>товщ. кліше</th>
           <th>N зубів</th>
           <th>ширина барабану</th>
           <th>диаметр по металу</th>
+          <th>довжина окружності валу</th>
           <th>товщ скотчу</th>
-          <th>Status</th>
-          <th>Action</th>
+          <th>товщ фартука</th>
+          <th>товщ демпф.</th>
+          <th>друкарський діаметр</th>
+          <th>точний раппорт</th>
+          <th>компресія</th>
+          <th>мінус від раппорта</th>
+          <th>раппорт з компресією</th>
+          <th>тип фартука</th>
+          <th>опис фартука</th>
+          <th>положення планки за умовчанням</th>
+          <th>довжина фартука</th>
+          <th>відступи</th>
+          <th>актуальність даних</th>
+          <th>істочник даних</th>
+          <th>округлений раппорт</th>
+          <th>відносна компресія</th>
         </tr>
-      </thead>
-    </table>
+        </thead>
+        <tbody>
+        {% for shaft in shafts %}
+          <tr>
+            <th>{{ shaft.printing_machine.printing_company.id.name }}</th>
+            <th>{{ shaft.printing_machine.name }}</th>
+            <th>{{ shaft.quantity }}</th>
+            <th>{{ shaft.thickness_data.material_thickness }}</th>
+            <th>N зубів</th>
+            <th>{{ shaft.width }}</th>
+            <th>диаметр по металу</th>
+            <th>довжина окружності валу</th>
+            <th>{{ shaft.thickness_data.adhesive_tape_thickness}}</th>
+            <th>{{ shaft.thickness_data.fartuk_thickness }}</th>
+            <th>{{ shaft.thickness_data.damper_thickness }}</th>
+            <th>друкарський діаметр</th>
+            <th>точний раппорт</th>
+            <th>компресія</th>
+            <th>мінус від раппорта</th>
+            <th>раппорт з компресією</th>
+            <th>тип фартука</th>
+            <th>опис фартука</th>
+            <th>положення планки за умовчанням</th>
+            <th>довжина фартука</th>
+            <th>відступи</th>
+            <th>{{ shaft.date_create | date:"d.m.Y" }}</th>
+            <th>{{ shaft.description }}</th>
+            <th>округлений раппорт</th>
+            <th>відносна компресія</th>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
   </div>
-</div>
-<!--/ Scrollable -->
+  <!--/ Scrollable -->
 
 
 {% endblock %}

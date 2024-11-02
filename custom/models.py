@@ -70,11 +70,16 @@ class Addresses(models.Model):
 
 class AdhesiveTapeThicknesses(models.Model):
     id = models.BigAutoField(primary_key=True)
-    thickness = models.DecimalField(max_digits=3, decimal_places=2, blank=True, null=True)
+    thickness = models.DecimalField(max_digits=3, decimal_places=2, blank=True, null=True, verbose_name='Товщина')
 
     class Meta:
         managed = False
         db_table = 'adhesive_tape_thicknesses'
+        verbose_name = 'Товщина скотчу'
+        verbose_name_plural = 'Товщини скотчів'
+
+    def __str__(self):
+        return f"{self.thickness}"
 
 
 class AdhesiveTapes(models.Model):
@@ -288,6 +293,11 @@ class ColorProfiles(models.Model):
     class Meta:
         managed = False
         db_table = 'color_profiles'
+        verbose_name_plural = "Кольорові профіля"
+        verbose_name = "Кольоровий профіль"
+
+    def __str__(self):
+        return self.color_profile_file_name
 
 
 class ColorProofOrderNotes(models.Model):
@@ -394,14 +404,15 @@ class Colors(models.Model):
 
 class Companies(models.Model):
     id = models.BigAutoField(primary_key=True)
-    full_name = models.CharField(max_length=255, blank=True, null=True, verbose_name="Повне ім`я")
+    full_name = models.CharField(max_length=255, blank=True, null=True, verbose_name="Повне ім`я",
+                                 help_text='обов`язково повинно співпадати символ в символ з 1С')
     name = models.CharField(unique=True, max_length=50, blank=True, null=True, verbose_name="Ім`я")
     okpo = models.CharField(max_length=15, blank=True, null=True, verbose_name="ЄРДПО")
     delivery_preset = models.ForeignKey('DeliveryPresets', models.DO_NOTHING, blank=True, null=True,
                                         verbose_name="Доставка за умовчанням")
     company_group = models.ForeignKey('CompanyGroups', models.DO_NOTHING, blank=True, null=True,
                                       verbose_name='Група компаній')
-    contact = models.ForeignKey('Contacts', models.DO_NOTHING, blank=True, null=True)
+    contact = models.ForeignKey('Contacts', models.DO_NOTHING, blank=True, null=True, verbose_name="Контакт за умовчанням")
     is_verified = models.BooleanField(blank=True, null=True, verbose_name="Перевірений")  # This field type is a guess.
     is_outdated = models.BooleanField(blank=True, null=True, verbose_name="Застарілий")  # This field type is a guess.
     number = models.CharField(max_length=15, blank=True, null=True, verbose_name="Тел. номер юр. особи")
@@ -460,6 +471,11 @@ class CompanyGroups(models.Model):
     class Meta:
         managed = False
         db_table = 'company_groups'
+        verbose_name = 'Група компаній'
+        verbose_name_plural = 'Групи компаній'
+
+    def __str__(self):
+        return self.name
 
 
 class CompanyNotes(models.Model):
@@ -591,11 +607,16 @@ class CurveListInStrategy(models.Model):
 
 class CurveStrategies(models.Model):
     id = models.BigAutoField(primary_key=True)
-    file_name = models.CharField(max_length=150)
+    file_name = models.CharField(max_length=150, verbose_name="назва файлу")
 
     class Meta:
         managed = False
         db_table = 'curve_strategies'
+        verbose_name = 'curve_strategy'
+        verbose_name_plural = 'curve_strategies'
+
+    def __str__(self):
+        return self.file_name
 
 
 class Curves(models.Model):
@@ -632,7 +653,19 @@ class DeliveryPresets(models.Model):
         verbose_name_plural = "Доставки"
 
     def __str__(self):
-        return f"{self.delivery_type} | {self.address}"
+        delivery_str = f"{self.delivery_type} | "
+
+        if self.address.settlement_ref:
+            delivery_str += f"{self.address} "
+
+        if self.delivery_type.id == 3 and self.address.post_office_ref:
+
+            #TODO get_post_office_str
+            # delivery_str += f"{self.address.post_office_ref} "
+            delivery_str += f"{self.name} "
+        else:
+            delivery_str += f"{self.address} "
+        return delivery_str
 
 
 class DeliveryTypes(models.Model):
@@ -1239,7 +1272,7 @@ class PaperSizes(models.Model):
 
 class PrintingCompanies(models.Model):
     id = models.OneToOneField(Companies, models.DO_NOTHING, db_column='id', primary_key=True, verbose_name='Компанія')
-    process_id = models.CharField(max_length=45, blank=True, null=True, verbose_name='process_id ???')
+    process_id = models.CharField(max_length=45, blank=True, null=True, verbose_name='ID в заявці')
     color_library = models.ForeignKey(ColorLibraries, models.DO_NOTHING, blank=True, null=True,
                                       verbose_name='Бібліотека кольорів')
     need_printout = models.BooleanField(blank=True, null=True,
@@ -1261,37 +1294,44 @@ class PrintingCompanies(models.Model):
 
 class PrintingMachinePresets(models.Model):
     id = models.BigAutoField(primary_key=True)
-    profile_file_name = models.CharField(max_length=75, blank=True, null=True)
-    name = models.CharField(max_length=75, blank=True, null=True)
-    angle_set = models.ForeignKey(AngleSets, models.DO_NOTHING, blank=True, null=True)
-    lineature = models.ForeignKey(Lineatures, models.DO_NOTHING, blank=True, null=True)
-    printing_machine = models.ForeignKey('PrintingMachines', models.DO_NOTHING, blank=True, null=True)
-    raster_dot = models.ForeignKey('RasterDots', models.DO_NOTHING, blank=True, null=True)
-    cliche_technology = models.ForeignKey(ClicheTechnologies, models.DO_NOTHING, blank=True, null=True)
-    is_revert_printing = models.BooleanField(blank=True, null=True)  # This field type is a guess.
-    color_profile = models.ForeignKey(ColorProfiles, models.DO_NOTHING, blank=True, null=True)
-    curve_strategy = models.ForeignKey(CurveStrategies, models.DO_NOTHING, blank=True, null=True)
-    material = models.ForeignKey(Materials, models.DO_NOTHING, blank=True, null=True)
+    profile_file_name = models.CharField(max_length=75, blank=True, null=True,)
+    name = models.CharField(max_length=75, blank=True, null=True, verbose_name='Назва пресету')
+    angle_set = models.ForeignKey(AngleSets, models.DO_NOTHING, blank=True, null=True, verbose_name='Набір кутів')
+    lineature = models.ForeignKey(Lineatures, models.DO_NOTHING, blank=True, null=True, )
+    printing_machine = models.ForeignKey('PrintingMachines', models.DO_NOTHING, blank=True, null=True, verbose_name='друкарські машини')
+    raster_dot = models.ForeignKey('RasterDots', models.DO_NOTHING, blank=True, null=True, verbose_name='растрова точка')
+    cliche_technology = models.ForeignKey(ClicheTechnologies, models.DO_NOTHING, blank=True, null=True, verbose_name='технологія')
+    is_revert_printing = models.BooleanField(blank=True, null=True, verbose_name='зворотній друк', help_text='якщо зворотный треба вибрати так, якщо прямий - ні')  # This field type is a guess.
+    color_profile = models.ForeignKey(ColorProfiles, models.DO_NOTHING, blank=True, null=True, verbose_name='профіль')
+    curve_strategy = models.ForeignKey(CurveStrategies, models.DO_NOTHING, blank=True, null=True,)
+    material = models.ForeignKey(Materials, models.DO_NOTHING, blank=True, null=True, verbose_name='Матеріал ?????')
     plate_curve_strategy = models.ForeignKey(CurveStrategies, models.DO_NOTHING,
                                              related_name='printingmachinepresets_plate_curve_strategy_set',
                                              blank=True,
-                                             null=True)
+                                             null=True,
+                                             verbose_name='plate_curve_strategy')
     press_curve_strategy = models.ForeignKey(CurveStrategies, models.DO_NOTHING,
                                              related_name='printingmachinepresets_press_curve_strategy_set',
                                              blank=True,
-                                             null=True)
-    ruling = models.ForeignKey('Rulings', models.DO_NOTHING, blank=True, null=True)
-    damper = models.DecimalField(max_digits=5, decimal_places=2, blank=True, null=True)
+                                             null=True,
+                                             verbose_name='press_curve_strategy')
+    ruling = models.ForeignKey('Rulings', models.DO_NOTHING, blank=True, null=True, verbose_name='лініатури')
+    damper = models.DecimalField(max_digits=5, decimal_places=2, blank=True, null=True, verbose_name='товщина демферу, мм')
     scotch = models.DecimalField(max_digits=4, decimal_places=2, blank=True, null=True)
-    description = models.CharField(max_length=255, blank=True, null=True)
-    material_thickness = models.DecimalField(max_digits=4, decimal_places=2, blank=True, null=True)
-    adhesive_tape_thickness_multiplier = models.IntegerField(blank=True, null=True)
-    adhesive_tape_thickness = models.ForeignKey(AdhesiveTapeThicknesses, models.DO_NOTHING, blank=True, null=True)
-    fartuk = models.ForeignKey(Fartuks, models.DO_NOTHING, blank=True, null=True)
+    description = models.CharField(max_length=255, blank=True, null=True, verbose_name="коментар")
+    material_thickness = models.DecimalField(max_digits=4, decimal_places=2, blank=True, null=True, verbose_name='Товщина матеріалу')
+    adhesive_tape_thickness_multiplier = models.IntegerField(blank=True, null=True, verbose_name="кількість шарів скотчу" )
+    adhesive_tape_thickness = models.ForeignKey(AdhesiveTapeThicknesses, models.DO_NOTHING, blank=True, null=True, verbose_name="Товщина скотчу")
+    fartuk = models.ForeignKey(Fartuks, models.DO_NOTHING, blank=True, null=True, verbose_name='фартук')
 
     class Meta:
         managed = False
         db_table = 'printing_machine_presets'
+        verbose_name = 'Пресет друкарської машини'
+        verbose_name_plural = 'Пресети друкарських машин'
+
+    def __str__(self):
+        return f"{self.printing_machine} {self.name}, лініатура {self.ruling}, матеріал {self.material_thickness} "
 
 
 class PrintingMachineShafts(models.Model):
@@ -1308,7 +1348,7 @@ class PrintingMachineShafts(models.Model):
     input_value_type = models.CharField(max_length=255, blank=True, null=True, verbose_name='Тип заміру',
                                         choices=PrintingMachineShaftsInputValueTypeList.choices)
     contact = models.ForeignKey(Contacts, models.DO_NOTHING, blank=True, null=True, verbose_name='контакт')
-    printing_width = models.IntegerField(blank=True, null=True, verbose_name='Ширина валу')
+    printing_width = models.IntegerField(blank=True, null=True, verbose_name='ширина друку валу')
     description = models.CharField(max_length=255, blank=True, null=True, verbose_name='Коментар')
 
     class Meta:

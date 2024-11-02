@@ -4,6 +4,8 @@ from django.urls import reverse, path
 from django.utils.html import format_html
 
 from .admin_filters import PrintingCompanyWithShaftsFilter
+from .forms import PrintingMachineShaftsForm, CompanyForm, DeliveryPresetsForm, PrintingMachinePresetsForm, \
+    AdhesiveTapeThicknessesForm
 from .models import *
 
 
@@ -21,7 +23,7 @@ class PrintingMachineShaftsAdmin(admin.ModelAdmin):
     autocomplete_fields = ['printing_machine', 'contact',]
 
     search_fields = ('printing_machine__printing_company__id__name', 'printing_machine__name')
-
+    form = PrintingMachineShaftsForm
     list_filter = (PrintingCompanyWithShaftsFilter, )
 
 
@@ -45,6 +47,27 @@ class PrintingMachinesAdmin(admin.ModelAdmin):
     search_fields = ('name', 'printing_company__id__name')
 
     autocomplete_fields = ['printing_company',]
+
+
+@admin.register(PrintingMachinePresets)
+class PrintingMachinePresetsAdmin(admin.ModelAdmin):
+    list_display = ('printing_machine', 'name', 'material_thickness', 'ruling', 'raster_dot')
+    search_fields = ('printing_machine', 'name')
+    form = PrintingMachinePresetsForm
+    autocomplete_fields = ['printing_machine', 'color_profile']
+
+
+@admin.register(ColorProfiles)
+class ColorProfileAdmin(admin.ModelAdmin):
+    list_display = ('color_profile_file_name', )
+    search_fields = ('color_profile_file_name', )
+
+
+@admin.register(AdhesiveTapeThicknesses)
+class AdhesiveTapeThicknessAdmin(admin.ModelAdmin):
+    list_display = ('thickness',)
+    form = AdhesiveTapeThicknessesForm
+
 
 
 @admin.register(CompanyClients)
@@ -71,12 +94,34 @@ class CompaniesAdmin(admin.ModelAdmin):
     list_display = ('name', 'okpo', 'full_name', 'company_group')
     search_fields = ('name', 'okpo', 'full_name')
 
-    autocomplete_fields = ['contact', ]
+    autocomplete_fields = ['contact', 'company_group']
+    form = CompanyForm
+
+
+@admin.register(DeliveryPresets)
+class DeliveryPresetAdmin(admin.ModelAdmin):
+    list_display = ('company', 'delivery_type', 'contact', 'description', 'name', 'address', 'custom_is_legal_address')
+    autocomplete_fields = ['contact', 'company']
+    search_fields = ('company', 'delivery_type')
+    form = DeliveryPresetsForm
+
+    def custom_is_legal_address(self, obj):
+        if obj.is_legal_address is None:
+            return 'Невідомо'
+        return 'Так' if obj.is_legal_address else 'Ні'
+
+    custom_is_legal_address.short_description = 'Перевірена адреса'
 
 
 @admin.register(AngleSetTypes)
 class AngleSetTypesAdmin(admin.ModelAdmin):
     list_display = ('name',)
+    search_fields = ('name',)
+
+
+@admin.register(CompanyGroups)
+class CompanyGroupAdmin(admin.ModelAdmin):
+    list_display = ('name', 'description')
     search_fields = ('name',)
 
 
