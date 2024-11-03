@@ -5,7 +5,7 @@ from django.utils.html import format_html
 
 from .admin_filters import PrintingCompanyWithShaftsFilter
 from .forms import PrintingMachineShaftsForm, CompanyForm, DeliveryPresetsForm, PrintingMachinePresetsForm, \
-    AdhesiveTapeThicknessesForm
+    AdhesiveTapeThicknessesForm, FartukHeightsForm, PrintingMachinesForm
 from .models import *
 
 
@@ -43,10 +43,21 @@ class PrintingCompaniesAdmin(admin.ModelAdmin):
 
 @admin.register(PrintingMachines)
 class PrintingMachinesAdmin(admin.ModelAdmin):
-    list_display = ('name', 'printing_company', 'material_thickness', 'fartuk', 'section', 'module')
+    list_display = ('name', 'printing_company', 'fartuk', 'section', 'module')
     search_fields = ('name', 'printing_company__id__name')
-
+    form = PrintingMachinesForm
     autocomplete_fields = ['printing_company',]
+
+
+@admin.register(ContactsDetails)
+class ContactsAdmin(admin.ModelAdmin):
+    list_display = ('contact', 'contact_info_type', 'value')
+    search_fields = ('value', 'contact')
+
+
+@admin.register(ContactInfoTypes)
+class ContactInfoTypesAdmin(admin.ModelAdmin):
+    list_display = ('type',)
 
 
 @admin.register(PrintingMachinePresets)
@@ -69,6 +80,11 @@ class AdhesiveTapeThicknessAdmin(admin.ModelAdmin):
     form = AdhesiveTapeThicknessesForm
 
 
+@admin.register(AdhesiveTapes)
+class AdhesiveTapesAdmin(admin.ModelAdmin):
+    list_display = ('description', 'manufacturer', 'series', 'adhesive_tape_thickness')
+    search_fields = ('description', 'adhesive_tape_thickness__thickness')
+
 
 @admin.register(CompanyClients)
 class CompanyClientsAdmin(admin.ModelAdmin):
@@ -81,6 +97,11 @@ class CompanyClientsAdmin(admin.ModelAdmin):
         return 'Так' if obj.is_banned else 'Ні'
 
     custom_is_banned.short_description = 'Заблокований'
+
+
+@admin.register(ColorProofOrders)
+class ColorProofOrdersAdmin(admin.ModelAdmin):
+    list_display = ('id', 'name', 'launch_date', 'color_proof_file_name', 'count')
 
 
 @admin.register(CompanyOurBrands)
@@ -96,6 +117,16 @@ class CompaniesAdmin(admin.ModelAdmin):
 
     autocomplete_fields = ['contact', 'company_group']
     form = CompanyForm
+
+
+@admin.register(FartukHeights)
+class FartukHeightsAdmin(admin.ModelAdmin):
+    list_display = ('printing_machine', 'fartuk', 'height')
+    search_fields = ('printing_machine', 'height')
+    autocomplete_fields = ['printing_machine']
+    form = FartukHeightsForm
+
+
 
 
 @admin.register(DeliveryPresets)

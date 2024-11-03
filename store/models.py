@@ -8,6 +8,11 @@
 from django.db import models
 
 
+class BarcodeTypeList(models.TextChoices):
+    SHEET = 'SHEET', 'Лист'
+    SLICE = 'SLICE', 'Кусок'
+
+
 class StoreManager(models.Manager):
     def get_queryset(self):
         return super().get_queryset().using('store')
@@ -15,7 +20,7 @@ class StoreManager(models.Manager):
 
 class Articles(models.Model):
     id = models.BigAutoField(primary_key=True)
-    barcode = models.ForeignKey('Barcodes', models.DO_NOTHING, blank=True, null=True)
+    barcode = models.ForeignKey('Barcodes', models.DO_NOTHING, blank=True, null=True, verbose_name='Баркод')
     cell = models.ForeignKey('Cells', models.DO_NOTHING, blank=True, null=True)
     company_owner_of_material = models.ForeignKey('CompanyOwnerOfMaterialEntity', models.DO_NOTHING, blank=True,
                                                   null=True)
@@ -56,7 +61,7 @@ class CellBranches(models.Model):
         verbose_name_plural = 'Філії'
 
     def __str__(self):
-        return self.settlement_name
+        return self.cell_branch
 
 
 class Cells(models.Model):

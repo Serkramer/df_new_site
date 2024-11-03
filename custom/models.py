@@ -40,7 +40,7 @@ class CustomManager(models.Manager):
     def get_queryset(self):
         return super().get_queryset().using('custom')
 
-
+### old table, don't use
 class Addressees(models.Model):
     id = models.BigAutoField(primary_key=True)
     company_id = models.BigIntegerField(blank=True, null=True)
@@ -84,15 +84,22 @@ class AdhesiveTapeThicknesses(models.Model):
 
 class AdhesiveTapes(models.Model):
     id = models.BigAutoField(primary_key=True)
-    description = models.CharField(max_length=255, blank=True, null=True)
-    manufacturer = models.CharField(max_length=50, blank=True, null=True)
-    series = models.CharField(max_length=50, blank=True, null=True)
-    thickness = models.DecimalField(max_digits=3, decimal_places=2, blank=True, null=True)
-    adhesive_tape_thickness = models.ForeignKey(AdhesiveTapeThicknesses, models.DO_NOTHING, blank=True, null=True)
+    description = models.CharField(max_length=255, blank=True, null=True, verbose_name='Опис')
+    manufacturer = models.CharField(max_length=50, blank=True, null=True, verbose_name='Виробник')
+    series = models.CharField(max_length=50, blank=True, null=True, verbose_name='Серія')
+    thickness = models.DecimalField(max_digits=3, decimal_places=2, blank=True, null=True) # old
+    adhesive_tape_thickness = models.ForeignKey(AdhesiveTapeThicknesses, models.DO_NOTHING, blank=True, null=True, verbose_name='товщина скотчу')
 
     class Meta:
         managed = False
         db_table = 'adhesive_tapes'
+        verbose_name = 'Скотч'
+        verbose_name_plural = 'Скотчі'
+
+    def __str__(self):
+        return (f"{self.description if self.description else ''} "
+                f"{self.manufacturer  if self.manufacturer else ''} "
+                f"{self. adhesive_tape_thickness if self.adhesive_tape_thickness else ''}")
 
 
 # +
@@ -146,6 +153,8 @@ class AniloxRolls(models.Model):
     class Meta:
         managed = False
         db_table = 'anilox_rolls'
+        verbose_name = 'Анілокс'
+        verbose_name_plural = 'Анілокси'
 
 
 class BlackGenerations(models.Model):
@@ -171,18 +180,20 @@ class Branches(models.Model):
 
 class ClicheTechnologies(models.Model):
     id = models.BigAutoField(primary_key=True)
-    name = models.CharField(max_length=15, blank=True, null=True)
-    cliche_technology_type = models.ForeignKey('ClicheTechnologyTypes', models.DO_NOTHING, blank=True, null=True)
-    len_file_resolution = models.ForeignKey('LenFileResolutions', models.DO_NOTHING, blank=True, null=True)
-    thickness_min = models.IntegerField(blank=True, null=True)
-    thickness_max = models.IntegerField(blank=True, null=True)
+    name = models.CharField(max_length=15, blank=True, null=True, verbose_name='Назва технології')
+    cliche_technology_type = models.ForeignKey('ClicheTechnologyTypes', models.DO_NOTHING, blank=True, null=True, verbose_name='Тип технології')
+    len_file_resolution = models.ForeignKey('LenFileResolutions', models.DO_NOTHING, blank=True, null=True, verbose_name='Розширення')
+    thickness_min = models.IntegerField(blank=True, null=True, verbose_name='Мінімальна товщина кліше для технології')
+    thickness_max = models.IntegerField(blank=True, null=True, verbose_name='Максимальна товщина кліше для технології')
 
     class Meta:
         managed = False
         db_table = 'cliche_technologies'
+        verbose_name = 'Технологія'
+        verbose_name_plural = 'Технології'
 
     def __str__(self):
-        return self.name
+        return f"{self.name} {self.len_file_resolution}"
 
 
 class ClicheTechnologiesUsesInPresets(models.Model):
@@ -361,27 +372,32 @@ class ColorProofOrderPayments(models.Model):
 
 class ColorProofOrders(models.Model):
     id = models.BigAutoField(primary_key=True)
-    is_cmyk = models.BooleanField(blank=True, null=True)  # This field type is a guess.
-    color_proof_file_name = models.CharField(max_length=255, blank=True, null=True)
-    count = models.IntegerField(blank=True, null=True)
-    height = models.IntegerField(blank=True, null=True)
-    launch_date = models.DateTimeField(blank=True, null=True)
+    is_cmyk = models.BooleanField(blank=True, null=True, verbose_name='Це cmyk?', help_text="якщо вибрати ні, то мається на увазі що в макеті є тільки пантони")  # This field type is a guess.
+    color_proof_file_name = models.CharField(max_length=255, blank=True, null=True) # old
+    count = models.IntegerField(blank=True, null=True, verbose_name='кількість')
+    height = models.IntegerField(blank=True, null=True, verbose_name="Висота")
+    launch_date = models.DateTimeField(blank=True, null=True, verbose_name='Дата запуску')
     login = models.CharField(max_length=100, blank=True, null=True)
-    urgency = models.BooleanField(blank=True, null=True)  # This field type is a guess.
-    width = models.IntegerField(blank=True, null=True)
-    order_delivery = models.ForeignKey('OrderDeliveries', models.DO_NOTHING, blank=True, null=True)
-    company_client = models.ForeignKey('CompanyClients', models.DO_NOTHING, blank=True, null=True)
-    name = models.CharField(max_length=255, blank=True, null=True)
-    paper_id = models.BigIntegerField(blank=True, null=True)
-    color_profile = models.ForeignKey(ColorProfiles, models.DO_NOTHING, blank=True, null=True)
-    paper_size = models.ForeignKey('PaperSizes', models.DO_NOTHING, blank=True, null=True)
-    status = models.CharField(max_length=255, blank=True, null=True)
-    file_name = models.CharField(max_length=255, blank=True, null=True)
-    company_our_brand = models.ForeignKey('CompanyOurBrands', models.DO_NOTHING, blank=True, null=True)
+    urgency = models.BooleanField(blank=True, null=True, verbose_name="термінова")  # This field type is a guess.
+    width = models.IntegerField(blank=True, null=True, verbose_name="ширина")
+    order_delivery = models.ForeignKey('OrderDeliveries', models.DO_NOTHING, blank=True, null=True, verbose_name="доставка" )
+    company_client = models.ForeignKey('CompanyClients', models.DO_NOTHING, blank=True, null=True, verbose_name="Замовник")
+    name = models.CharField(max_length=255, blank=True, null=True, verbose_name="Назва")
+    paper_id = models.BigIntegerField(blank=True, null=True, verbose_name="Бумага")
+    color_profile = models.ForeignKey(ColorProfiles, models.DO_NOTHING, blank=True, null=True, verbose_name="Кольоровий профіль")
+    paper_size = models.ForeignKey('PaperSizes', models.DO_NOTHING, blank=True, null=True, verbose_name="Розмір паперу")
+    status = models.CharField(max_length=255, blank=True, null=True, verbose_name="Статус")
+    file_name = models.CharField(max_length=255, blank=True, null=True, verbose_name="Назва файлу")
+    company_our_brand = models.ForeignKey('CompanyOurBrands', models.DO_NOTHING, blank=True, null=True, verbose_name="Наша компанія")
 
     class Meta:
         managed = False
         db_table = 'color_proof_orders'
+        verbose_name = 'Кольоропроба'
+        verbose_name_plural = 'Кольоропроби'
+
+    def __str__(self):
+        return f"№ {self.id}, {self.name}"
 
 
 # +
@@ -534,6 +550,11 @@ class ContactInfoTypes(models.Model):
     class Meta:
         managed = False
         db_table = 'contact_info_types'
+        verbose_name = 'Тип контакту'
+        verbose_name_plural = "Типи контактів"
+
+    def __str__(self):
+        return self.type
 
 
 class ContactTypes(models.Model):
@@ -580,6 +601,11 @@ class ContactsDetails(models.Model):
     class Meta:
         managed = False
         db_table = 'contacts_details'
+        verbose_name = 'Контактна інформація'
+        verbose_name_plural = 'контактна інформація'
+
+    def __str__(self):
+        return self.value
 
 
 class Curriers(models.Model):
@@ -725,17 +751,25 @@ class Engravers(models.Model):
     class Meta:
         managed = False
         db_table = 'engravers'
+        verbose_name_plural = 'Гравери'
+        verbose_name = 'Гравер'
+
+    def __str__(self):
+        return self.full_name
 
 
 class FartukHeights(models.Model):
     id = models.BigAutoField(primary_key=True)
-    height = models.DecimalField(max_digits=5, decimal_places=1, blank=True, null=True)
-    fartuk = models.ForeignKey('Fartuks', models.DO_NOTHING, blank=True, null=True)
-    printing_machine = models.ForeignKey('PrintingMachines', models.DO_NOTHING, blank=True, null=True)
+    height = models.DecimalField(max_digits=5, decimal_places=1, blank=True, null=True, verbose_name='Висота')
+    fartuk = models.ForeignKey('Fartuks', models.DO_NOTHING, blank=True, null=True, verbose_name='Фартук')
+    printing_machine = models.ForeignKey('PrintingMachines', models.DO_NOTHING, blank=True, null=True,
+                                         verbose_name="друкарська машина")
 
     class Meta:
         managed = False
         db_table = 'fartuk_heights'
+        verbose_name = 'Висота фартука'
+        verbose_name_plural = 'Висоти фартуків'
 
 
 # +

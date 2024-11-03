@@ -12,3 +12,5 @@ requests~=2.32.3
 aiohttp~=3.8.6
 pathlib~=1.0.1
 python-dateutil~=2.9.0.post0
+
+pydantic~=2.8.2

@@ -3,8 +3,21 @@ from dal import autocomplete
 from pydantic import ValidationError
 
 from custom.models import PrintingMachineShafts, Companies, DeliveryPresets, Addresses, PrintingMachinePresets, \
-    AdhesiveTapeThicknesses
+    AdhesiveTapeThicknesses, FartukHeights, PrintingMachines
 from map.models import Areas, PostOffices, Settlements
+
+
+class PrintingMachinesForm(forms.ModelForm):
+    class Meta:
+        model = PrintingMachines
+        exclude = ('material_thickness',)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        required_fields = ['printing_company', 'name']
+        for field in required_fields:
+            self.fields[field].required = True
 
 
 class PrintingMachinePresetsForm(forms.ModelForm):
@@ -67,6 +80,18 @@ class PrintingMachineShaftsForm(forms.ModelForm):
         required_fields = ['printing_machine', 'input_value', 'input_value_type']
         for field in required_fields:
             self.fields[field].required = True
+
+
+class FartukHeightsForm(forms.ModelForm):
+    class Meta:
+        model = FartukHeights
+        fields = '__all__'
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        for field in self.fields.values():
+            field.required = True
 
 
 class CompanyForm(forms.ModelForm):
