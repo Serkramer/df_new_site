@@ -7,6 +7,8 @@ from .admin_filters import PrintingCompanyWithShaftsFilter
 from .forms import PrintingMachineShaftsForm, CompanyForm, DeliveryPresetsForm, PrintingMachinePresetsForm, \
     AdhesiveTapeThicknessesForm, FartukHeightsForm, PrintingMachinesForm, FartuksForm, FartukRailTypesForm, \
     FartukMembraneTypesForm
+from .inlines import PrintingMachineShaftsInline, PrintingMachinesInline, PrintingMachinePresetsInline, \
+    AniloxRollsInline
 from .models import *
 
 
@@ -40,6 +42,7 @@ class PrintingCompaniesAdmin(admin.ModelAdmin):
     search_fields = ('id__name',)
 
     autocomplete_fields = ['id', ]
+    inlines = (PrintingMachinesInline,)
 
 
 @admin.register(PrintingMachines)
@@ -48,6 +51,14 @@ class PrintingMachinesAdmin(admin.ModelAdmin):
     search_fields = ('name', 'printing_company__id__name')
     form = PrintingMachinesForm
     autocomplete_fields = ['printing_company',]
+    inlines = [PrintingMachineShaftsInline, PrintingMachinePresetsInline, AniloxRollsInline]
+
+
+@admin.register(AniloxRolls)
+class AniloxRollAdmin(admin.ModelAdmin):
+    list_display = ('printing_machine', 'line_count', 'transfer_volume', 'type', 'description')
+    search_fields = ('printing_machine', 'line_count')
+    autocomplete_fields = ['printing_machine', ]
 
 
 @admin.register(ContactsDetails)
