@@ -3,11 +3,24 @@ from django.db.models import Count
 from django.http import HttpResponseRedirect
 from django.urls import reverse
 
-from .forms import MaterialSheetsForm
-from .models import Materials, MaterialHardness, MaterialSheets, Articles, MaterialSlices, MaterialSheetStores
+from .forms import MaterialSheetsForm, MaterialHardnessTypesForm, MaterialHardnessForm
+from .models import Materials, MaterialHardness, MaterialSheets, Articles, MaterialSlices, MaterialSheetStores, \
+    MaterialHardnessTypes
 
 
 # Register your models here.
+
+@admin.register(MaterialHardnessTypes)
+class MaterialHardnessTypesAdmin(admin.ModelAdmin):
+    list_display = ('name', )
+    form = MaterialHardnessTypesForm
+
+
+@admin.register(MaterialHardness)
+class MaterialHardnessAdmin(admin.ModelAdmin):
+    list_display = ('material_hardness_type', 'hardness')
+    form = MaterialHardnessForm
+
 
 @admin.register(Materials)
 class MaterialsAdmin(admin.ModelAdmin):

@@ -281,12 +281,14 @@ class MaterialBoxes(models.Model):
 
 class MaterialHardness(models.Model):
     id = models.BigAutoField(primary_key=True)
-    hardness = models.IntegerField(blank=True, null=True)
-    material_hardness_type = models.ForeignKey('MaterialHardnessTypes', models.DO_NOTHING, blank=True, null=True)
+    hardness = models.IntegerField(blank=True, null=True, verbose_name="Твердість")
+    material_hardness_type = models.ForeignKey('MaterialHardnessTypes', models.DO_NOTHING, blank=True, null=True, verbose_name="Тип твердості")
 
     class Meta:
         managed = False
         db_table = 'material_hardness'
+        verbose_name = 'Твердість матеріалів'
+        verbose_name_plural = verbose_name
 
     def __str__(self):
         return f"{self.hardness} {self.material_hardness_type}"
@@ -299,6 +301,8 @@ class MaterialHardnessTypes(models.Model):
     class Meta:
         managed = False
         db_table = 'material_hardness_types'
+        verbose_name = 'тип твердості матеріалу'
+        verbose_name_plural = 'типи твердості матеріалу'
 
     def __str__(self):
         return self.name
@@ -311,6 +315,9 @@ class MaterialManufacturers(models.Model):
     class Meta:
         managed = False
         db_table = 'material_manufacturers'
+        verbose_name = 'Виробник матеріалу'
+        verbose_name = 'Виробники матеріалу'
+
 
     def __str__(self):
         return self.name
@@ -576,17 +583,24 @@ class WorkShiftSheets(models.Model):
 
 class WorkShifts(models.Model):
     id = models.BigAutoField(primary_key=True)
-    end_work_shift = models.DateTimeField(blank=True, null=True)
-    start_work_shift = models.DateTimeField(blank=True, null=True)
-    cell_branch = models.ForeignKey(CellBranches, models.DO_NOTHING, blank=True, null=True)
+    end_work_shift = models.DateTimeField(blank=True, null=True, verbose_name='Кінець зміни')
+    start_work_shift = models.DateTimeField(blank=True, null=True, verbose_name="початок зміни")
+    cell_branch = models.ForeignKey(CellBranches, models.DO_NOTHING, blank=True, null=True, verbose_name='відділення')
 
     class Meta:
         managed = False
         db_table = 'work_shifts'
+        verbose_name = 'Зміна'
+        verbose_name_plural = 'Зміни'
+
+    def __str__(self):
+        return (f"{self.cell_branch}, "
+                f"{self.start_work_shift.strftime('%d.%m.%Y %H:%M:%S')}-"
+                f"{self.end_work_shift.strftime('%d.%m.%Y %H:%M:%S')}")
 
 
 class WorkersOnAWorkShifts(models.Model):
-    work_shift = models.OneToOneField(WorkShifts, models.DO_NOTHING, primary_key=True)
+    work_shift = models.OneToOneField(WorkShifts, models.DO_NOTHING, primary_key=True, verbose_name="Зміна")
     operator = models.ForeignKey(Operators, models.DO_NOTHING)
 
     class Meta:

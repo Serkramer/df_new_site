@@ -5,7 +5,8 @@ from django.utils.html import format_html
 
 from .admin_filters import PrintingCompanyWithShaftsFilter
 from .forms import PrintingMachineShaftsForm, CompanyForm, DeliveryPresetsForm, PrintingMachinePresetsForm, \
-    AdhesiveTapeThicknessesForm, FartukHeightsForm, PrintingMachinesForm
+    AdhesiveTapeThicknessesForm, FartukHeightsForm, PrintingMachinesForm, FartuksForm, FartukRailTypesForm, \
+    FartukMembraneTypesForm
 from .models import *
 
 
@@ -86,6 +87,12 @@ class AdhesiveTapesAdmin(admin.ModelAdmin):
     search_fields = ('description', 'adhesive_tape_thickness__thickness')
 
 
+@admin.register(ClicheTechnologies)
+class ClicheTechnologiesAdmin(admin.ModelAdmin):
+    list_display = ('name', 'cliche_technology_type', 'len_file_resolution', 'thickness_min','thickness_max')
+
+
+
 @admin.register(CompanyClients)
 class CompanyClientsAdmin(admin.ModelAdmin):
     list_display = ('id', 'custom_is_banned', 'debt', 'company_our_brand', 'document_delivery_type', 'is_prepayment')
@@ -125,8 +132,6 @@ class FartukHeightsAdmin(admin.ModelAdmin):
     search_fields = ('printing_machine', 'height')
     autocomplete_fields = ['printing_machine']
     form = FartukHeightsForm
-
-
 
 
 @admin.register(DeliveryPresets)
@@ -217,14 +222,23 @@ class RulingRelationshipsAdmin(admin.ModelAdmin):
 @admin.register(FartukRailTypes)
 class FartukRailTypesAdmin(admin.ModelAdmin):
     list_display = ('type',)
+    form = FartukRailTypesForm
 
 
 @admin.register(FartukMembraneTypes)
 class FartukMemberTypesAdmin(admin.ModelAdmin):
     list_display = ('type', 'thickness')
+    form = FartukMembraneTypesForm
 
 
 @admin.register(Fartuks)
 class FartuksAdmin(admin.ModelAdmin):
-    list_display = ("description", "max_height", "max_width", "type", "bottom_fartuk_rail_type", "fartuk_membrane_type",
-                    "top_fartuk_rail_type", "is_fixed", "height",)
+    list_display = ("type", "description", "max_height", "max_width", "bottom_fartuk_rail_type",
+                    "fartuk_membrane_type",
+                    "top_fartuk_rail_type", "is_fixed", )
+    #
+    # list_editable = ("description",  "max_height", "max_width", "bottom_fartuk_rail_type", "fartuk_membrane_type",
+    #                  "top_fartuk_rail_type",)
+
+    form = FartuksForm
+

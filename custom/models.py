@@ -40,6 +40,7 @@ class CustomManager(models.Manager):
     def get_queryset(self):
         return super().get_queryset().using('custom')
 
+
 ### old table, don't use
 class Addressees(models.Model):
     id = models.BigAutoField(primary_key=True)
@@ -155,6 +156,9 @@ class AniloxRolls(models.Model):
         db_table = 'anilox_rolls'
         verbose_name = 'Анілокс'
         verbose_name_plural = 'Анілокси'
+
+    def __str__(self):
+        return f"{self.printing_machine} | {self.line_count}"
 
 
 class BlackGenerations(models.Model):
@@ -320,6 +324,11 @@ class ColorProofOrderNotes(models.Model):
     class Meta:
         managed = False
         db_table = 'color_proof_order_notes'
+        verbose_name = 'коментар до замовлення кольоропроби'
+        verbose_name_plural = 'коментарі до замовлення кольоропроби'
+
+    def __str__(self):
+        return f"{self.header if self.header else ''} {self.text if self.text else ''}"
 
 
 class ColorProofOrderPaymentAmortizations(models.Model):
@@ -542,6 +551,9 @@ class CompressionTypes(models.Model):
         managed = False
         db_table = 'compression_types'
 
+    def __str__(self):
+        return self.type
+
 
 class ContactInfoTypes(models.Model):
     id = models.BigAutoField(primary_key=True)
@@ -652,6 +664,9 @@ class Curves(models.Model):
     class Meta:
         managed = False
         db_table = 'curves'
+
+    def __str__(self):
+        return self.file_name
 
 
 class DeliveryPresetForOurCompanies(models.Model):
@@ -770,6 +785,9 @@ class FartukHeights(models.Model):
         db_table = 'fartuk_heights'
         verbose_name = 'Висота фартука'
         verbose_name_plural = 'Висоти фартуків'
+
+    def __str__(self):
+        return f"{self.fartuk} {self.height}"
 
 
 # +
@@ -1030,16 +1048,18 @@ class OrderEmployee(models.Model):
 
 class OrderFartuks(models.Model):
     id = models.BigAutoField(primary_key=True)
-    center_point = models.IntegerField(blank=True, null=True)
-    comment = models.CharField(max_length=255, blank=True, null=True)
-    height = models.IntegerField(blank=True, null=True)
-    width = models.IntegerField(blank=True, null=True)
-    order = models.ForeignKey('Orders', models.DO_NOTHING, blank=True, null=True)
-    name = models.CharField(max_length=100, blank=True, null=True)
+    center_point = models.IntegerField(blank=True, null=True, verbose_name="центральна точка")
+    comment = models.CharField(max_length=255, blank=True, null=True, verbose_name='коментар')
+    height = models.IntegerField(blank=True, null=True, verbose_name="висота фартука")
+    width = models.IntegerField(blank=True, null=True, verbose_name='ширина фартука')
+    order = models.ForeignKey('Orders', models.DO_NOTHING, blank=True, null=True, verbose_name='Замовленння')
+    name = models.CharField(max_length=100, blank=True, null=True, verbose_name='Назва')
 
     class Meta:
         managed = False
         db_table = 'order_fartuks'
+        verbose_name = "фортук в замовленні"
+        verbose_name_plural = "фортуки в замовленнях"
 
 
 class OrderGroups(models.Model):
@@ -1048,6 +1068,7 @@ class OrderGroups(models.Model):
     class Meta:
         managed = False
         db_table = 'order_groups'
+        verbose_name = 'Група замовлень'
 
 
 class OrderNotes(models.Model):
@@ -1191,6 +1212,7 @@ class OrderPlaneSlices(models.Model):
     class Meta:
         managed = False
         db_table = 'order_plane_slices'
+        verbose_name = 'форми в замовленні'
 
 
 # устаревшая
@@ -1434,6 +1456,10 @@ class PrintingMaterialColors(models.Model):
     class Meta:
         managed = False
         db_table = 'printing_material_colors'
+        verbose_name = 'колір задруковного матеріалу'
+
+    def __str__(self):
+        return self.name
 
 
 class PrintingMaterialTypes(models.Model):
@@ -1443,6 +1469,10 @@ class PrintingMaterialTypes(models.Model):
     class Meta:
         managed = False
         db_table = 'printing_material_types'
+        verbose_name = 'Тип задруковуємого матеріалу'
+
+    def __str__(self):
+        return self.type
 
 
 class PrintingMaterials(models.Model):
@@ -1550,8 +1580,8 @@ class RasterDots(models.Model):
 
 class RasterDotsUsesInPresets(models.Model):
     printing_machine_preset = models.OneToOneField(PrintingMachinePresets, models.DO_NOTHING,
-                                                   primary_key=True)  # The composite primary key (printing_machine_preset_id, raster_dot_id) found, that is not supported. The first column is selected.
-    raster_dot = models.ForeignKey(RasterDots, models.DO_NOTHING)
+                                                   primary_key=True, verbose_name='пресет друкарської машини')  # The composite primary key (printing_machine_preset_id, raster_dot_id) found, that is not supported. The first column is selected.
+    raster_dot = models.ForeignKey(RasterDots, models.DO_NOTHING, verbose_name="растрова точка")
 
     class Meta:
         managed = False

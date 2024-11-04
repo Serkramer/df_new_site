@@ -3,7 +3,7 @@ from dal import autocomplete
 from pydantic import ValidationError
 
 from custom.models import PrintingMachineShafts, Companies, DeliveryPresets, Addresses, PrintingMachinePresets, \
-    AdhesiveTapeThicknesses, FartukHeights, PrintingMachines
+    AdhesiveTapeThicknesses, FartukHeights, PrintingMachines, Fartuks, FartukRailTypes, FartukMembraneTypes
 from map.models import Areas, PostOffices, Settlements
 
 
@@ -92,6 +92,54 @@ class FartukHeightsForm(forms.ModelForm):
 
         for field in self.fields.values():
             field.required = True
+
+
+class FartukRailTypesForm(forms.ModelForm):
+    class Meta:
+        model = FartukRailTypes
+        fields = '__all__'
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        for field in self.fields.values():
+            field.required = True
+
+    def clean_thickness(self):
+        type = self.cleaned_data.get('type')
+
+        # Проверка на уникальность
+        if FartukRailTypes.objects.filter(type=type).exists():
+            self.add_error('type', "Це поле повинно бути унікальним. введіть значення, якого ще немає")
+
+        return type
+
+
+
+class FartukMembraneTypesForm(forms.ModelForm):
+    class Meta:
+        model = FartukMembraneTypes
+        fields = '__all__'
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        for field in self.fields.values():
+            field.required = True
+
+
+class FartuksForm(forms.ModelForm):
+    class Meta:
+        model = Fartuks
+        exclude = ('height', 'thickness')
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        # Указываем обязательные поля
+        required_fields = ['type', 'bottom_fartuk_rail_type', 'fartuk_membrane_type', 'top_fartuk_rail_type']
+        for field in required_fields:
+            self.fields[field].required = True
 
 
 class CompanyForm(forms.ModelForm):
