@@ -4,6 +4,7 @@ from django.views.generic import TemplateView
 from math import pi
 from config import settings
 from custom.models import PrintingMachineShafts, PrintingMachinePresets, PrintingMachineShaftsInputValueTypeList
+from store.models import MaterialUnderlayments
 from web_project import TemplateLayout
 
 
@@ -41,60 +42,91 @@ class PrintingRollersView(TemplateView):
 
             for thickness in list_printing_machine_preset_thickness:
                 shaft.thickness_data = thickness
+                material_underlayment = MaterialUnderlayments.objects.filter(id=1).first() if float(
+                    shaft.thickness_data['material_thickness']) == 1.14 else MaterialUnderlayments.objects.filter(
+                    id=1).first()
+
+                if shaft.input_value_type == PrintingMachineShaftsInputValueTypeList.NUMBER_OF_TEETH:
+                    shaft.number_of_teeth = shaft.input_value
+                    shaft.rapport = shaft.number_of_teeth * shaft.printing_machine.module \
+                        if (shaft.printing_machine and shaft.printing_machine.module) \
+                        else shaft.number_of_teeth * settings.DEFAULT_PRINTING_MACHINE_MODUL
+                    shaft.printing_diameter = round(float(shaft.rapport) / pi, 2)
+                    shaft.diameter = None
+                    shaft.metal_diameter = None
+                    shaft.circumference = None
+                    shaft.distortion = None
+
+                elif shaft.input_value_type == PrintingMachineShaftsInputValueTypeList.RAPPORT:
+                    shaft.number_of_teeth = 0
+                    shaft.rapport = shaft.input_value
+                    shaft.diameter = None
+                    shaft.metal_diameter = None
+                    shaft.circumference = None
+                    shaft.distortion = None
+                    shaft.printing_diameter = None
+
+                elif shaft.input_value_type == PrintingMachineShaftsInputValueTypeList.DIAMETER:
+                    shaft.number_of_teeth = 0
+                    shaft.rapport = None
+                    shaft.diameter = shaft.input_value
+                    shaft.metal_diameter = None
+                    shaft.circumference = None
+                    shaft.distortion = None
+                    shaft.printing_diameter = None
+                elif shaft.input_value_type == PrintingMachineShaftsInputValueTypeList.METAL_DIAMETER:
+                    shaft.number_of_teeth = 0
+
+                    shaft.diameter = None
+                    shaft.metal_diameter = shaft.input_value
+                    shaft.circumference = round(float(shaft.metal_diameter) * pi, 2)
+                    shaft.printing_diameter = (float(shaft.metal_diameter) +
+                                               2 *
+                                               ((
+                                                    float(shaft.thickness_data['material_thickness']) if
+                                                    shaft.thickness_data['material_thickness'] else 0) +
+                                                (
+                                                    float(shaft.thickness_data['fartuk_thickness']) if
+                                                    shaft.thickness_data['fartuk_thickness'] else 0) +
+                                                (
+                                                    float(shaft.thickness_data['damper_thickness']) if
+                                                    shaft.thickness_data['damper_thickness'] else 0) +
+                                                (
+                                                    float(shaft.thickness_data['adhesive_tape_thickness']) if
+                                                    shaft.thickness_data['adhesive_tape_thickness'] else 0)
+
+                                                )) if shaft.thickness_data['material_thickness'] and \
+                                                      shaft.thickness_data['adhesive_tape_thickness'] else None
+                    shaft.rapport = round(shaft.printing_diameter * pi, 2)
+                    # shaft.distortion = round((float(shaft.metal_diameter) + 2 *
+                    #                          (float(shaft.thickness_data['material_thickness']) +
+                    #                           float(material_underlayment.thickness) +
+                    #                           (float(shaft.thickness_data['fartuk_thickness']) if shaft.thickness_data[
+                    #                               'fartuk_thickness'] else 0) +
+                    #                           (float(shaft.thickness_data['damper_thickness']) if shaft.thickness_data[
+                    #                               'damper_thickness'] else 0) +
+                    #                           (float(shaft.thickness_data['adhesive_tape_thickness']) if
+                    #                            shaft.thickness_data['adhesive_tape_thickness'] else 0)
+                    #                           )) / shaft.printing_diameter * 100,  2)
+
+                elif shaft.input_value_type == PrintingMachineShaftsInputValueTypeList.CIRCUMFERENCE:
+                    shaft.number_of_teeth = 0
+                    shaft.rapport = None
+                    shaft.diameter = None
+                    shaft.metal_diameter = None
+                    shaft.circumference = shaft.input_value
+                    shaft.distortion = None
+                    shaft.printing_diameter = None
+                elif shaft.input_value_type == PrintingMachineShaftsInputValueTypeList.CIRCUMFERENCE:
+                    shaft.number_of_teeth = 0
+                    shaft.rapport = None
+                    shaft.diameter = None
+                    shaft.metal_diameter = None
+                    shaft.circumference = None
+                    shaft.distortion = shaft.input_value
+                    shaft.printing_diameter = None
+
                 table_shafts.append(shaft)
-
-            if shaft.input_value_type == PrintingMachineShaftsInputValueTypeList.NUMBER_OF_TEETH:
-                number_of_teeth = shaft.input_value
-                rapport = number_of_teeth * shaft.printing_machine.module \
-                    if (shaft.printing_machine and shaft.printing_machine.module) \
-                    else number_of_teeth * settings.DEFAULT_PRINTING_MACHINE_MODUL
-                printing_diameter = round(rapport / pi, 2)
-                diameter = None
-                metal_diameter = None
-                circumference = None
-                distortion = None
-
-            elif shaft.input_value_type == PrintingMachineShaftsInputValueTypeList.RAPPORT:
-                number_of_teeth = 0
-                rapport = shaft.input_value
-                diameter = None
-                metal_diameter = None
-                circumference = None
-                distortion = None
-                printing_diameter = None
-            elif shaft.input_value_type == PrintingMachineShaftsInputValueTypeList.DIAMETER:
-                number_of_teeth = 0
-                rapport = None
-                diameter = shaft.input_value
-                metal_diameter = None
-                circumference = None
-                distortion = None
-                printing_diameter = None
-            elif shaft.input_value_type == PrintingMachineShaftsInputValueTypeList.METAL_DIAMETER:
-                number_of_teeth = 0
-                rapport = None
-                diameter = None
-                metal_diameter = shaft.input_value
-                circumference = None
-                distortion = None
-                printing_diameter = None
-            elif shaft.input_value_type == PrintingMachineShaftsInputValueTypeList.CIRCUMFERENCE:
-                number_of_teeth = 0
-                rapport = None
-                diameter = None
-                metal_diameter = None
-                circumference = shaft.input_value
-                distortion = None
-                printing_diameter = None
-            elif shaft.input_value_type == PrintingMachineShaftsInputValueTypeList.CIRCUMFERENCE:
-                number_of_teeth = 0
-                rapport = None
-                diameter = None
-                metal_diameter = None
-                circumference = None
-                distortion = shaft.input_value
-                printing_diameter = None
-            pass
 
         context['shafts'] = table_shafts
         return context
