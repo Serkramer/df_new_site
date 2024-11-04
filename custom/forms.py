@@ -3,8 +3,22 @@ from dal import autocomplete
 from pydantic import ValidationError
 
 from custom.models import PrintingMachineShafts, Companies, DeliveryPresets, Addresses, PrintingMachinePresets, \
-    AdhesiveTapeThicknesses, FartukHeights, PrintingMachines, Fartuks, FartukRailTypes, FartukMembraneTypes
+    AdhesiveTapeThicknesses, FartukHeights, PrintingMachines, Fartuks, FartukRailTypes, FartukMembraneTypes, \
+    AniloxRolls
 from map.models import Areas, PostOffices, Settlements
+
+
+class AniloxRollForm(forms.ModelForm):
+    class Meta:
+        model = AniloxRolls
+        fields = ('printing_machine', 'line_count', 'transfer_volume', 'type', 'description')
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        required_fields = ['printing_machine', 'line_count']
+        for field in required_fields:
+            self.fields[field].required = True
 
 
 class PrintingMachinesForm(forms.ModelForm):

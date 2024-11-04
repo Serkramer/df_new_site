@@ -36,6 +36,12 @@ class PrintingMachineShaftsInputValueTypeList(models.TextChoices):
     DISTORTION = "DISTORTION", "Компресія"
 
 
+class AniloxRollTransferVolumeTypeList(models.TextChoices):
+    G_PER_M2 = "G_PER_M2", "гр/м2",
+    BCM = "BCM", "миллиард кубических микрон на квадратный дюйм",
+    CM3_PER_M2 = "CM3_PER_M2", "см3/м2",
+
+
 class CustomManager(models.Manager):
     def get_queryset(self):
         return super().get_queryset().using('custom')
@@ -145,11 +151,11 @@ class AngleSets(models.Model):
 
 class AniloxRolls(models.Model):
     id = models.BigAutoField(primary_key=True)
-    description = models.CharField(max_length=255, blank=True, null=True)
-    line_count = models.IntegerField(blank=True, null=True)
-    transfer_volume = models.DecimalField(max_digits=6, decimal_places=2, blank=True, null=True)
-    printing_machine = models.ForeignKey('PrintingMachines', models.DO_NOTHING, blank=True, null=True)
-    type = models.CharField(max_length=255, blank=True, null=True)
+    description = models.CharField(max_length=255, blank=True, null=True, verbose_name="Опис")
+    line_count = models.IntegerField(blank=True, null=True, verbose_name='лініатура')
+    transfer_volume = models.DecimalField(max_digits=6, decimal_places=2, blank=True, null=True, verbose_name="фарбоперенос")
+    printing_machine = models.ForeignKey('PrintingMachines', models.DO_NOTHING, blank=True, null=True, verbose_name='Друкарська машина')
+    type = models.CharField(max_length=255, blank=True, null=True, verbose_name='вимірювання арбопереносу', choices=AniloxRollTransferVolumeTypeList.choices)
 
     class Meta:
         managed = False

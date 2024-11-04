@@ -6,7 +6,7 @@ from django.utils.html import format_html
 from .admin_filters import PrintingCompanyWithShaftsFilter
 from .forms import PrintingMachineShaftsForm, CompanyForm, DeliveryPresetsForm, PrintingMachinePresetsForm, \
     AdhesiveTapeThicknessesForm, FartukHeightsForm, PrintingMachinesForm, FartuksForm, FartukRailTypesForm, \
-    FartukMembraneTypesForm
+    FartukMembraneTypesForm, AniloxRollForm
 from .inlines import PrintingMachineShaftsInline, PrintingMachinesInline, PrintingMachinePresetsInline, \
     AniloxRollsInline
 from .models import *
@@ -59,6 +59,7 @@ class AniloxRollAdmin(admin.ModelAdmin):
     list_display = ('printing_machine', 'line_count', 'transfer_volume', 'type', 'description')
     search_fields = ('printing_machine', 'line_count')
     autocomplete_fields = ['printing_machine', ]
+    form = AniloxRollForm
 
 
 @admin.register(ContactsDetails)

@@ -50,7 +50,7 @@ class Barcodes(models.Model):
 
 class CellBranches(models.Model):
     id = models.BigAutoField(primary_key=True)
-    cell_branch = models.CharField(max_length=100, blank=True, null=True, verbose_name="Населенний пункт")
+    settlement_name = models.CharField(max_length=100, blank=True, null=True, verbose_name="Населенний пункт")
     is_own = models.BooleanField(blank=True, null=True, verbose_name='Наш / не наш')  # This field type is a guess.
     short_name = models.CharField(max_length=10, blank=True, null=True, verbose_name="Скорочена назва")
 
@@ -61,7 +61,7 @@ class CellBranches(models.Model):
         verbose_name_plural = 'Філії'
 
     def __str__(self):
-        return self.cell_branch
+        return self.settlement_name
 
 
 class Cells(models.Model):
@@ -74,6 +74,9 @@ class Cells(models.Model):
     class Meta:
         managed = False
         db_table = 'cells'
+
+    def __str__(self):
+        return f"{self.cell_branch}"
 
 
 class CompanyOwnerOfMaterialEntity(models.Model):
