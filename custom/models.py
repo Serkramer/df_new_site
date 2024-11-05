@@ -28,7 +28,7 @@ class OrderStatusList(models.TextChoices):
 
 
 class PrintingMachineShaftsInputValueTypeList(models.TextChoices):
-    DIAMETER = "DIAMETER", "Діаметр"
+    DIAMETER = "DIAMETER", "Друкарський діаметр"
     RAPPORT = "RAPPORT", "Рапорт"
     METAL_DIAMETER = "METAL_DIAMETER", "Діаметр по металу"
     CIRCUMFERENCE = "CIRCUMFERENCE", "Довжина окружності"

@@ -3,7 +3,7 @@
 {% load static %}
 {% load i18n %}
 
-{% block title %}DataTables - Tables{% endblock %}
+{% block title %}Таблиця друкарських валів{% endblock %}
 
 {% block vendor_css %}
   {{ block.super }}
@@ -158,18 +158,16 @@
           <th>товщ демпф.</th>
           <th>друкарський діаметр</th>
           <th>точний раппорт</th>
-          <th>компресія</th>
+          <th>компресія, %</th>
           <th>мінус від раппорта</th>
           <th>раппорт з компресією</th>
           <th>тип фартука</th>
-          <th>опис фартука</th>
-          <th>положення планки за умовчанням</th>
-          <th>довжина фартука</th>
-          <th>відступи</th>
+{#          <th>опис фартука</th>#}
+{#          <th>положення планки за умовчанням</th>#}
+{#          <th>довжина фартука</th>#}
+{#          <th>відступи</th>#}
           <th>актуальність даних</th>
           <th>істочник даних</th>
-          <th>округлений раппорт</th>
-          <th>відносна компресія</th>
         </tr>
         </thead>
         <tbody>
@@ -178,28 +176,26 @@
             <th>{{ shaft.printing_machine.printing_company.id.name }}</th>
             <th>{{ shaft.printing_machine.name }}</th>
             <th>{{ shaft.quantity }}</th>
-            <th>{{ shaft.thickness_data.material_thickness }}</th>
+            <th>{{ shaft.data.material_thickness }}</th>
             <th>{% if shaft.number_of_teeth %} {{ shaft.number_of_teeth}} {% else %} - {% endif %}</th>
             <th>{% if shaft.width %}{{ shaft.width }}{% else %} - {% endif %}</th>
             <th>{% if shaft.metal_diameter %} {{ shaft.metal_diameter}} {% else %} - {% endif %}</th>
             <th>{% if shaft.circumference %} {{ shaft.circumference}} {% else %} - {% endif %}</th>
-            <th>{{ shaft.thickness_data.adhesive_tape_thickness}}</th>
-            <th>{% if shaft.thickness_data.fartuk_thickness %}{{ shaft.thickness_data.fartuk_thickness }} {% else %} - {% endif %}</th>
-            <th>{% if shaft.thickness_data.damper_thickness %}{{ shaft.thickness_data.damper_thickness }} {% else %} - {% endif %}</th>
+            <th>{{ shaft.data.adhesive_tape_thickness}}</th>
+            <th>{% if shaft.data.fartuk_thickness %}{{ shaft.data.fartuk_thickness }} {% else %} - {% endif %}</th>
+            <th>{% if shaft.data.damper_thickness %}{{ shaft.data.damper_thickness }} {% else %} - {% endif %}</th>
             <th>{% if shaft.printing_diameter %} {{ shaft.printing_diameter}} {% else %} - {% endif %}</th>
             <th>{% if shaft.rapport %} {{ shaft.rapport}} {% else %} - {% endif %}</th>
             <th>{% if shaft.distortion %} {{ shaft.distortion}} {% else %} - {% endif %}</th>
-            <th>мінус від раппорта</th>
-            <th>раппорт з компресією</th>
-            <th>тип фартука</th>
-            <th>опис фартука</th>
-            <th>положення планки за умовчанням</th>
-            <th>довжина фартука</th>
-            <th>відступи</th>
+            <th>{% if shaft.minus_from_rapport %} {{ shaft.minus_from_rapport}} {% else %} - {% endif %}</th>
+            <th>{% if shaft.rapport_with_distortion %} {{ shaft.rapport_with_distortion}} {% else %} - {% endif %}</th>
+            <th>{% if shaft.data.fartuk %}{{ shaft.data.fartuk.type }} {% else %} - {% endif %}</th>
+{#            <th>опис фартука</th>#}
+{#            <th>положення планки за умовчанням</th>#}
+{#            <th>довжина фартука</th>#}
+{#            <th>відступи</th>#}
             <th>{{ shaft.date_create | date:"d.m.Y" }}</th>
             <th>{{ shaft.description }}</th>
-            <th>округлений раппорт</th>
-            <th>відносна компресія</th>
           </tr>
         {% endfor %}
         </tbody>
