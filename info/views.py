@@ -176,3 +176,11 @@ class PrintingRollersView(TemplateView):
 
         context['shafts'] = table_shafts
         return context
+
+
+class FartukViews(TemplateView):
+    def get_context_data(self, **kwargs):
+        context = TemplateLayout.init(self, super().get_context_data(**kwargs))
+        context['fartuks'] = None
+        return context
+

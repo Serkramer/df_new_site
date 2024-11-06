@@ -68,7 +68,7 @@
     let cardColor, headingColor, labelColor, borderColor, legendColor;
 
     if (isDarkStyle) {
-      cardColor = config.colors_dark.cardColor;
+      cardColor = config.colors.cardColor;
       headingColor = config.colors_dark.headingColor;
       labelColor = config.colors_dark.textMuted;
       legendColor = config.colors_dark.bodyColor;
@@ -252,7 +252,18 @@
             },
             legend: {
               display: false
+            },
+            datalabels: {
+              anchor: 'end',
+              align: 'top',
+              color: labelColor,
+              font: {
+                size: 12,
+                weight: 'bold'
+              },
+              formatter: (value) => value // Отображение числовых значений
             }
+
           },
           scales: {
             x: {
@@ -279,7 +290,24 @@
               }
             }
           }
-        }
+        },
+        plugins: [{
+          afterDatasetsDraw: (chart) => {
+            const ctx = chart.ctx;
+            chart.data.datasets.forEach((dataset, i) => {
+              const meta = chart.getDatasetMeta(i);
+              meta.data.forEach((bar, index) => {
+                const value = dataset.data[index];
+                ctx.fillStyle = labelColor;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.font = '12px Arial';
+                const positionY = bar.y + (bar.base - bar.y) / 2; // Центр столбца по оси Y
+                ctx.fillText(value, bar.x, positionY); // Текст внутри ст // Вывод значения чуть выше каждого столбца
+              });
+            });
+          }
+        }]
       });
     }
 
@@ -353,6 +381,42 @@
     }
 
   </script>
+  <script>
+
+$(document).ready(function () {
+
+
+    // Получаем ссылки на элементы
+    const thicknessField = document.getElementById("select_material_thickness");
+    const materialsField = document.getElementById("select_material");
+
+    thicknessField.addEventListener("change", function () {
+        // Получаем выбранные значения толщины
+        const selectedThickness = Array.from(thicknessField.selectedOptions).map(option => option.value);
+
+        // Отправляем запрос на сервер с выбранными значениями толщины
+        fetch(`/filter-materials/?${new URLSearchParams({ 'thickness[]': selectedThickness })}`)
+            .then(response => response.json())
+            .then(data => {
+                // Очистка текущего содержимого materialsField
+                materialsField.innerHTML = "";
+
+                // Добавляем новые опции на основе полученных данных
+                data.forEach(material => {
+                    const option = document.createElement("option");
+                    option.value = material.id;
+                    option.text = material.name;
+                    materialsField.appendChild(option);
+                });
+
+                // Обновляем Select2 виджет
+                $('#select_material').trigger('change');
+            })
+            .catch(error => console.error('Ошибка при получении данных:', error));
+    });
+});
+  </script>
+
 
 {% endblock page_js %}
 

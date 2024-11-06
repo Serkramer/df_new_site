@@ -4,7 +4,7 @@ from django.contrib.auth import views as auth_views
 
 from .views import *
 
-# app_name = '1C'
+app_name = '1C'
 
 urlpatterns = [
     path('check', CheckView.as_view(), name="check"),
@@ -20,6 +20,11 @@ urlpatterns = [
         login_required(CreateCheckView.as_view(template_name="OneC/create_check.html")),
         name="create-check",
     ),
+
+    path("create-orders-check/",
+         login_required(CreateOrdersCheckView.as_view(template_name="OneC/create_check_v2.html")),
+         name="create-orders-check"),
+
 
     path("get_orders_from_clients_and_dates", get_orders_from_clients_and_dates,
          name="get_orders_from_clients_and_dates"),

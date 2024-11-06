@@ -9,12 +9,12 @@
       "slug": "materials",
       "submenu": [
         {
-          "url": "material-info-table",
+          "url": "materials:material-info-table",
           "name": "Наявність",
           "slug": "material-info-table"
         },
         {
-          "url": "materials-charts",
+          "url": "materials:materials-charts",
           "name": "Графіки",
           "slug": "materials-charts"
         }
@@ -22,27 +22,38 @@
     },
     {
       "url": "1C",
-      "name": "1C",
+      "name": "Бухгалтерія",
       "icon": "menu-icon tf-icons ri-mail-open-line",
-      "slug": "check-list",
+      "slug": "",
       "submenu": [
         {
-          "url": "check-list",
+          "url": "1C:check-list",
           "name": "Рахунки",
-          "slug": "check-list"
+          "slug": ""
         },
         {
-          "url": "create-check",
+          "url": "1C:create-check",
           "name": "Створити рахунок",
-          "slug": "create-check"
+          "slug": ""
+        },
+        {
+          "url": "1C:create-orders-check",
+          "name": "Створити рахунок v2",
+          "slug": ""
         }
       ]
     },
     {
-      "url": "printing-rollers",
+      "url": "info:printing-rollers",
       "icon": "menu-icon tf-icons ri-table-alt-line",
       "name": "Вали",
-      "slug": "printing-rollers"
+      "slug": ""
+    },
+    {
+      "url": "info:printing-machine-fartks",
+      "icon": "menu-icon tf-icons ri-table-alt-line",
+      "name": "Фартуки компаній",
+      "slug": ""
     },
     {
       "name": "Dashboards",

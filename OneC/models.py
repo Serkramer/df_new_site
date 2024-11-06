@@ -74,5 +74,3 @@ class Check(models.Model):
         verbose_name_plural = "Рахунки"
 
 
-class OrderCheck(models.Model):
-    pass

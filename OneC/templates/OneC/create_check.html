@@ -8,13 +8,10 @@
 
 {% block vendor_css %}
   {{ block.super }}
-
-
   <link rel="stylesheet" href="{% static 'vendor/libs/bootstrap-datepicker/bootstrap-datepicker.css' %}" />
   <link rel="stylesheet" href="{% static 'vendor/libs/bootstrap-daterangepicker/bootstrap-daterangepicker.css' %}" />
   <link rel="stylesheet" href="{% static 'vendor/libs/jquery-timepicker/jquery-timepicker.css' %}" />
   <link rel="stylesheet" href="{% static 'vendor/libs/pickr/pickr-themes.css' %}" />
-
   <link rel="stylesheet" href="{% static 'vendor/libs/typeahead-js/typeahead.css' %}" />
   <link rel="stylesheet" href="{% static 'vendor/libs/bootstrap-select/bootstrap-select.css' %}" />
   <link rel="stylesheet" href="{% static 'vendor/libs/select2/select2.css' %}" />
@@ -35,10 +32,6 @@
   <script src="{% static 'vendor/libs/@form-validation/popular.js' %}"></script>
   <script src="{% static 'vendor/libs/@form-validation/bootstrap5.js' %}"></script>
   <script src="{% static 'vendor/libs/@form-validation/auto-focus.js' %}"></script>
-
-
-
-
   <script src="{% static 'vendor/libs/bootstrap-datepicker/bootstrap-datepicker.js' %}"></script>
   <script src="{% static 'vendor/libs/bootstrap-daterangepicker/bootstrap-daterangepicker.js' %}"></script>
   <script src="{% static 'vendor/libs/jquery-timepicker/jquery-timepicker.js' %}"></script>
@@ -47,9 +40,9 @@
 
 {% block page_js %}
   {{ block.super }}
+  <script src="{% static 'js/forms-pickers.js' %}"></script>
   <script src="{% static 'js/forms-selects.js' %}"></script>
   <script src="{% static 'js/forms-typeahead.js' %}"></script>
-  <script src="{% static 'js/forms-pickers.js' %}"></script>
 
   <script>
 

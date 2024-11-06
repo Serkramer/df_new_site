@@ -50,7 +50,9 @@ class MaterialChartsForm(forms.Form):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
         # Устанавливаем начальную дату — первый день месяца год назад
+
         one_year_ago = (date.today() - relativedelta(years=1)).replace(day=1)
         self.fields['start_date'].initial = one_year_ago
 

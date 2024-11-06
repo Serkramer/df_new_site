@@ -1,7 +1,7 @@
 from django import forms
 from django.core.exceptions import ValidationError
 from django_select2.forms import Select2MultipleWidget
-
+from dal import autocomplete
 from custom.models import CompanyClients
 from .models import Price, Materials, Companies, CompanyWithNuances
 
@@ -10,7 +10,9 @@ class PriceForm(forms.ModelForm):
     # Поле для выбора компании (без отображения ID)
     company = forms.ModelChoiceField(
         queryset=CompanyClients.objects.using('custom').all(),
-        label="Компанія"
+        label="Компанія",
+        widget=autocomplete.ModelSelect2(url='custom:company-clients'),
+        required=True
     )
 
     # Поле для выбора материалов

@@ -1,7 +1,9 @@
 from django.contrib.auth.decorators import login_required
 from django.urls import path
 
-from materials.views import MaterialInfoView, MaterialsChartsView
+from materials.views import MaterialInfoView, MaterialsChartsView, filter_materials_by_thickness
+
+app_name = 'materials'
 
 urlpatterns = [
 
@@ -16,5 +18,7 @@ urlpatterns = [
         login_required(MaterialsChartsView.as_view()),
         name="materials-charts"
     ),
+
+    path('filter-materials/', filter_materials_by_thickness, name='filter_materials_by_thickness'),
 
 ]

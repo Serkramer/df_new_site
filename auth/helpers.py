@@ -9,20 +9,22 @@ def send_email(subject, email, message):
         email = EmailMessage(subject, message, email_from, recipient_list)
         email.send()
     except Exception as e:
-        print(f"Failed to send email: {e}")
+        print(f"Помилка відправки email: {e}")
 
 
 def get_absolute_url(path):
     return settings.BASE_URL + path
 
+
 def send_verification_email(email, token):
-    subject = "Verify your email"
+    subject = "Підтвердіть свій email"
     verification_url = get_absolute_url(reverse('verify-email', kwargs={'token': token}))
-    message = f"Hi,\n\nPlease verify your email using this link: {verification_url}"
+    message = f"Доброго дня,\n\n Щоб підтвердити ваш email перейдіть за посиланням: {verification_url}"
     send_email(subject, email, message)
 
+
 def send_password_reset_email(email, token):
-    subject = "Reset your password"
+    subject = "Відновлення паролю"
     reset_url = get_absolute_url(reverse('reset-password', kwargs={'token': token}))
-    message = f"Hi,\n\nPlease reset your password using this link: {reset_url}"
+    message = f"Доброго дня,\n\n Щоб відновити ваш пароль перейдіть за посиланням: {reset_url}"
     send_email(subject, email, message)

@@ -40,6 +40,15 @@ class CreateCheckView(TemplateView):
         return context
 
 
+class CreateOrdersCheckView(TemplateView):
+    def get_context_data(self, **kwargs):
+        context = TemplateLayout.init(self, super().get_context_data(**kwargs))
+        context['clients'] = CompanyClients.objects.filter(id__is_verified=True).exclude(id__is_outdated=True)
+        context['our_companies'] = CompanyOurBrands.objects.all()
+
+        return context
+
+
 @login_required
 @csrf_exempt
 def get_orders_from_clients_and_dates(request):

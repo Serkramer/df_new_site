@@ -119,6 +119,8 @@ urlpatterns = [
     path("materials/", include("materials.urls")),
 
     path("map/", include("map.urls", namespace="map")),
+    path("custom/", include("custom.urls", namespace="custom")),
+    path("store/", include("store.urls", namespace="store")),
 
 
 ]

@@ -1,5 +1,5 @@
 import json
-
+from django.http import JsonResponse
 from django.shortcuts import render
 from django.views.generic import TemplateView
 from django.db.models import Prefetch, Sum, F, FloatField, ExpressionWrapper, Count
@@ -130,6 +130,7 @@ class MaterialInfoView(TemplateView):
 class MaterialsChartsView(TemplateView):
     template_name = "materials/materials_charts.html"
 
+
     def get_context_data(self, **kwargs):
         context = TemplateLayout.init(self, super().get_context_data(**kwargs))
         form = kwargs.get('form', MaterialChartsForm())
@@ -245,7 +246,7 @@ class MaterialsChartsView(TemplateView):
                                                    default=0), -2))
 
             company_count = len(orders_with_area_company)
-            height = company_count * 20 if company_count else 400
+            height = 60 + company_count * 20 if company_count else 400
             return self.render_to_response(self.get_context_data(form=form, orders_in_month=orders_in_month,
                                                                  max_in_month=max_in_month, show_modal=True,
                                                                  orders_in_week=orders_in_week,
@@ -261,5 +262,8 @@ class MaterialsChartsView(TemplateView):
             return self.render_to_response(self.get_context_data(form=form))
 
 
-
-
+def filter_materials_by_thickness(request):
+    thickness_values = request.GET.getlist('thickness[]')
+    materials = Materials.objects.using('store').filter(thickness__in=thickness_values)
+    data = [{'id': material.id, 'name': material.name} for material in materials]  # адаптируйте под ваши поля
+    return JsonResponse(data, safe=False)
