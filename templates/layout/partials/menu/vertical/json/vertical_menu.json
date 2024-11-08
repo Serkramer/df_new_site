@@ -44,6 +44,12 @@
       ]
     },
     {
+      "url": "orders:orders-table",
+      "icon": "menu-icon tf-icons ri-table-alt-line",
+      "name": "Замовлення",
+      "slug": ""
+    },
+    {
       "url": "info:printing-rollers",
       "icon": "menu-icon tf-icons ri-table-alt-line",
       "name": "Вали",

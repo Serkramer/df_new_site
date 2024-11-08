@@ -1,0 +1,242 @@
+{% extends layout_path %}
+
+{% load static %}
+{% load i18n %}
+
+{% block title %}DataTables - Tables{% endblock %}
+
+{% block vendor_css %}
+  {{ block.super }}
+  <link rel="stylesheet" href="{% static 'vendor/libs/datatables-bs5/datatables.bootstrap5.css' %}" />
+  <link rel="stylesheet" href="{% static 'vendor/libs/datatables-responsive-bs5/responsive.bootstrap5.css' %}" />
+  <link rel="stylesheet" href="{% static 'vendor/libs/datatables-select-bs5/select.bootstrap5.css' %}" />
+  <link rel="stylesheet" href="{% static 'vendor/libs/datatables-checkboxes-jquery/datatables.checkboxes.css' %}" />
+  <link rel="stylesheet" href="{% static 'vendor/libs/datatables-fixedcolumns-bs5/fixedcolumns.bootstrap5.css' %}" />
+  <link rel="stylesheet" href="{% static 'vendor/libs/datatables-fixedheader-bs5/fixedheader.bootstrap5.css' %}" />
+{% endblock vendor_css %}
+
+{% block vendor_js %}
+  {{ block.super }}
+  <script src="{% static 'vendor/libs/datatables-bs5/datatables-bootstrap5.js' %}"></script>
+{% endblock vendor_js %}
+
+{% block page_js %}
+  {{ block.super }}
+  <script>
+
+
+    'use strict';
+
+    {#$(function() {#}
+    {##}
+    {#  var dt_select_table = $('.dt-select-table');#}
+    {##}
+    {##}
+    {#  if (dt_select_table.length) {#}
+    {#    var dt_select = dt_select_table.DataTable({#}
+    {#      ajax: {#}
+    {#        url: "{% url 'orders:orders_data' %}",#}
+    {#        dataSrc: 'orders'#}
+    {#      },#}
+    {#      columns: [#}
+    {#        { data: 'id' },#}
+    {#        { data: 'full_name' },#}
+    {#        { data: 'post' },#}
+    {#        { data: 'email' },#}
+    {#        { data: 'city' },#}
+    {#        { data: 'start_date' },#}
+    {#        { data: 'salary' },#}
+    {#        { data: 'status' }#}
+    {#      ],#}
+    {#      columnDefs: [#}
+    {#        {#}
+    {#          // For Checkboxes#}
+    {#          targets: 0,#}
+    {#          searchable: false,#}
+    {#          orderable: false,#}
+    {#          render: function() {#}
+    {#            return '<input type="checkbox" class="dt-checkboxes form-check-input">';#}
+    {#          },#}
+    {#          checkboxes: {#}
+    {#            selectRow: true,#}
+    {#            selectAllRender: '<input type="checkbox" class="form-check-input">'#}
+    {#          }#}
+    {#        },#}
+    {#        {#}
+    {#          // Label#}
+    {#          targets: -1,#}
+    {#          render: function(data, type, full, meta) {#}
+    {#            var $status_number = full['status'];#}
+    {#            var $status = {#}
+    {#              1: { title: 'Current', class: 'bg-label-primary' },#}
+    {#              2: { title: 'Professional', class: ' bg-label-success' },#}
+    {#              3: { title: 'Rejected', class: ' bg-label-danger' },#}
+    {#              4: { title: 'Resigned', class: ' bg-label-warning' },#}
+    {#              5: { title: 'Applied', class: ' bg-label-info' }#}
+    {#            };#}
+    {#            if (typeof $status[$status_number] === 'undefined') {#}
+    {#              return data;#}
+    {#            }#}
+    {#            return (#}
+    {#              '<span class="badge rounded-pill ' +#}
+    {#              $status[$status_number].class +#}
+    {#              '">' +#}
+    {#              $status[$status_number].title +#}
+    {#              '</span>'#}
+    {#            );#}
+    {#          }#}
+    {#        }#}
+    {#      ],#}
+    {#      order: [[1, 'desc']],#}
+    {#      dom: '<"row"<"col-sm-12 col-md-6"l><"col-sm-12 col-md-6 d-flex justify-content-center justify-content-md-end"f>><"table-responsive"t><"row"<"col-sm-12 col-md-6"i><"col-sm-12 col-md-6"p>>',#}
+    {#      language: {#}
+    {#        paginate: {#}
+    {#          next: '<i class="ri-arrow-right-s-line"></i>',#}
+    {#          previous: '<i class="ri-arrow-left-s-line"></i>'#}
+    {#        }#}
+    {#      },#}
+    {#      select: {#}
+    {#        // Select style#}
+    {#        style: 'multi'#}
+    {#      }#}
+    {#    });#}
+    {#  }#}
+    {#});#}
+
+
+  $(function() {
+    var dt_select_table = $('.dt-select-table');
+
+    if (dt_select_table.length) {
+      var dt_select = dt_select_table.DataTable({
+        pageLength: 100,  // Количество записей на странице
+        lengthMenu: [[100, 200, 500], [100, 200, 500]],  // Параметры для выбора количества записей
+        order: [[1, 'desc']],
+        dom: '<"row"<"col-sm-12 col-md-6"l><"col-sm-12 col-md-6 d-flex justify-content-center justify-content-md-end"f>><"table-responsive"t><"row"<"col-sm-12 col-md-6"i><"col-sm-12 col-md-6"p>>',
+        language: {
+          paginate: {
+            next: '<i class="ri-arrow-right-s-line"></i>',
+            previous: '<i class="ri-arrow-left-s-line"></i>'
+          }
+
+        },
+        select: {
+          style: 'multi'
+        }
+      });
+    }
+  });
+
+
+
+  </script>
+{% endblock page_js %}
+
+{% block content %}
+<div class="card">
+    <h5 class="card-header text-center text-md-start pb-md-0">Таблиця замовлень</h5>
+    <div class="card-datatable dataTable_select text-nowrap">
+      <table class="dt-select-table table table-bordered ">
+        <thead>
+          <tr>
+            <th></th>
+            <th>id</th>
+            <th>дата запуску</th>
+            <th>статус</th>
+            <th>Замовник</th>
+            <th>Друкарська компанія</th>
+            <th>назва замовлення</th>
+            <th>технологія</th>
+            <th>матеріал</th>
+            <th>лініатура</th>
+            <th>кількість форм</th>
+            <th>площа замовлення</th>
+            <th>площа фартуків</th>
+            <th>тип фартуків</th>
+            <th>розміри фартуків</th>
+            <th>оплата</th>
+            <th>рахунок</th>
+            <th>плануєма відправка</th>
+            <th>фактична відправка</th>
+            <th>адреса доставки</th>
+            <th>контакт доставки</th>
+            <th>брак</th>
+
+          </tr>
+        </thead>
+        <tbody>
+          {% for order in orders %}
+            <tr>
+              <td><input type="checkbox" class="dt-checkboxes form-check-input"></td>
+              <td>{{ order.id }}</td>
+              <td>{{ order.launch_date|date:"d.m.Y" }}</td>
+              <td>{{ order.get_status_display }}</td>
+              <td>{{ order.company_client.id.name }}</td>
+              <td>{{ order.printing_company.id.name }}</td>
+
+              <td>{{ order.name }}</td>
+              <td>{{ order.cliche_technology.name }} </td>
+              <td></td>
+              <td></td>
+              <td>{{ order.slices_count }}</td>
+              <td>{{ order.forms_area }}</td>
+              <td>{% if order.fartuks_area  %}{{ order.fartuks_area }} {% else %} - {% endif %}</td>
+              <td>{% if order.fartuk  %}{{ order.fartuk }} {% else %} - {% endif %}</td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td>{{ order.forms_area.shipping_date_planed |date:"d.m.Y H:i:s"}}</td>
+              <td>{{ order.order_delivery.shipping_date_departure |date:"d.m.Y H:i:s" }}</td>
+              <td>{{ order.order_delivery }}</td>
+              <td>{{ order.order_delivery }}</td>
+              <td>{{ order.is_defective }}</td>
+
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+
+      <!-- Пагинация -->
+      {% if is_paginated %}
+      <nav aria-label="Page navigation">
+        <ul class="pagination justify-content-center">
+          {% if page_obj.has_previous %}
+            <li class="page-item">
+              <a class="page-link" href="?page=1" aria-label="First">
+                <span aria-hidden="true">&laquo;&laquo;</span>
+              </a>
+            </li>
+            <li class="page-item">
+              <a class="page-link" href="?page={{ page_obj.previous_page_number }}" aria-label="Previous">
+                <span aria-hidden="true">&laquo;</span>
+              </a>
+            </li>
+          {% endif %}
+
+          {% for num in page_obj.paginator.page_range %}
+            {% if page_obj.number == num %}
+              <li class="page-item active"><a class="page-link">{{ num }}</a></li>
+            {% elif num > page_obj.number|add:'-5' and num < page_obj.number|add:'5' %}
+              <li class="page-item"><a class="page-link" href="?page={{ num }}">{{ num }}</a></li>
+            {% endif %}
+          {% endfor %}
+
+          {% if page_obj.has_next %}
+            <li class="page-item">
+              <a class="page-link" href="?page={{ page_obj.next_page_number }}" aria-label="Next">
+                <span aria-hidden="true">&raquo;</span>
+              </a>
+            </li>
+            <li class="page-item">
+              <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}" aria-label="Last">
+                <span aria-hidden="true">&raquo;&raquo;</span>
+              </a>
+            </li>
+          {% endif %}
+        </ul>
+      </nav>
+      {% endif %}
+    </div>
+</div>
+{% endblock content %}
+

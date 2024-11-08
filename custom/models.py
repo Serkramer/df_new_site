@@ -1220,6 +1220,9 @@ class OrderPlaneSlices(models.Model):
         db_table = 'order_plane_slices'
         verbose_name = 'форми в замовленні'
 
+    def __str__(self):
+        return f"{self.order.id}  {self.name}"
+
 
 # устаревшая
 class OrderStatus(models.Model):

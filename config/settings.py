@@ -87,6 +87,7 @@ INSTALLED_APPS = [
     "map.apps.MapConfig",
     'dal',
     'dal_select2',
+    "orders.apps.OrdersConfig"
 ]
 
 MIDDLEWARE = [
