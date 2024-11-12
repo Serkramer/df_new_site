@@ -3,7 +3,7 @@
 {% load static %}
 {% load i18n %}
 
-{% block title %}DataTables - Tables{% endblock %}
+{% block title %}Замовлення{% endblock %}
 
 {% block vendor_css %}
   {{ block.super }}
@@ -13,230 +13,497 @@
   <link rel="stylesheet" href="{% static 'vendor/libs/datatables-checkboxes-jquery/datatables.checkboxes.css' %}" />
   <link rel="stylesheet" href="{% static 'vendor/libs/datatables-fixedcolumns-bs5/fixedcolumns.bootstrap5.css' %}" />
   <link rel="stylesheet" href="{% static 'vendor/libs/datatables-fixedheader-bs5/fixedheader.bootstrap5.css' %}" />
+  <link rel="stylesheet" href="{% static 'vendor/libs/select2/select2.css' %}" />
+  <link rel="stylesheet" href="{% static 'vendor/libs/tagify/tagify.css' %}" />
+  <link rel="stylesheet" href="{% static 'vendor/libs/@form-validation/form-validation.css' %}" />
+  <link rel="stylesheet" href="{% static 'vendor/libs/bs-stepper/bs-stepper.css' %}" />
+  <link rel="stylesheet" href="{% static 'vendor/libs/dropzone/dropzone.css' %}" />
 {% endblock vendor_css %}
 
 {% block vendor_js %}
   {{ block.super }}
   <script src="{% static 'vendor/libs/datatables-bs5/datatables-bootstrap5.js' %}"></script>
+  <script src="{% static 'vendor/libs/cleavejs/cleave.js' %}"></script>
+  <script src="{% static 'vendor/libs/tagify/tagify.js' %}"></script>
+  <script src="{% static 'vendor/libs/cleavejs/cleave-phone.js' %}"></script>
+  <script src="{% static 'vendor/libs/select2/select2.js' %}"></script>
+  <script src="{% static 'vendor/libs/@form-validation/popular.js' %}"></script>
+  <script src="{% static 'vendor/libs/@form-validation/bootstrap5.js' %}"></script>
+  <script src="{% static 'vendor/libs/@form-validation/auto-focus.js' %}"></script>
+  <script src="{% static 'vendor/libs/bs-stepper/bs-stepper.js' %}"></script>
+  <script src="{% static 'vendor/libs/dropzone/dropzone.js' %}"></script>
 {% endblock vendor_js %}
 
 {% block page_js %}
   {{ block.super }}
+  <script src="{% static 'js/modal-edit-user.js' %}"></script>
+  <script src="{% static 'js/forms-file-upload.js' %}"></script>
   <script>
 
 
     'use strict';
 
-    {#$(function() {#}
-    {##}
-    {#  var dt_select_table = $('.dt-select-table');#}
-    {##}
-    {##}
-    {#  if (dt_select_table.length) {#}
-    {#    var dt_select = dt_select_table.DataTable({#}
-    {#      ajax: {#}
-    {#        url: "{% url 'orders:orders_data' %}",#}
-    {#        dataSrc: 'orders'#}
-    {#      },#}
-    {#      columns: [#}
-    {#        { data: 'id' },#}
-    {#        { data: 'full_name' },#}
-    {#        { data: 'post' },#}
-    {#        { data: 'email' },#}
-    {#        { data: 'city' },#}
-    {#        { data: 'start_date' },#}
-    {#        { data: 'salary' },#}
-    {#        { data: 'status' }#}
-    {#      ],#}
-    {#      columnDefs: [#}
-    {#        {#}
-    {#          // For Checkboxes#}
-    {#          targets: 0,#}
-    {#          searchable: false,#}
-    {#          orderable: false,#}
-    {#          render: function() {#}
-    {#            return '<input type="checkbox" class="dt-checkboxes form-check-input">';#}
-    {#          },#}
-    {#          checkboxes: {#}
-    {#            selectRow: true,#}
-    {#            selectAllRender: '<input type="checkbox" class="form-check-input">'#}
-    {#          }#}
-    {#        },#}
-    {#        {#}
-    {#          // Label#}
-    {#          targets: -1,#}
-    {#          render: function(data, type, full, meta) {#}
-    {#            var $status_number = full['status'];#}
-    {#            var $status = {#}
-    {#              1: { title: 'Current', class: 'bg-label-primary' },#}
-    {#              2: { title: 'Professional', class: ' bg-label-success' },#}
-    {#              3: { title: 'Rejected', class: ' bg-label-danger' },#}
-    {#              4: { title: 'Resigned', class: ' bg-label-warning' },#}
-    {#              5: { title: 'Applied', class: ' bg-label-info' }#}
-    {#            };#}
-    {#            if (typeof $status[$status_number] === 'undefined') {#}
-    {#              return data;#}
-    {#            }#}
-    {#            return (#}
-    {#              '<span class="badge rounded-pill ' +#}
-    {#              $status[$status_number].class +#}
-    {#              '">' +#}
-    {#              $status[$status_number].title +#}
-    {#              '</span>'#}
-    {#            );#}
-    {#          }#}
-    {#        }#}
-    {#      ],#}
-    {#      order: [[1, 'desc']],#}
-    {#      dom: '<"row"<"col-sm-12 col-md-6"l><"col-sm-12 col-md-6 d-flex justify-content-center justify-content-md-end"f>><"table-responsive"t><"row"<"col-sm-12 col-md-6"i><"col-sm-12 col-md-6"p>>',#}
-    {#      language: {#}
-    {#        paginate: {#}
-    {#          next: '<i class="ri-arrow-right-s-line"></i>',#}
-    {#          previous: '<i class="ri-arrow-left-s-line"></i>'#}
-    {#        }#}
-    {#      },#}
-    {#      select: {#}
-    {#        // Select style#}
-    {#        style: 'multi'#}
-    {#      }#}
-    {#    });#}
-    {#  }#}
-    {#});#}
+
+    $(function() {
+      let dt_select_table = $('.dt-select-table');
+
+      if (dt_select_table.length) {
+        var dt_select = dt_select_table.DataTable({
+
+          ajax: "{% url 'orders:orders_data' %}",
+          columns: [
+            { data: 'id' },
+            { data: 'id' },
+            { data: 'start_date' },
+            { data: 'status' },
+            { data: 'client' },
+            { data: 'printing_company' },
+            { data: 'name' },
+            { data: 'technology' },
+            { data: 'order_material' },
+            { data: 'ruling' },
+            { data: 'slices_count' },
+            { data: 'forms_area' },
+            { data: 'fartuks_area' },
+            { data: 'fartuk' },
+            { data: 'fartuks' },
+            { data: 'pay' },
+            { data: 'check' },
+            { data: 'shipping_date_planed' },
+            { data: 'shipping_date_departure' },
+            { data: 'delivery' },
+            { data: 'contact' },
+            { data: 'contact' }
+
+          ],
+          lengthMenu: [[100, 200, 500], [100, 200, 500]],
+          columnDefs: [
+            {
+              // For Checkboxes
+              targets: 0,
+              searchable: false,
+              orderable: false,
+              render: function() {
+                return '<input type="checkbox" class="dt-checkboxes form-check-input">';
+              },
+              checkboxes: {
+                selectRow: true,
+                selectAllRender: '<input type="checkbox" class="form-check-input">'
+              }
+            },
+            {
+              // Label
+              targets: -1,
+              render: function(data, type, full, meta) {
+                var $status_number = full['status'];
+                var $status = {
+                  1: { title: 'Доставлено', class: 'bg-label-primary' },
+                  2: { title: 'Professional', class: ' bg-label-success' },
+                  3: { title: 'Rejected', class: ' bg-label-danger' },
+                  4: { title: 'Resigned', class: ' bg-label-warning' },
+                  5: { title: 'Applied', class: ' bg-label-info' }
+                };
+                if (typeof $status[$status_number] === 'undefined') {
+                  return data;
+                }
+                return (
+                  '<span class="badge rounded-pill ' +
+                  $status[$status_number].class +
+                  '">' +
+                  $status[$status_number].title +
+                  '</span>'
+                );
+              }
+            }
+          ],
+          order: [[1, 'desc']],
+          dom: '<"row"<"col-sm-12 col-md-6"l><"col-sm-12 col-md-6 d-flex justify-content-center justify-content-md-end"f>><"table-responsive"t><"row"<"col-sm-12 col-md-6"i><"col-sm-12 col-md-6"p>>',
+          language: {
+            paginate: {
+              next: '<i class="ri-arrow-right-s-line"></i>',
+              previous: '<i class="ri-arrow-left-s-line"></i>'
+            }
+          },
+          select: {
+            // Select style
+            style: 'multi'
+          },
+          processing: true,
+          serverSide: true,
+          scrollY: '65vh',
+          {#search: {#}
+          {#  return: true#}
+          {# },#}
+          scrollX: true
+        });
+      }
+
+      {#if (dt_select_table.length) {#}
+      {#  let dt_select = dt_select_table.DataTable({#}
+      {#    ajax: "{% url 'orders:orders_data' %}",#}
+      {##}
+      {#    columns: [#}
+      {#      { data: '' },#}
+      {#      { data: 'id' },#}
+      {#      { data: 'id' },#}
+      {#      { data: 'full_name' },#}
+      {#      { data: 'email' },#}
+      {#      { data: 'start_date' },#}
+      {#      { data: 'salary' },#}
+      {#      { data: 'status' },#}
+      {#      { data: '' }#}
+      {#    ],#}
+      {##}
+      {#    pageLength: 100,  // Количество записей на странице#}
+      {#    lengthMenu: [[100, 200, 500], [100, 200, 500]],  // Параметры для выбора количества записей#}
+      {#    order: [[1, 'desc']],#}
+      {#    dom: '<"row"<"col-sm-12 col-md-6"l><"col-sm-12 col-md-6 d-flex justify-content-center justify-content-md-end"f>><"table-responsive"t><"row"<"col-sm-12 col-md-6"i><"col-sm-12 col-md-6"p>>',#}
+      {#    language: {#}
+      {#      paginate: {#}
+      {#        next: '<i class="ri-arrow-right-s-line"></i>',#}
+      {#        previous: '<i class="ri-arrow-left-s-line"></i>'#}
+      {#      }#}
+      {##}
+      {#    },#}
+      {#paging: false,#}
+      {#info: false,#}
+      {#    select: {#}
+      {#      style: 'multi'#}
+      {#    },#}
+      {#scrollCollapse: true,#}
+      {#    scrollY: '65vh',#}
+      {#searching: false,#}
+      {#    processing: true,#}
+      {#    serverSide: true#}
+      {#  });#}
+      {# } #}
+    })
+    ;
 
 
-  $(function() {
-    var dt_select_table = $('.dt-select-table');
-
-    if (dt_select_table.length) {
-      var dt_select = dt_select_table.DataTable({
-        pageLength: 100,  // Количество записей на странице
-        lengthMenu: [[100, 200, 500], [100, 200, 500]],  // Параметры для выбора количества записей
-        order: [[1, 'desc']],
-        dom: '<"row"<"col-sm-12 col-md-6"l><"col-sm-12 col-md-6 d-flex justify-content-center justify-content-md-end"f>><"table-responsive"t><"row"<"col-sm-12 col-md-6"i><"col-sm-12 col-md-6"p>>',
-        language: {
-          paginate: {
-            next: '<i class="ri-arrow-right-s-line"></i>',
-            previous: '<i class="ri-arrow-left-s-line"></i>'
-          }
-
-        },
-        select: {
-          style: 'multi'
-        }
-      });
-    }
-  });
-
+    {#function changePageSize() {#}
+    {#  const pageSize = document.getElementById('page-size').value;#}
+    {#  const url = new URL(window.location.href);#}
+    {#  url.searchParams.set('page_size', pageSize);#}
+    {#  url.searchParams.set('page', 1);  // Сбросить на первую страницу при изменении размера#}
+    {#  window.location.href = url.toString();#}
+    {# } #}
 
 
   </script>
 {% endblock page_js %}
 
 {% block content %}
-<div class="card">
+  {#  <div class="card">#}
+  {#    <h5 class="card-header text-center text-md-start pb-md-0">Таблиця замовлень</h5>#}
+  {#    <div class="card-datatable dataTable_select text-nowrap">#}
+  {##}
+  {#      <div class="row">#}
+  {#        <div class="col-sm-12 col-md-6">#}
+  {#          <div class="dataTables_length" id="DataTables_Table_0_length">#}
+  {#            <label for="page-size">Кількість:</label>#}
+  {#            <select id="page-size" name="page_size" class="form-select form-select-sm" onchange="changePageSize()">#}
+  {#              <option value="50" {% if page_size == 50 %}selected{% endif %}>50</option>#}
+  {#              <option value="100" {% if page_size == 100 %}selected{% endif %}>100</option>#}
+  {#              <option value="150" {% if page_size == 150 %}selected{% endif %}>150</option>#}
+  {#              <option value="200" {% if page_size == 200 %}selected{% endif %}>200</option>#}
+  {#            </select>#}
+  {#          </div>#}
+  {#        </div>#}
+  {#      </div>#}
+  {##}
+  {##}
+  {#      <div class="table-responsive">#}
+  {#        <div class="dataTables_scrollBody">#}
+  {#          <table class="dt-select-table table table-bordered dataTable no-footer">#}
+  {#            <thead>#}
+  {#            <tr>#}
+  {#              <th></th>#}
+  {#              <th>id</th>#}
+  {#              <th>дата запуску</th>#}
+  {#              <th>статус</th>#}
+  {#              <th>Замовник</th>#}
+  {#              <th>Друкарська компанія</th>#}
+  {#              <th>назва замовлення</th>#}
+  {#              <th>технологія</th>#}
+  {#              <th>матеріал</th>#}
+  {#              <th>лініатура</th>#}
+  {#              <th>кількість форм</th>#}
+  {#              <th>площа замовлення</th>#}
+  {#              <th>площа фартуків</th>#}
+  {#              <th>тип фартуків</th>#}
+  {#              <th>розміри фартуків</th>#}
+  {#              <th>оплата</th>#}
+  {#              <th>рахунок</th>#}
+  {#              <th>плануєма відправка</th>#}
+  {#              <th>фактична відправка</th>#}
+  {#              <th>адреса доставки</th>#}
+  {#              <th>контакт доставки</th>#}
+  {#              <th>брак</th>#}
+  {##}
+  {#            </tr>#}
+  {#            </thead>#}
+  {#          <tbody>#}
+  {#          {% for order in orders %}#}
+  {#            <tr>#}
+  {#              <td><input type="checkbox" class="dt-checkboxes form-check-input"></td>#}
+  {#              <td>{{ order.id }}</td>#}
+  {#              <td>{{ order.launch_date|date:"d.m.Y" }}</td>#}
+  {#              <td>{{ order.get_status_display }}</td>#}
+  {#              <td>{{ order.company_client.id.name }}</td>#}
+  {#              <td>{{ order.printing_company.id.name }}</td>#}
+  {##}
+  {#              <td>{{ order.name }}</td>#}
+  {#              <td>{{ order.cliche_technology.name }} </td>#}
+  {#              <td></td>#}
+  {#              <td></td>#}
+  {#              <td>{{ order.slices_count }}</td>#}
+  {#              <td>{{ order.forms_area }}</td>#}
+  {#              <td>{% if order.fartuks_area %}{{ order.fartuks_area }} {% else %} - {% endif %}</td>#}
+  {#              <td>{% if order.fartuk %}{{ order.fartuk }} {% else %} - {% endif %}</td>#}
+  {#              <td>{% if order.fartuks %} {% for fartuk in  order.fartuks %} {{ fartuk }} <br> {% endfor %} {% else %}#}
+  {#                - {% endif %}</td>#}
+  {#              <td></td>#}
+  {#              <td></td>#}
+  {#              <td>{{ order.order_delivery.shipping_date_planed |date:"d.m.Y H:i" }}</td>#}
+  {#              <td>{{ order.order_delivery.shipping_date_departure |date:"d.m.Y H:i" }}</td>#}
+  {#              <td>{{ order.order_delivery }}</td>#}
+  {#              <td>{{ order.order_delivery }}</td>#}
+  {#              <td>{{ order.is_defective }}</td>#}
+  {##}
+  {#            </tr>#}
+  {#          {% endfor %}#}
+  {#          </tbody>#}
+  {#          </table>#}
+  {#        </div>#}
+  {#      </div>#}
+  {#      <div class="mt-5">#}
+  {#        <!-- Пагинация -->#}
+  {#        {% if is_paginated %}#}
+  {#          <nav aria-label="Page navigation">#}
+  {#            <ul class="pagination justify-content-center">#}
+  {#              {% if page_obj.has_previous %}#}
+  {#                <li class="page-item">#}
+  {#                  <a class="page-link" href="?page=1" aria-label="First">#}
+  {#                    <span aria-hidden="true">&laquo;&laquo;</span>#}
+  {#                  </a>#}
+  {#                </li>#}
+  {#                <li class="page-item">#}
+  {#                  <a class="page-link" href="?page={{ page_obj.previous_page_number }}" aria-label="Previous">#}
+  {#                    <span aria-hidden="true">&laquo;</span>#}
+  {#                  </a>#}
+  {#                </li>#}
+  {#              {% endif %}#}
+  {##}
+  {#              {% for num in page_obj.paginator.page_range %}#}
+  {#                {% if page_obj.number == num %}#}
+  {#                  <li class="page-item active"><a class="page-link">{{ num }}</a></li>#}
+  {#                {% elif num > page_obj.number|add:'-5' and num < page_obj.number|add:'5' %}#}
+  {#                  <li class="page-item"><a class="page-link" href="?page={{ num }}">{{ num }}</a></li>#}
+  {#                {% endif %}#}
+  {#              {% endfor %}#}
+  {##}
+  {#              {% if page_obj.has_next %}#}
+  {#                <li class="page-item">#}
+  {#                  <a class="page-link" href="?page={{ page_obj.next_page_number }}" aria-label="Next">#}
+  {#                    <span aria-hidden="true">&raquo;</span>#}
+  {#                  </a>#}
+  {#                </li>#}
+  {#                <li class="page-item">#}
+  {#                  <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}" aria-label="Last">#}
+  {#                    <span aria-hidden="true">&raquo;&raquo;</span>#}
+  {#                  </a>#}
+  {#                </li>#}
+  {#              {% endif %}#}
+  {#            </ul>#}
+  {#          </nav>#}
+  {#        {% endif %}#}
+  {#      </div>#}
+  {#    </div>#}
+  {#  </div>#}
+
+  <div class="card">
     <h5 class="card-header text-center text-md-start pb-md-0">Таблиця замовлень</h5>
+    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#editUser"> Додати замовлення
+    </button>
     <div class="card-datatable dataTable_select text-nowrap">
-      <table class="dt-select-table table table-bordered ">
+      <table class="dt-select-table table table-bordered">
         <thead>
-          <tr>
-            <th></th>
-            <th>id</th>
-            <th>дата запуску</th>
-            <th>статус</th>
-            <th>Замовник</th>
-            <th>Друкарська компанія</th>
-            <th>назва замовлення</th>
-            <th>технологія</th>
-            <th>матеріал</th>
-            <th>лініатура</th>
-            <th>кількість форм</th>
-            <th>площа замовлення</th>
-            <th>площа фартуків</th>
-            <th>тип фартуків</th>
-            <th>розміри фартуків</th>
-            <th>оплата</th>
-            <th>рахунок</th>
-            <th>плануєма відправка</th>
-            <th>фактична відправка</th>
-            <th>адреса доставки</th>
-            <th>контакт доставки</th>
-            <th>брак</th>
+        <tr>
+          <th></th>
 
-          </tr>
+          <th>id</th>
+          <th>дата запуску</th>
+          <th>статус</th>
+          <th>Замовник</th>
+          <th>Друкарська компанія</th>
+          <th>назва замовлення</th>
+          <th>технологія</th>
+          <th>матеріал</th>
+          <th>лініатура</th>
+          <th>кількість форм</th>
+          <th>площа замовлення</th>
+          <th>площа фартуків</th>
+          <th>тип фартуків</th>
+          <th>розміри фартуків</th>
+          <th>оплата</th>
+          <th>рахунок</th>
+          <th>плануєма відправка</th>
+          <th>фактична відправка</th>
+          <th>адреса доставки</th>
+          <th>контакт доставки</th>
+          <th>брак</th>
+        </tr>
         </thead>
-        <tbody>
-          {% for order in orders %}
-            <tr>
-              <td><input type="checkbox" class="dt-checkboxes form-check-input"></td>
-              <td>{{ order.id }}</td>
-              <td>{{ order.launch_date|date:"d.m.Y" }}</td>
-              <td>{{ order.get_status_display }}</td>
-              <td>{{ order.company_client.id.name }}</td>
-              <td>{{ order.printing_company.id.name }}</td>
-
-              <td>{{ order.name }}</td>
-              <td>{{ order.cliche_technology.name }} </td>
-              <td></td>
-              <td></td>
-              <td>{{ order.slices_count }}</td>
-              <td>{{ order.forms_area }}</td>
-              <td>{% if order.fartuks_area  %}{{ order.fartuks_area }} {% else %} - {% endif %}</td>
-              <td>{% if order.fartuk  %}{{ order.fartuk }} {% else %} - {% endif %}</td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td>{{ order.forms_area.shipping_date_planed |date:"d.m.Y H:i:s"}}</td>
-              <td>{{ order.order_delivery.shipping_date_departure |date:"d.m.Y H:i:s" }}</td>
-              <td>{{ order.order_delivery }}</td>
-              <td>{{ order.order_delivery }}</td>
-              <td>{{ order.is_defective }}</td>
-
-            </tr>
-          {% endfor %}
-        </tbody>
       </table>
-
-      <!-- Пагинация -->
-      {% if is_paginated %}
-      <nav aria-label="Page navigation">
-        <ul class="pagination justify-content-center">
-          {% if page_obj.has_previous %}
-            <li class="page-item">
-              <a class="page-link" href="?page=1" aria-label="First">
-                <span aria-hidden="true">&laquo;&laquo;</span>
-              </a>
-            </li>
-            <li class="page-item">
-              <a class="page-link" href="?page={{ page_obj.previous_page_number }}" aria-label="Previous">
-                <span aria-hidden="true">&laquo;</span>
-              </a>
-            </li>
-          {% endif %}
-
-          {% for num in page_obj.paginator.page_range %}
-            {% if page_obj.number == num %}
-              <li class="page-item active"><a class="page-link">{{ num }}</a></li>
-            {% elif num > page_obj.number|add:'-5' and num < page_obj.number|add:'5' %}
-              <li class="page-item"><a class="page-link" href="?page={{ num }}">{{ num }}</a></li>
-            {% endif %}
-          {% endfor %}
-
-          {% if page_obj.has_next %}
-            <li class="page-item">
-              <a class="page-link" href="?page={{ page_obj.next_page_number }}" aria-label="Next">
-                <span aria-hidden="true">&raquo;</span>
-              </a>
-            </li>
-            <li class="page-item">
-              <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}" aria-label="Last">
-                <span aria-hidden="true">&raquo;&raquo;</span>
-              </a>
-            </li>
-          {% endif %}
-        </ul>
-      </nav>
-      {% endif %}
     </div>
-</div>
+  </div>
+
+  <!-- Edit User Modal -->
+  <div class="modal fade" id="editUser" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-simple modal-edit-user">
+      <div class="modal-content">
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        <div class="modal-body p-0">
+          <div class="text-center mb-6">
+            <h4 class="mb-2">Створення замовлення</h4>
+          </div>
+          <div class="col-12">
+            <div class="card">
+              <h5 class="card-header">Завантажте файли</h5>
+              <div class="card-body">
+                <form action="/upload" class="dropzone needsclick" id="dropzone-multi">
+                  <div class="dz-message needsclick">
+                    Перетягніть файли сюди або натисніть, щоб завантажити
+
+                  </div>
+                  <div class="fallback">
+                    <input name="file" type="file" />
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+          <br>
+
+          <form id="editUserForm" class="row g-5" onsubmit="return false">
+            {% csrf_token %}
+
+            <div class="col-12 col-md-6">
+              <div class="form-floating form-floating-outline">
+                <input type="text" id="modalEditUserFirstName" name="modalEditUserFirstName" class="form-control"
+                       value="Oliver" placeholder="Oliver" />
+                <label for="modalEditUserFirstName">First Name</label>
+              </div>
+            </div>
+            <div class="col-12 col-md-6">
+              <div class="form-floating form-floating-outline">
+                <input type="text" id="modalEditUserLastName" name="modalEditUserLastName" class="form-control"
+                       value="Queen" placeholder="Queen" />
+                <label for="modalEditUserLastName">Last Name</label>
+              </div>
+            </div>
+            <div class="col-12">
+              <div class="form-floating form-floating-outline">
+                <input type="text" id="modalEditUserName" name="modalEditUserName" class="form-control"
+                       value="oliverQueen" placeholder="oliverQueen" />
+                <label for="modalEditUserName">Username</label>
+              </div>
+            </div>
+            <div class="col-12 col-md-6">
+              <div class="form-floating form-floating-outline">
+                <input type="text" id="modalEditUserEmail" name="modalEditUserEmail" class="form-control"
+                       value="oliverqueen@gmail.com" placeholder="oliverqueen@gmail.com" />
+                <label for="modalEditUserEmail">Email</label>
+              </div>
+            </div>
+            <div class="col-12 col-md-6">
+              <div class="form-floating form-floating-outline">
+                <select id="modalEditUserStatus" name="modalEditUserStatus" class="form-select"
+                        aria-label="Default select example">
+                  <option value="1" selected>Active</option>
+                  <option value="2">Inactive</option>
+                  <option value="3">Suspended</option>
+                </select>
+                <label for="modalEditUserStatus">Status</label>
+              </div>
+            </div>
+            <div class="col-12 col-md-6">
+              <div class="form-floating form-floating-outline">
+                <input type="text" id="modalEditTaxID" name="modalEditTaxID" class="form-control modal-edit-tax-id"
+                       placeholder="123 456 7890" />
+                <label for="modalEditTaxID">Tax ID</label>
+              </div>
+            </div>
+            <div class="col-12 col-md-6">
+              <div class="input-group input-group-merge">
+                <span class="input-group-text">US (+1)</span>
+                <div class="form-floating form-floating-outline">
+                  <input type="text" id="modalEditUserPhone" name="modalEditUserPhone"
+                         class="form-control phone-number-mask" value="+1 609 933 4422" placeholder="+1 609 933 4422" />
+                  <label for="modalEditUserPhone">Phone Number</label>
+                </div>
+              </div>
+            </div>
+            <div class="col-12 col-md-6">
+              <div class="form-floating form-floating-outline">
+                <input id="TagifyLanguageSuggestion" name="TagifyLanguageSuggestion" class="form-control h-auto"
+                       placeholder="select language" value="English">
+                <label for="TagifyLanguageSuggestion">Language</label>
+              </div>
+            </div>
+            <div class="col-12 col-md-6">
+              <div class="form-floating form-floating-outline">
+                <select id="modalEditUserCountry" name="modalEditUserCountry" class="select2 form-select"
+                        data-allow-clear="true">
+                  <option value="">Select</option>
+                  <option value="Australia">Australia</option>
+                  <option value="Bangladesh">Bangladesh</option>
+                  <option value="Belarus">Belarus</option>
+                  <option value="Brazil">Brazil</option>
+                  <option value="Canada">Canada</option>
+                  <option value="China">China</option>
+                  <option value="France">France</option>
+                  <option value="Germany">Germany</option>
+                  <option value="India" selected>India</option>
+                  <option value="Indonesia">Indonesia</option>
+                  <option value="Israel">Israel</option>
+                  <option value="Italy">Italy</option>
+                  <option value="Japan">Japan</option>
+                  <option value="Korea">Korea, Republic of</option>
+                  <option value="Mexico">Mexico</option>
+                  <option value="Philippines">Philippines</option>
+                  <option value="Russia">Russian Federation</option>
+                  <option value="South Africa">South Africa</option>
+                  <option value="Thailand">Thailand</option>
+                  <option value="Turkey">Turkey</option>
+                  <option value="Ukraine">Ukraine</option>
+                  <option value="United Arab Emirates">United Arab Emirates</option>
+                  <option value="United Kingdom">United Kingdom</option>
+                  <option value="United States">United States</option>
+                </select>
+                <label for="modalEditUserCountry">Country</label>
+              </div>
+            </div>
+            <div class="col-12">
+              <div class="form-check form-switch">
+                <input type="checkbox" class="form-check-input" id="editBillingAddress" />
+                <label for="editBillingAddress" class="text-heading">Use as a billing address?</label>
+              </div>
+            </div>
+            <div class="col-12 text-center d-flex flex-wrap justify-content-center gap-4 row-gap-4">
+              <button type="submit" class="btn btn-primary">Submit</button>
+              <button type="reset" class="btn btn-outline-secondary" data-bs-dismiss="modal" aria-label="Close">Cancel
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!--/ Edit User Modal -->
+
+
+
 {% endblock content %}
 

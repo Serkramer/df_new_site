@@ -9,7 +9,7 @@ from django.urls import reverse
 class PrintingMachineShaftsInline(admin.TabularInline):  # Или используйте admin.StackedInline для более детального представления
     model = PrintingMachineShafts
     extra = 1  # Число пустых форм для добавления новых объектов
-    fields = ['diameter', 'quantity', 'width', 'date_create', 'input_value', 'input_value_type', 'contact', 'printing_width', 'description']
+    fields = ['quantity', 'width', 'date_create', 'input_value', 'input_value_type', 'contact', 'printing_width', 'description']
     classes = ['collapse']
 
 

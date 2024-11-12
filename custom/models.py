@@ -155,7 +155,7 @@ class AniloxRolls(models.Model):
     line_count = models.IntegerField(blank=True, null=True, verbose_name='лініатура')
     transfer_volume = models.DecimalField(max_digits=6, decimal_places=2, blank=True, null=True, verbose_name="фарбоперенос")
     printing_machine = models.ForeignKey('PrintingMachines', models.DO_NOTHING, blank=True, null=True, verbose_name='Друкарська машина')
-    type = models.CharField(max_length=255, blank=True, null=True, verbose_name='вимірювання арбопереносу', choices=AniloxRollTransferVolumeTypeList.choices)
+    type = models.CharField(max_length=255, blank=True, null=True, verbose_name='вимірювання фарбопереносу', choices=AniloxRollTransferVolumeTypeList.choices)
 
     class Meta:
         managed = False
@@ -1067,6 +1067,9 @@ class OrderFartuks(models.Model):
         verbose_name = "фортук в замовленні"
         verbose_name_plural = "фортуки в замовленнях"
 
+    def __str__(self):
+        return f"{self.width}x{self.height} | {self.comment}"
+
 
 class OrderGroups(models.Model):
     id = models.BigAutoField(primary_key=True)
@@ -1289,6 +1292,8 @@ class Orders(models.Model):
     class Meta:
         managed = False
         db_table = 'orders'
+        verbose_name = 'замовлення'
+        verbose_name_plural = 'замовлення'
 
     def __str__(self):
         return f'{self.id} {self.company_client} {self.name}'
@@ -1315,6 +1320,7 @@ class PaddingForMaterial(models.Model):
         managed = False
         db_table = 'padding_for_material'
         unique_together = (('material_id', 'printing_company'),)
+        verbose_name = 'Відступи на матеріалах для друкарських компаній'
 
 
 # +
