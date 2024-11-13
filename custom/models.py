@@ -9,6 +9,12 @@ from django.db import models
 from store.models import Materials as StoreMaterial
 
 
+class CompressionType(models.TextChoices):
+    NONE = "NONE", "Врахована"
+    IN_WIDTH = "IN_WIDTH", "Вертикальна"
+    IN_HEIGHT = "IN_HEIGHT", "Горизонтальна"
+
+
 class OrderStatusList(models.TextChoices):
     NONE = 'NONE', 'Не зазначено'
     ERROR_FILE_COUNT = 'ERROR_FILE_COUNT', 'Не вірна кількість файлів'

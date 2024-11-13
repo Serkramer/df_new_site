@@ -8,6 +8,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import TemplateView
 from django.db.models import Q
 from custom.models import Orders, OrderStatusList, OrderPlaneSlices, OrderFartuks
+from orders.forms import OrderViewForm
 from orders.models import FilesAllowedExtensions
 from web_project import TemplateLayout
 import os
@@ -22,8 +23,10 @@ class OrdersTableView(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = TemplateLayout.init(self, super().get_context_data(**kwargs))
+        create_order_form = OrderViewForm()
         all_extensions = FilesAllowedExtensions.objects.values_list('extension', flat=True)
         context['allowed_extensions'] = list(all_extensions)
+        context['create_order_form'] = create_order_form
         return context
 
 
@@ -99,29 +102,40 @@ def load_work_files(self, request):
     pass
 
 
+@csrf_exempt
 @login_required
 def upload_files(request):
     if request.method == 'POST' and request.FILES:
         username = request.user.username
         timestamp = int(time.time())
-        temp_dir = f"{username}_{timestamp}"
+        temp_dir = f"{username}/{timestamp}"
 
         # Создаем временную папку на SFTP
-        transport = paramiko.Transport((settings.HOST, settings.PORT))
-        transport.connect(username=settings.FTP_LOGIN, password=settings.FTP_PASS)
-        sftp = paramiko.SFTPClient.from_transport(transport)
-
         remote_dir = os.path.join(settings.UPLOAD_FOLDER, temp_dir)
-        sftp.mkdir(remote_dir)
 
-        # Сохраняем каждый файл в созданной временной папке
-        for file_key, file in request.FILES.items():
-            remote_path = os.path.join(remote_dir, file.name)
+        try:
+            # Подключение к SFTP
+            transport = paramiko.Transport((settings.HOST, settings.PORT))
+            transport.connect(username=settings.FTP_LOGIN, password=settings.FTP_PASS)
+            sftp = paramiko.SFTPClient.from_transport(transport)
+
+            # Создаем папку для загрузки, если она еще не создана
+            try:
+                sftp.stat(remote_dir)
+            except FileNotFoundError:
+                sftp.mkdir(remote_dir)
+
+            # Загружаем файл на SFTP
+            uploaded_file = next(request.FILES.values())
+            remote_path = os.path.join(remote_dir, uploaded_file.name)
             with sftp.file(remote_path, 'wb') as sftp_file:
-                sftp_file.write(file.read())
+                sftp_file.write(uploaded_file.read())
 
-        sftp.close()
-        transport.close()
+            sftp.close()
+            transport.close()
+            return JsonResponse({"message": "Файл успешно загружен на FTP!"})
 
-        return JsonResponse({"message": "Файлы успешно загружены в временную папку!"})
-    return JsonResponse({"error": "Ошибка загрузки файлов"}, status=400)
+        except Exception as e:
+            return JsonResponse({"error": f"Ошибка загрузки файла: {str(e)}"}, status=500)
+
+    return JsonResponse({"error": "Ошибка загрузки файла"}, status=400)

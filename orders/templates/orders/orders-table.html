@@ -44,21 +44,21 @@
       const allowedExtensions = {{ allowed_extensions|safe }};
 
       const previewTemplate = `<div class="dz-preview dz-file-preview">
-<div class="dz-details">
-  <div class="dz-thumbnail">
-    <img data-dz-thumbnail>
-    <span class="dz-nopreview">Без превью</span>
-    <div class="dz-success-mark"></div>
-    <div class="dz-error-mark"></div>
-    <div class="dz-error-message"><span data-dz-errormessage></span></div>
-    <div class="progress">
-      <div class="progress-bar progress-bar-primary" role="progressbar" aria-valuemin="0" aria-valuemax="100" data-dz-uploadprogress></div>
+    <div class="dz-details">
+      <div class="dz-thumbnail">
+        <img data-dz-thumbnail>
+        <span class="dz-nopreview">Без превью</span>
+        <div class="dz-success-mark"></div>
+        <div class="dz-error-mark"></div>
+        <div class="dz-error-message"><span data-dz-errormessage></span></div>
+        <div class="progress">
+          <div class="progress-bar progress-bar-primary" role="progressbar" aria-valuemin="0" aria-valuemax="100" data-dz-uploadprogress></div>
+        </div>
+      </div>
+      <div class="dz-filename" data-dz-name></div>
+      <div class="dz-size" data-dz-size></div>
     </div>
-  </div>
-  <div class="dz-filename" data-dz-name></div>
-  <div class="dz-size" data-dz-size></div>
-</div>
-</div>`;
+  </div>`;
 
 
       // Multiple Dropzone
@@ -66,11 +66,24 @@
       const dropzoneMulti = document.querySelector('#dropzone-multi');
       if (dropzoneMulti) {
         const myDropzoneMulti = new Dropzone(dropzoneMulti, {
+          url: "{% url 'orders:upload_files' %}",
           previewTemplate: previewTemplate,
           parallelUploads: 1,
           maxFilesize: 1024,
           addRemoveLinks: true,
-          acceptedFiles: allowedExtensions.map(ext => '.' + ext).join(',')
+          acceptedFiles: allowedExtensions.map(ext => '.' + ext).join(','),
+          autoProcessQueue: true,
+          headers: { 'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value }
+
+        });
+
+        // Добавьте обработчики для успешной загрузки или ошибок
+        myDropzoneMulti.on('success', function(file, response) {
+          console.log('Серверный ответ:', response);
+          console.log('Файл загружен:', response.message);
+        });
+        myDropzoneMulti.on('error', function(file, response) {
+          console.error('Ошибка загрузки файла:', response.error);
         });
       }
     })();
@@ -343,10 +356,11 @@
             <div class="card">
               <h5 class="card-header">Завантажте файли</h5>
               <div class="card-body">
-                <form action="{% url 'orders:upload_files' %}" class="dropzone needsclick" id="dropzone-multi">
+                <form action="{% url 'orders:upload_files' %}" method="post" enctype="multipart/form-data"
+                      class="dropzone needsclick" id="dropzone-multi">
+                  {% csrf_token %}
                   <div class="dz-message needsclick">
                     Перетягніть файли сюди або натисніть, щоб завантажити
-
                   </div>
                   <div class="fallback">
                     <input name="file" type="file" />
@@ -360,111 +374,113 @@
           <form id="createOrderForm" class="row g-5" onsubmit="return false">
             {% csrf_token %}
 
+
             <div class="col-12 col-md-6">
               <div class="form-floating form-floating-outline">
-                <input type="text" id="modalEditUserFirstName" name="modalEditUserFirstName" class="form-control"
-                       value="Oliver" placeholder="Oliver" />
-                <label for="modalEditUserFirstName">First Name</label>
+                {{ create_order_form.work_file }}
+                {{ create_order_form.work_file.label_tag }}
               </div>
             </div>
             <div class="col-12 col-md-6">
               <div class="form-floating form-floating-outline">
-                <input type="text" id="modalEditUserLastName" name="modalEditUserLastName" class="form-control"
-                       value="Queen" placeholder="Queen" />
-                <label for="modalEditUserLastName">Last Name</label>
+                {{ create_order_form.name }}
+                {{ create_order_form.name.label_tag }}
+              </div>
+            </div>
+            <div class="col-12 col-md-6">
+              <div class="form-floating form-floating-outline">
+                {{ create_order_form.company_client }}
+                {{ create_order_form.company_client.label_tag }}
+              </div>
+            </div>
+            <div class="col-12 col-md-6">
+              <div class="form-floating form-floating-outline">
+                {{ create_order_form.printing_company }}
+                {{ create_order_form.printing_company.label_tag }}
               </div>
             </div>
             <div class="col-12">
               <div class="form-floating form-floating-outline">
-                <input type="text" id="modalEditUserName" name="modalEditUserName" class="form-control"
-                       value="oliverQueen" placeholder="oliverQueen" />
-                <label for="modalEditUserName">Username</label>
+                {{ create_order_form.preset }}
+                {{ create_order_form.preset.label_tag }}
               </div>
             </div>
             <div class="col-12 col-md-6">
               <div class="form-floating form-floating-outline">
-                <input type="text" id="modalEditUserEmail" name="modalEditUserEmail" class="form-control"
-                       value="oliverqueen@gmail.com" placeholder="oliverqueen@gmail.com" />
-                <label for="modalEditUserEmail">Email</label>
+                <small class="text-light fw-medium d-block">Друк</small>
+                {% for value, label in create_order_form.revert_print.field.choices %}
+                  <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="{{ create_order_form.revert_print.name }}"
+                           id="inlineRadio{{ forloop.counter }}" value="{{ value }}">
+                    <label class="form-check-label" for="inlineRadio{{ forloop.counter }}">{{ label }}</label>
+                  </div>
+                {% endfor %}
+
+              </div>
+            </div>
+            <div class="col-12 col-md-3">
+              <div class="form-floating form-floating-outline">
+                {{ create_order_form.compression }}
+                {{ create_order_form.compression.label_tag }}
+              </div>
+            </div>
+            <div class="col-12 col-md-3">
+              <div class="form-floating form-floating-outline">
+                {{ create_order_form.compression_value }}
+                {{ create_order_form.compression_value.label_tag }}
               </div>
             </div>
             <div class="col-12 col-md-6">
               <div class="form-floating form-floating-outline">
-                <select id="modalEditUserStatus" name="modalEditUserStatus" class="form-select"
-                        aria-label="Default select example">
-                  <option value="1" selected>Active</option>
-                  <option value="2">Inactive</option>
-                  <option value="3">Suspended</option>
-                </select>
-                <label for="modalEditUserStatus">Status</label>
+                {{ create_order_form.technology }}
+                {{ create_order_form.technology.label_tag }}
               </div>
             </div>
             <div class="col-12 col-md-6">
               <div class="form-floating form-floating-outline">
-                <input type="text" id="modalEditTaxID" name="modalEditTaxID" class="form-control modal-edit-tax-id"
-                       placeholder="123 456 7890" />
-                <label for="modalEditTaxID">Tax ID</label>
-              </div>
-            </div>
-            <div class="col-12 col-md-6">
-              <div class="input-group input-group-merge">
-                <span class="input-group-text">US (+1)</span>
-                <div class="form-floating form-floating-outline">
-                  <input type="text" id="modalEditUserPhone" name="modalEditUserPhone"
-                         class="form-control phone-number-mask" value="+1 609 933 4422" placeholder="+1 609 933 4422" />
-                  <label for="modalEditUserPhone">Phone Number</label>
-                </div>
-              </div>
-            </div>
-            <div class="col-12 col-md-6">
-              <div class="form-floating form-floating-outline">
-                <input id="TagifyLanguageSuggestion" name="TagifyLanguageSuggestion" class="form-control h-auto"
-                       placeholder="select language" value="English">
-                <label for="TagifyLanguageSuggestion">Language</label>
-              </div>
-            </div>
-            <div class="col-12 col-md-6">
-              <div class="form-floating form-floating-outline">
-                <select id="modalEditUserCountry" name="modalEditUserCountry" class="select2 form-select"
-                        data-allow-clear="true">
-                  <option value="">Select</option>
-                  <option value="Australia">Australia</option>
-                  <option value="Bangladesh">Bangladesh</option>
-                  <option value="Belarus">Belarus</option>
-                  <option value="Brazil">Brazil</option>
-                  <option value="Canada">Canada</option>
-                  <option value="China">China</option>
-                  <option value="France">France</option>
-                  <option value="Germany">Germany</option>
-                  <option value="India" selected>India</option>
-                  <option value="Indonesia">Indonesia</option>
-                  <option value="Israel">Israel</option>
-                  <option value="Italy">Italy</option>
-                  <option value="Japan">Japan</option>
-                  <option value="Korea">Korea, Republic of</option>
-                  <option value="Mexico">Mexico</option>
-                  <option value="Philippines">Philippines</option>
-                  <option value="Russia">Russian Federation</option>
-                  <option value="South Africa">South Africa</option>
-                  <option value="Thailand">Thailand</option>
-                  <option value="Turkey">Turkey</option>
-                  <option value="Ukraine">Ukraine</option>
-                  <option value="United Arab Emirates">United Arab Emirates</option>
-                  <option value="United Kingdom">United Kingdom</option>
-                  <option value="United States">United States</option>
-                </select>
-                <label for="modalEditUserCountry">Country</label>
-              </div>
+                {{ create_order_form.angle_set }}
+                {{ create_order_form.angle_set.label_tag }}
+               </div>
             </div>
             <div class="col-12">
-              <div class="form-check form-switch">
-                <input type="checkbox" class="form-check-input" id="editBillingAddress" />
-                <label for="editBillingAddress" class="text-heading">Use as a billing address?</label>
-              </div>
+              <div class="form-floating form-floating-outline">
+                {{ create_order_form.color_library }}
+                {{ create_order_form.color_library.label_tag }}
+               </div>
+            </div>
+            <div class="col-12 col-md-2">
+              <div class="form-floating form-floating-outline">
+                {{ create_order_form.raster_dot_default }}
+                {{ create_order_form.raster_dot_default.label_tag }}
+               </div>
+            </div>
+                      <div class="col-12 col-md-2">
+              <div class="form-floating form-floating-outline">
+                {{ create_order_form.ruling_default }}
+                {{ create_order_form.ruling_default.label_tag }}
+               </div>
+            </div>
+                      <div class="col-12 col-md-2">
+              <div class="form-floating form-floating-outline">
+                {{ create_order_form.materials_default }}
+                {{ create_order_form.materials_default.label_tag }}
+               </div>
+            </div>
+                      <div class="col-12 col-md-2">
+              <div class="form-floating form-floating-outline">
+                {{ create_order_form.height_default }}
+                {{ create_order_form.height_default.label_tag }}
+               </div>
+            </div>
+                      <div class="col-12 col-md-2">
+              <div class="form-floating form-floating-outline">
+                {{ create_order_form.width_default }}
+                {{ create_order_form.width_default.label_tag }}
+               </div>
             </div>
             <div class="col-12 text-center d-flex flex-wrap justify-content-center gap-4 row-gap-4">
-              <button type="submit" class="btn btn-primary">Submit</button>
-              <button type="reset" class="btn btn-outline-secondary" data-bs-dismiss="modal" aria-label="Close">Cancel
+              <button type="submit" class="btn btn-primary">Додати замовлення</button>
+              <button type="reset" class="btn btn-outline-secondary" data-bs-dismiss="modal" aria-label="Close">Очистити форму
               </button>
             </div>
           </form>
