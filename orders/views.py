@@ -1,14 +1,19 @@
 from aiohttp.payload import Order
+from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.http import JsonResponse
 from django.shortcuts import render
 from django.views import View
+from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import TemplateView
 from django.db.models import Q
 from custom.models import Orders, OrderStatusList, OrderPlaneSlices, OrderFartuks
+from orders.models import FilesAllowedExtensions
 from web_project import TemplateLayout
-
-
+import os
+import time
+import paramiko
+from django.conf import settings
 # Create your views here.
 
 
@@ -17,6 +22,8 @@ class OrdersTableView(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = TemplateLayout.init(self, super().get_context_data(**kwargs))
+        all_extensions = FilesAllowedExtensions.objects.values_list('extension', flat=True)
+        context['allowed_extensions'] = list(all_extensions)
         return context
 
 
@@ -86,3 +93,35 @@ class OrdersTableDataView(View):
             'data': data
         }
         return JsonResponse(response)
+
+
+def load_work_files(self, request):
+    pass
+
+
+@login_required
+def upload_files(request):
+    if request.method == 'POST' and request.FILES:
+        username = request.user.username
+        timestamp = int(time.time())
+        temp_dir = f"{username}_{timestamp}"
+
+        # Создаем временную папку на SFTP
+        transport = paramiko.Transport((settings.HOST, settings.PORT))
+        transport.connect(username=settings.FTP_LOGIN, password=settings.FTP_PASS)
+        sftp = paramiko.SFTPClient.from_transport(transport)
+
+        remote_dir = os.path.join(settings.UPLOAD_FOLDER, temp_dir)
+        sftp.mkdir(remote_dir)
+
+        # Сохраняем каждый файл в созданной временной папке
+        for file_key, file in request.FILES.items():
+            remote_path = os.path.join(remote_dir, file.name)
+            with sftp.file(remote_path, 'wb') as sftp_file:
+                sftp_file.write(file.read())
+
+        sftp.close()
+        transport.close()
+
+        return JsonResponse({"message": "Файлы успешно загружены в временную папку!"})
+    return JsonResponse({"error": "Ошибка загрузки файлов"}, status=400)

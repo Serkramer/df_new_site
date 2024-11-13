@@ -101,3 +101,6 @@ class OrderDeliveryViewForm(forms.Form):
         required=False
     )
 
+
+class FileUploadForm(forms.ModelForm):
+    pass

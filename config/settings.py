@@ -289,3 +289,18 @@ DEFAULT_PRINTING_MACHINE_MODUL = 3.175
 #TODO  del after create materials
 DATA_UPLOAD_MAX_NUMBER_FIELDS = 2000
 
+
+####################################
+# ftp
+####################################
+UPLOAD_FOLDER = os.environ.get("UPLOAD_FOLDER", default='')
+HOST = os.environ.get("HOST", default='')
+PORT = 21
+FTP_LOGIN = os.environ.get("FTP_LOGIN", default='')
+FTP_PASS = os.environ.get("FTP_PASS", default='')
+
+
+# #############SSH#####################
+SSH_LOGIN = os.environ.get("SSH_LOGIN", default='')
+SSH_PASS = os.environ.get("SSH_PASS", default='')
+HOST_SSH = os.environ.get("HOST_SSH", default='')

@@ -36,20 +36,54 @@
 
 {% block page_js %}
   {{ block.super }}
-  <script src="{% static 'js/modal-edit-user.js' %}"></script>
-  <script src="{% static 'js/forms-file-upload.js' %}"></script>
+  <script>
+    (function() {
+
+      // робота з завантаження файлів
+
+      const allowedExtensions = {{ allowed_extensions|safe }};
+
+      const previewTemplate = `<div class="dz-preview dz-file-preview">
+<div class="dz-details">
+  <div class="dz-thumbnail">
+    <img data-dz-thumbnail>
+    <span class="dz-nopreview">Без превью</span>
+    <div class="dz-success-mark"></div>
+    <div class="dz-error-mark"></div>
+    <div class="dz-error-message"><span data-dz-errormessage></span></div>
+    <div class="progress">
+      <div class="progress-bar progress-bar-primary" role="progressbar" aria-valuemin="0" aria-valuemax="100" data-dz-uploadprogress></div>
+    </div>
+  </div>
+  <div class="dz-filename" data-dz-name></div>
+  <div class="dz-size" data-dz-size></div>
+</div>
+</div>`;
+
+
+      // Multiple Dropzone
+      // --------------------------------------------------------------------
+      const dropzoneMulti = document.querySelector('#dropzone-multi');
+      if (dropzoneMulti) {
+        const myDropzoneMulti = new Dropzone(dropzoneMulti, {
+          previewTemplate: previewTemplate,
+          parallelUploads: 1,
+          maxFilesize: 1024,
+          addRemoveLinks: true,
+          acceptedFiles: allowedExtensions.map(ext => '.' + ext).join(',')
+        });
+      }
+    })();
+
+
+  </script>
   <script>
 
-
-    'use strict';
-
-
+    // заполнение и работа с таблицей
     $(function() {
       let dt_select_table = $('.dt-select-table');
-
       if (dt_select_table.length) {
         var dt_select = dt_select_table.DataTable({
-
           ajax: "{% url 'orders:orders_data' %}",
           columns: [
             { data: 'id' },
@@ -137,194 +171,131 @@
           scrollX: true
         });
       }
+    });
 
-      {#if (dt_select_table.length) {#}
-      {#  let dt_select = dt_select_table.DataTable({#}
-      {#    ajax: "{% url 'orders:orders_data' %}",#}
-      {##}
-      {#    columns: [#}
-      {#      { data: '' },#}
-      {#      { data: 'id' },#}
-      {#      { data: 'id' },#}
-      {#      { data: 'full_name' },#}
-      {#      { data: 'email' },#}
-      {#      { data: 'start_date' },#}
-      {#      { data: 'salary' },#}
-      {#      { data: 'status' },#}
-      {#      { data: '' }#}
-      {#    ],#}
-      {##}
-      {#    pageLength: 100,  // Количество записей на странице#}
-      {#    lengthMenu: [[100, 200, 500], [100, 200, 500]],  // Параметры для выбора количества записей#}
-      {#    order: [[1, 'desc']],#}
-      {#    dom: '<"row"<"col-sm-12 col-md-6"l><"col-sm-12 col-md-6 d-flex justify-content-center justify-content-md-end"f>><"table-responsive"t><"row"<"col-sm-12 col-md-6"i><"col-sm-12 col-md-6"p>>',#}
-      {#    language: {#}
-      {#      paginate: {#}
-      {#        next: '<i class="ri-arrow-right-s-line"></i>',#}
-      {#        previous: '<i class="ri-arrow-left-s-line"></i>'#}
-      {#      }#}
-      {##}
-      {#    },#}
-      {#paging: false,#}
-      {#info: false,#}
-      {#    select: {#}
-      {#      style: 'multi'#}
-      {#    },#}
-      {#scrollCollapse: true,#}
-      {#    scrollY: '65vh',#}
-      {#searching: false,#}
-      {#    processing: true,#}
-      {#    serverSide: true#}
-      {#  });#}
-      {# } #}
-    })
-    ;
+    // работа с формой в выпадающем окне
 
+    $(function() {
+      const select2 = $('.select2'),
+        TagifyLanguageSuggestionEl = document.querySelector('#TagifyLanguageSuggestion');
 
-    {#function changePageSize() {#}
-    {#  const pageSize = document.getElementById('page-size').value;#}
-    {#  const url = new URL(window.location.href);#}
-    {#  url.searchParams.set('page_size', pageSize);#}
-    {#  url.searchParams.set('page', 1);  // Сбросить на первую страницу при изменении размера#}
-    {#  window.location.href = url.toString();#}
-    {# } #}
+      const langaugelist = ['Portuguese', 'German', 'French', 'English'];
+
+      let TagifyLanguageSuggestion = new Tagify(TagifyLanguageSuggestionEl, {
+        whitelist: langaugelist,
+        dropdown: {
+          classname: '',
+          enabled: 0,
+          closeOnSelect: false
+        }
+      });
+
+      // Select2 Country
+      if (select2.length) {
+        select2.each(function() {
+          var $this = $(this);
+          select2Focus($this);
+          $this.wrap('<div class="position-relative"></div>').select2({
+            placeholder: 'Select value',
+            dropdownParent: $this.parent()
+          });
+        });
+      }
+    });
+
+    document.addEventListener('DOMContentLoaded', function(e) {
+      (function() {
+        // variables
+        const modalEditUserTaxID = document.querySelector('.modal-edit-tax-id');
+        const modalEditUserPhone = document.querySelector('.phone-number-mask');
+
+        // Prefix
+        if (modalEditUserTaxID) {
+          new Cleave(modalEditUserTaxID, {
+            prefix: 'TIN',
+            blocks: [3, 3, 3, 4],
+            uppercase: true
+          });
+        }
+
+        // Phone Number Input Mask
+        if (modalEditUserPhone) {
+          new Cleave(modalEditUserPhone, {
+            phone: true,
+            phoneRegionCode: 'US'
+          });
+        }
+
+        // валидация формы
+        FormValidation.formValidation(document.getElementById('createOrderForm'), {
+          fields: {
+            modalEditUserFirstName: {
+              validators: {
+                notEmpty: {
+                  message: 'Please enter your first name'
+                },
+                regexp: {
+                  regexp: /^[a-zA-Zs]+$/,
+                  message: 'The first name can only consist of alphabetical'
+                }
+              }
+            },
+            modalEditUserLastName: {
+              validators: {
+                notEmpty: {
+                  message: 'Please enter your last name'
+                },
+                regexp: {
+                  regexp: /^[a-zA-Zs]+$/,
+                  message: 'The last name can only consist of alphabetical'
+                }
+              }
+            },
+            modalEditUserName: {
+              validators: {
+                notEmpty: {
+                  message: 'Please enter your username'
+                },
+                stringLength: {
+                  min: 6,
+                  max: 30,
+                  message: 'The name must be more than 6 and less than 30 characters long'
+                },
+                regexp: {
+                  regexp: /^[a-zA-Z0-9 ]+$/,
+                  message: 'The name can only consist of alphabetical, number and space'
+                }
+              }
+            }
+          },
+          plugins: {
+            trigger: new FormValidation.plugins.Trigger(),
+            bootstrap5: new FormValidation.plugins.Bootstrap5({
+              // Use this for enabling/changing valid/invalid class
+              // eleInvalidClass: '',
+              eleValidClass: '',
+              rowSelector: '.col-12'
+            }),
+            submitButton: new FormValidation.plugins.SubmitButton(),
+            // Submit the form when all fields are valid
+            // defaultSubmit: new FormValidation.plugins.DefaultSubmit(),
+            autoFocus: new FormValidation.plugins.AutoFocus()
+          }
+        });
+      })();
+    });
 
 
   </script>
 {% endblock page_js %}
 
 {% block content %}
-  {#  <div class="card">#}
-  {#    <h5 class="card-header text-center text-md-start pb-md-0">Таблиця замовлень</h5>#}
-  {#    <div class="card-datatable dataTable_select text-nowrap">#}
-  {##}
-  {#      <div class="row">#}
-  {#        <div class="col-sm-12 col-md-6">#}
-  {#          <div class="dataTables_length" id="DataTables_Table_0_length">#}
-  {#            <label for="page-size">Кількість:</label>#}
-  {#            <select id="page-size" name="page_size" class="form-select form-select-sm" onchange="changePageSize()">#}
-  {#              <option value="50" {% if page_size == 50 %}selected{% endif %}>50</option>#}
-  {#              <option value="100" {% if page_size == 100 %}selected{% endif %}>100</option>#}
-  {#              <option value="150" {% if page_size == 150 %}selected{% endif %}>150</option>#}
-  {#              <option value="200" {% if page_size == 200 %}selected{% endif %}>200</option>#}
-  {#            </select>#}
-  {#          </div>#}
-  {#        </div>#}
-  {#      </div>#}
-  {##}
-  {##}
-  {#      <div class="table-responsive">#}
-  {#        <div class="dataTables_scrollBody">#}
-  {#          <table class="dt-select-table table table-bordered dataTable no-footer">#}
-  {#            <thead>#}
-  {#            <tr>#}
-  {#              <th></th>#}
-  {#              <th>id</th>#}
-  {#              <th>дата запуску</th>#}
-  {#              <th>статус</th>#}
-  {#              <th>Замовник</th>#}
-  {#              <th>Друкарська компанія</th>#}
-  {#              <th>назва замовлення</th>#}
-  {#              <th>технологія</th>#}
-  {#              <th>матеріал</th>#}
-  {#              <th>лініатура</th>#}
-  {#              <th>кількість форм</th>#}
-  {#              <th>площа замовлення</th>#}
-  {#              <th>площа фартуків</th>#}
-  {#              <th>тип фартуків</th>#}
-  {#              <th>розміри фартуків</th>#}
-  {#              <th>оплата</th>#}
-  {#              <th>рахунок</th>#}
-  {#              <th>плануєма відправка</th>#}
-  {#              <th>фактична відправка</th>#}
-  {#              <th>адреса доставки</th>#}
-  {#              <th>контакт доставки</th>#}
-  {#              <th>брак</th>#}
-  {##}
-  {#            </tr>#}
-  {#            </thead>#}
-  {#          <tbody>#}
-  {#          {% for order in orders %}#}
-  {#            <tr>#}
-  {#              <td><input type="checkbox" class="dt-checkboxes form-check-input"></td>#}
-  {#              <td>{{ order.id }}</td>#}
-  {#              <td>{{ order.launch_date|date:"d.m.Y" }}</td>#}
-  {#              <td>{{ order.get_status_display }}</td>#}
-  {#              <td>{{ order.company_client.id.name }}</td>#}
-  {#              <td>{{ order.printing_company.id.name }}</td>#}
-  {##}
-  {#              <td>{{ order.name }}</td>#}
-  {#              <td>{{ order.cliche_technology.name }} </td>#}
-  {#              <td></td>#}
-  {#              <td></td>#}
-  {#              <td>{{ order.slices_count }}</td>#}
-  {#              <td>{{ order.forms_area }}</td>#}
-  {#              <td>{% if order.fartuks_area %}{{ order.fartuks_area }} {% else %} - {% endif %}</td>#}
-  {#              <td>{% if order.fartuk %}{{ order.fartuk }} {% else %} - {% endif %}</td>#}
-  {#              <td>{% if order.fartuks %} {% for fartuk in  order.fartuks %} {{ fartuk }} <br> {% endfor %} {% else %}#}
-  {#                - {% endif %}</td>#}
-  {#              <td></td>#}
-  {#              <td></td>#}
-  {#              <td>{{ order.order_delivery.shipping_date_planed |date:"d.m.Y H:i" }}</td>#}
-  {#              <td>{{ order.order_delivery.shipping_date_departure |date:"d.m.Y H:i" }}</td>#}
-  {#              <td>{{ order.order_delivery }}</td>#}
-  {#              <td>{{ order.order_delivery }}</td>#}
-  {#              <td>{{ order.is_defective }}</td>#}
-  {##}
-  {#            </tr>#}
-  {#          {% endfor %}#}
-  {#          </tbody>#}
-  {#          </table>#}
-  {#        </div>#}
-  {#      </div>#}
-  {#      <div class="mt-5">#}
-  {#        <!-- Пагинация -->#}
-  {#        {% if is_paginated %}#}
-  {#          <nav aria-label="Page navigation">#}
-  {#            <ul class="pagination justify-content-center">#}
-  {#              {% if page_obj.has_previous %}#}
-  {#                <li class="page-item">#}
-  {#                  <a class="page-link" href="?page=1" aria-label="First">#}
-  {#                    <span aria-hidden="true">&laquo;&laquo;</span>#}
-  {#                  </a>#}
-  {#                </li>#}
-  {#                <li class="page-item">#}
-  {#                  <a class="page-link" href="?page={{ page_obj.previous_page_number }}" aria-label="Previous">#}
-  {#                    <span aria-hidden="true">&laquo;</span>#}
-  {#                  </a>#}
-  {#                </li>#}
-  {#              {% endif %}#}
-  {##}
-  {#              {% for num in page_obj.paginator.page_range %}#}
-  {#                {% if page_obj.number == num %}#}
-  {#                  <li class="page-item active"><a class="page-link">{{ num }}</a></li>#}
-  {#                {% elif num > page_obj.number|add:'-5' and num < page_obj.number|add:'5' %}#}
-  {#                  <li class="page-item"><a class="page-link" href="?page={{ num }}">{{ num }}</a></li>#}
-  {#                {% endif %}#}
-  {#              {% endfor %}#}
-  {##}
-  {#              {% if page_obj.has_next %}#}
-  {#                <li class="page-item">#}
-  {#                  <a class="page-link" href="?page={{ page_obj.next_page_number }}" aria-label="Next">#}
-  {#                    <span aria-hidden="true">&raquo;</span>#}
-  {#                  </a>#}
-  {#                </li>#}
-  {#                <li class="page-item">#}
-  {#                  <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}" aria-label="Last">#}
-  {#                    <span aria-hidden="true">&raquo;&raquo;</span>#}
-  {#                  </a>#}
-  {#                </li>#}
-  {#              {% endif %}#}
-  {#            </ul>#}
-  {#          </nav>#}
-  {#        {% endif %}#}
-  {#      </div>#}
-  {#    </div>#}
-  {#  </div>#}
+
 
   <div class="card">
     <h5 class="card-header text-center text-md-start pb-md-0">Таблиця замовлень</h5>
-    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#editUser"> Додати замовлення
+    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createOrder"> Додати
+      замовлення
     </button>
     <div class="card-datatable dataTable_select text-nowrap">
       <table class="dt-select-table table table-bordered">
@@ -360,8 +331,8 @@
   </div>
 
   <!-- Edit User Modal -->
-  <div class="modal fade" id="editUser" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-simple modal-edit-user">
+  <div class="modal fade" id="createOrder" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-simple">
       <div class="modal-content">
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         <div class="modal-body p-0">
@@ -372,7 +343,7 @@
             <div class="card">
               <h5 class="card-header">Завантажте файли</h5>
               <div class="card-body">
-                <form action="/upload" class="dropzone needsclick" id="dropzone-multi">
+                <form action="{% url 'orders:upload_files' %}" class="dropzone needsclick" id="dropzone-multi">
                   <div class="dz-message needsclick">
                     Перетягніть файли сюди або натисніть, щоб завантажити
 
@@ -386,7 +357,7 @@
           </div>
           <br>
 
-          <form id="editUserForm" class="row g-5" onsubmit="return false">
+          <form id="createOrderForm" class="row g-5" onsubmit="return false">
             {% csrf_token %}
 
             <div class="col-12 col-md-6">
