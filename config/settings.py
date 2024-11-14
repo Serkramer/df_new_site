@@ -87,7 +87,8 @@ INSTALLED_APPS = [
     "map.apps.MapConfig",
     'dal',
     'dal_select2',
-    "orders.apps.OrdersConfig"
+    "orders.apps.OrdersConfig",
+    'website.apps.WebsiteConfig',
 ]
 
 MIDDLEWARE = [
@@ -148,7 +149,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'store',
         'USER': 'root',
-        'PASSWORD': os.environ.get("STORE_DB_PASS", default=''),
+        'PASSWORD': os.environ.get("STORE_DB_PASS", default='Lbaaepbz22'),
         'HOST': '127.0.0.1',
         'PORT': '3306',
     },
@@ -156,7 +157,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'custom',
         'USER': 'root',
-        'PASSWORD': os.environ.get("CUSTOM_DB_PASS", default=''),
+        'PASSWORD': os.environ.get("CUSTOM_DB_PASS", default='Lbaaepbz22'),
         'HOST': '127.0.0.1',
         'PORT': '3306',
     },
@@ -164,7 +165,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'map',
         'USER': 'root',
-        'PASSWORD': os.environ.get("CUSTOM_DB_PASS", default=''),
+        'PASSWORD': os.environ.get("CUSTOM_DB_PASS", default='Lbaaepbz22'),
         'HOST': '127.0.0.1',
         'PORT': '3306',
     }
@@ -289,6 +290,8 @@ DEFAULT_PRINTING_MACHINE_MODUL = 3.175
 #TODO  del after create materials
 DATA_UPLOAD_MAX_NUMBER_FIELDS = 2000
 
+MEDIA_ROOT = BASE_DIR / 'media'
+MEDIA_URL = '/media/'
 
 ####################################
 # ftp

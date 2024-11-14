@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
       deactivateButton = deactivateAcc.querySelector('.deactivate-account'),
       TagifyLanguageSuggestionEl = document.querySelector('#TagifyLanguageSuggestion');
 
-    const langaugelist = ['Portuguese', 'German', 'French', 'English'];
+    const langaugelist = ['Ukraine'];
 
     let TagifyLanguageSuggestion = new Tagify(TagifyLanguageSuggestionEl, {
       whitelist: langaugelist,
@@ -29,14 +29,14 @@ document.addEventListener('DOMContentLoaded', function (e) {
           firstName: {
             validators: {
               notEmpty: {
-                message: 'Please enter first name'
+                message: 'введіть своє ім`я'
               }
             }
           },
           lastName: {
             validators: {
               notEmpty: {
-                message: 'Please enter last name'
+                message: 'Введіть своє прізвище'
               }
             }
           }
@@ -111,10 +111,10 @@ document.addEventListener('DOMContentLoaded', function (e) {
       deactivateButton.onclick = function () {
         if (accountActivation.checked == true) {
           Swal.fire({
-            text: 'Are you sure you would like to deactivate your account?',
+            text: 'Ви дійсно хочете вимкнути свій обліковий запис?',
             icon: 'warning',
             showCancelButton: true,
-            confirmButtonText: 'Yes',
+            confirmButtonText: 'Так',
             customClass: {
               confirmButton: 'btn btn-primary me-2 waves-effect waves-light',
               cancelButton: 'btn btn-outline-secondary waves-effect'
@@ -124,16 +124,16 @@ document.addEventListener('DOMContentLoaded', function (e) {
             if (result.value) {
               Swal.fire({
                 icon: 'success',
-                title: 'Deleted!',
-                text: 'Your file has been deleted.',
+                title: 'Вимкнуто!',
+                text: 'Ваш аккаунт був вимкнутий.',
                 customClass: {
                   confirmButton: 'btn btn-success waves-effect'
                 }
               });
             } else if (result.dismiss === Swal.DismissReason.cancel) {
               Swal.fire({
-                title: 'Cancelled',
-                text: 'Deactivation Cancelled!!',
+                title: 'Відміна',
+                text: 'Деактивація відмінена!!',
                 icon: 'error',
                 customClass: {
                   confirmButton: 'btn btn-success waves-effect'

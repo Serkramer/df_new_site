@@ -1,4 +1,6 @@
 from django.contrib import admin
+from django.utils.safestring import mark_safe
+
 from .models import Profile
 
 
@@ -17,5 +19,11 @@ class Member(admin.ModelAdmin):
 
 @admin.register(Profile)
 class ProfileAdmin(admin.ModelAdmin):
-    list_display = ('id', 'user', 'first_name', 'last_name', 'company', 'phone_number', 'email', 'is_worker',
-                    'is_verified', 'created_at')
+    list_display = ('id', 'user', 'first_name', 'last_name', 'company', 'phone_number', 'email',
+                    'is_verified', 'created_at', 'post_avatar')
+
+    @admin.display(description="Аватарка", ordering='content')
+    def post_avatar(self, obj):
+        if obj.avatar:
+            return mark_safe(f"<img src='{obj.avatar.url}' width=50>")
+        return "-"

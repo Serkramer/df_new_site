@@ -41,7 +41,7 @@ class TemplateBootstrapLayoutVertical:
             menu_data = []
 
         # Updated context with menu_data
-        context.update({ "menu_data": menu_data })
+        context.update({"menu_data": menu_data})
 
 #
 # {
