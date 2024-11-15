@@ -53,8 +53,8 @@ document.addEventListener('DOMContentLoaded', function (e) {
                 message: 'Будь ласка введіть пароль'
               },
               stringLength: {
-                min: 4,
-                message: 'Пароль має бути більш ніж 4 символа'
+                min: 8,
+                message: 'Пароль має бути більш ніж 8 символів'
               }
             }
           },
@@ -70,8 +70,8 @@ document.addEventListener('DOMContentLoaded', function (e) {
                 message: 'Паролі не співпадають'
               },
               stringLength: {
-                min: 4,
-                message: 'Пароль має бути більш ніж 4 символа'
+                min: 8,
+                message: 'Пароль має бути більш ніж 8 символів'
               }
             }
           },

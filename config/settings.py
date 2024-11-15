@@ -142,14 +142,18 @@ WSGI_APPLICATION = "config.wsgi.application"
 
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'df_crm',
+        'USER': 'admin',
+        'PASSWORD': os.environ.get("DF_CRM_PASS", default=''),
+        'HOST': '192.168.11.82',
+        'PORT': '3306',
     },
     'store': {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'store',
         'USER': 'root',
-        'PASSWORD': os.environ.get("STORE_DB_PASS", default='Lbaaepbz22'),
+        'PASSWORD': os.environ.get("STORE_DB_PASS", default=''),
         'HOST': '127.0.0.1',
         'PORT': '3306',
     },
@@ -157,7 +161,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'custom',
         'USER': 'root',
-        'PASSWORD': os.environ.get("CUSTOM_DB_PASS", default='Lbaaepbz22'),
+        'PASSWORD': os.environ.get("CUSTOM_DB_PASS", default=''),
         'HOST': '127.0.0.1',
         'PORT': '3306',
     },
@@ -165,7 +169,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'map',
         'USER': 'root',
-        'PASSWORD': os.environ.get("CUSTOM_DB_PASS", default='Lbaaepbz22'),
+        'PASSWORD': os.environ.get("CUSTOM_DB_PASS", default=''),
         'HOST': '127.0.0.1',
         'PORT': '3306',
     }
