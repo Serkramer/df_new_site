@@ -1,12 +1,13 @@
 from django.urls import path
 
 from .forms import ProfileForm
-from .views import PagesView, ProfileView, AccountSettingsView
+from .views import PagesView, ProfileView, AccountSettingsView, UpdateAvatarView
 from .views_misc import MiscPagesView
 from django.contrib.auth.decorators import login_required
 
-
 urlpatterns = [
+    path('pages/account_settings/update-avatar/', UpdateAvatarView.as_view(), name='update-avatar'),
+
     path(
         "pages/profile/user/",
         login_required(ProfileView.as_view(template_name="pages_profile_user.html")),

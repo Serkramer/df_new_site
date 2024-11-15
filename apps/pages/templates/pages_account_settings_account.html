@@ -29,44 +29,96 @@
 {% block page_js %}
   {{ block.super }}
   <script>
-  document.addEventListener('DOMContentLoaded', function (e) {
-  (function () {
 
-    // Update/reset user image of account page
-    let accountUserImage = document.getElementById('uploadedAvatar');
-    const fileInput = document.querySelector('.account-file-input'),
-      resetFileInput = document.querySelector('.account-image-reset');
+    document.addEventListener('DOMContentLoaded', function() {
+      const fileInput = document.getElementById('upload');
+      const accountUserImage = document.getElementById('uploadedAvatar');
+      const errorContainer = document.getElementById('uploadError');
+      const maxFileSize = 2 * 1024 * 1024; // 2 MB
+      const allowedFormats = ['image/jpeg', 'image/png']; // Разрешённые MIME-типы
 
-    if (accountUserImage) {
-      const resetImage = accountUserImage.src;
-      fileInput.onchange = () => {
-        if (fileInput.files[0]) {
-          accountUserImage.src = window.URL.createObjectURL(fileInput.files[0]);
+      fileInput.addEventListener('change', function() {
+        const file = fileInput.files[0];
+
+        if (file) {
+          // Очистка предыдущей ошибки
+          errorContainer.style.display = 'none';
+          errorContainer.textContent = '';
+
+          // Проверка размера файла
+          if (file.size > maxFileSize) {
+            errorContainer.style.display = 'block';
+            errorContainer.textContent = 'Розмір файлу перевищує 2 MB. Оберіть менший файл.';
+            fileInput.value = ''; // Сбросить файл
+            return;
+          }
+
+          // Проверка формата файла
+          if (!allowedFormats.includes(file.type)) {
+            errorContainer.style.display = 'block';
+            errorContainer.textContent = 'Непідтримуваний формат файлу. Дозволені формати: JPG, PNG.';
+            fileInput.value = ''; // Сбросить файл
+            return;
+          }
+
+          const formData = new FormData();
+          formData.append('avatar', file);
+
+          fetch("{% url 'update-avatar' %}", {
+            method: 'POST',
+            headers: {
+              'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: formData
+          })
+            .then(response => {
+              if (response.ok) {
+                return response.json();
+              }
+              return response.json().then(data => {
+                throw new Error(data.error || 'Не вдалося завантажити файл.');
+              });
+            })
+            .then(data => {
+              if (data.avatar_url) {
+                accountUserImage.src = data.avatar_url;
+              }
+            })
+            .catch(error => {
+              errorContainer.style.display = 'block';
+              errorContainer.textContent = error.message;
+            });
         }
-      };
-      resetFileInput.onclick = () => {
-        fileInput.value = '';
-        accountUserImage.src = resetImage;
-      };
-    }
-  })();
-});
-
-// Select2 (jquery)
-$(function () {
-  let select2 = $('.select2');
-  // For all Select2
-  if (select2.length) {
-    select2.each(function () {
-      let $this = $(this);
-      select2Focus($this);
-      $this.wrap('<div class="position-relative"></div>');
-      $this.select2({
-        dropdownParent: $this.parent()
       });
-    });
-  }
-});
+
+
+      const phoneInput = document.querySelector('#id_phone_number'); // ID вашего поля phone_number
+      const phoneError = document.getElementById('phoneError');
+      const maxLength = 13; // Максимальная длина телефонного номера
+
+      phoneInput.addEventListener('input', function() {
+        let value = phoneInput.value;
+
+        // Разрешаем только цифры и "+"
+        if (/^[\d+]*$/.test(value)) {
+          // Ограничиваем длину
+          if (value.length > maxLength) {
+            phoneError.style.display = 'block';
+            phoneError.textContent = `Максимальна довжина номера ${maxLength} символів.`;
+            phoneInput.value = value.slice(0, maxLength); // Обрезаем лишнее
+          } else {
+            phoneError.style.display = 'none';
+            phoneError.textContent = '';
+          }
+        } else {
+          // Удаляем все недопустимые символы
+          phoneError.style.display = 'block';
+          phoneError.textContent = 'Номер може містити лише цифри та символ "+".';
+          phoneInput.value = value.replace(/[^\d+]/g, '');
+        }
+      });
+    })
+    ;
 
 
   </script>
@@ -103,11 +155,7 @@ $(function () {
                 <i class="ri-upload-2-line d-block d-sm-none"></i>
                 <input type="file" id="upload" class="account-file-input" hidden accept="image/png, image/jpeg" />
               </label>
-              <button type="button" class="btn btn-outline-danger account-image-reset mb-4">
-                <i class="ri-refresh-line d-block d-sm-none"></i>
-                <span class="d-none d-sm-block">Видалити</span>
-              </button>
-
+              <div id="uploadError" class="text-danger mt-2" style="display: none;"></div>
               <div>Дозволені формати JPG, PNG. Максимальний розмір 2M</div>
             </div>
           </div>
@@ -118,8 +166,8 @@ $(function () {
             <div class="row mt-1 g-5">
               <div class="col-md-6">
                 <div class="form-floating form-floating-outline">
-                    {{ profile_form.first_name }}
-                    {{ profile_form.first_name.label_tag }}
+                  {{ profile_form.first_name }}
+                  {{ profile_form.first_name.label_tag }}
                 </div>
               </div>
               <div class="col-md-6">
@@ -130,8 +178,8 @@ $(function () {
               </div>
               <div class="col-md-6">
                 <div class="form-floating form-floating-outline">
-                    {{ profile_form.company }}
-                   {{ profile_form.company.label_tag }}
+                  {{ profile_form.company }}
+                  {{ profile_form.company.label_tag }}
                 </div>
               </div>
               <div class="col-md-6">
@@ -144,9 +192,9 @@ $(function () {
                 <div class="form-floating form-floating-outline">
                   {{ profile_form.phone_number }}
                   {{ profile_form.phone_number.label_tag }}
+                   <div id="phoneError" class="text-danger mt-1" style="display: none;"></div>
                 </div>
               </div>
-
 
             </div>
             <div class="mt-6">
@@ -157,24 +205,6 @@ $(function () {
         </div>
         <!-- /Account -->
       </div>
-{#      <div class="card">#}
-{#        <h5 class="card-header mb-1">Delete Account</h5>#}
-{#        <div class="card-body">#}
-{#          <div class="mb-6 col-12 mb-0">#}
-{#            <div class="alert alert-warning">#}
-{#              <h6 class="alert-heading mb-1">Are you sure you want to delete your account?</h6>#}
-{#              <p class="mb-0">Once you delete your account, there is no going back. Please be certain.</p>#}
-{#            </div>#}
-{#          </div>#}
-{#          <form id="formAccountDeactivation" onsubmit="return false">#}
-{#            <div class="form-check mb-6">#}
-{#              <input class="form-check-input" type="checkbox" name="accountActivation" id="accountActivation" />#}
-{#              <label class="form-check-label" for="accountActivation">I confirm my account deactivation</label>#}
-{#            </div>#}
-{#            <button type="submit" class="btn btn-danger deactivate-account" disabled>Deactivate Account</button>#}
-{#          </form>#}
-{#        </div>#}
-{#      </div>#}
     </div>
   </div>
 {% endblock %}

@@ -2,6 +2,7 @@ from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseRedirect, JsonResponse
 from django.shortcuts import get_object_or_404
 from django.utils.decorators import method_decorator
+from django.views import View
 from django.views.generic import TemplateView
 
 from apps.pages.forms import ProfileForm
@@ -46,6 +47,31 @@ class AccountSettingsView(TemplateView):
             context = self.get_context_data()
             context['profile_form'] = form
             return self.render_to_response(context)
+
+
+@method_decorator(login_required, name='dispatch')
+class UpdateAvatarView(View):
+    def post(self, request, *args, **kwargs):
+        profile = request.user.profile
+        avatar = request.FILES.get('avatar')
+
+        if avatar:
+            # Проверка размера файла (2 MB = 2 * 1024 * 1024 байта)
+            max_file_size = 2 * 1024 * 1024
+            if avatar.size > max_file_size:
+                return JsonResponse({'error': 'Файл перевищує максимальний розмір 2 MB'}, status=400)
+
+            # Проверка формата файла
+            allowed_formats = ['image/jpeg', 'image/png']
+            if avatar.content_type not in allowed_formats:
+                return JsonResponse({'error': 'Непідтримуваний формат файлу. Дозволені формати: JPG, PNG.'}, status=400)
+
+            # Сохраняем аватар
+            profile.avatar = avatar
+            profile.save()
+            return JsonResponse({'avatar_url': profile.avatar.url}, status=200)
+
+        return JsonResponse({'error': 'Файл не завантажено'}, status=400)
 
 
 class ProfileView(TemplateView):

@@ -6,94 +6,271 @@
 {% block title %}Налаштування акаунту - Паролі{% endblock %}
 
 {% block vendor_css %}
-{{ block.super }}
-<link rel="stylesheet" href="{% static 'vendor/libs/select2/select2.css' %}" />
-<link rel="stylesheet" href="{% static 'vendor/libs/@form-validation/form-validation.css' %}" />
+  {{ block.super }}
+  <link rel="stylesheet" href="{% static 'vendor/libs/select2/select2.css' %}" />
+  <link rel="stylesheet" href="{% static 'vendor/libs/@form-validation/form-validation.css' %}" />
 {% endblock vendor_css %}
 
 {% block vendor_js %}
-{{ block.super }}
-<script src="{% static 'vendor/libs/select2/select2.js' %}"></script>
-<script src="{% static 'vendor/libs/@form-validation/popular.js' %}"></script>
-<script src="{% static 'vendor/libs/@form-validation/bootstrap5.js' %}"></script>
-<script src="{% static 'vendor/libs/@form-validation/auto-focus.js' %}"></script>
-<script src="{% static 'vendor/libs/cleavejs/cleave.js' %}"></script>
-<script src="{% static 'vendor/libs/cleavejs/cleave-phone.js' %}"></script>
+  {{ block.super }}
+  <script src="{% static 'vendor/libs/select2/select2.js' %}"></script>
+  <script src="{% static 'vendor/libs/@form-validation/popular.js' %}"></script>
+  <script src="{% static 'vendor/libs/@form-validation/bootstrap5.js' %}"></script>
+  <script src="{% static 'vendor/libs/@form-validation/auto-focus.js' %}"></script>
+  <script src="{% static 'vendor/libs/cleavejs/cleave.js' %}"></script>
+  <script src="{% static 'vendor/libs/cleavejs/cleave-phone.js' %}"></script>
 {% endblock vendor_js %}
 
 {% block page_css %}
-{{ block.super }}
-<link rel="stylesheet" href="{% static 'vendor/css/pages/page-account-settings.css' %}" />
+  {{ block.super }}
+  <link rel="stylesheet" href="{% static 'vendor/css/pages/page-account-settings.css' %}" />
 {% endblock page_css %}
 
 {% block page_js %}
-{{ block.super }}
-<script src="{% static 'js/pages-account-settings-security.js' %}"></script>
-<script src="{% static 'js/modal-enable-otp.js' %}"></script>
+  {{ block.super }}
+  <script>
+
+    document.addEventListener('DOMContentLoaded', function(e) {
+      (function() {
+        const formChangePass = document.querySelector('#formAccountSettings'),
+          formApiKey = document.querySelector('#formAccountSettingsApiKey');
+
+        // Form validation for Change password
+        if (formChangePass) {
+          const fv = FormValidation.formValidation(formChangePass, {
+            fields: {
+              currentPassword: {
+                validators: {
+                  notEmpty: {
+                    message: 'Please current password'
+                  },
+                  stringLength: {
+                    min: 8,
+                    message: 'Пароль має містити мінімум 8 символів'
+                  }
+                }
+              },
+              newPassword: {
+                validators: {
+                  notEmpty: {
+                    message: 'Введіть новий пароль'
+                  },
+                  stringLength: {
+                    min: 8,
+                    message: 'Пароль має містити мінімум 8 символів'
+                  }
+                }
+              },
+              confirmPassword: {
+                validators: {
+                  notEmpty: {
+                    message: 'повторіть новий пароль'
+                  },
+                  identical: {
+                    compare: function() {
+                      return formChangePass.querySelector('[name="newPassword"]').value;
+                    },
+                    message: 'не співпадає з новим паролем'
+                  },
+                  stringLength: {
+                    min: 8,
+                    message: 'Пароль має містити мінімум 8 символів'
+                  }
+                }
+              }
+            },
+            plugins: {
+              trigger: new FormValidation.plugins.Trigger(),
+              bootstrap5: new FormValidation.plugins.Bootstrap5({
+                eleValidClass: '',
+                rowSelector: '.col-md-6'
+              }),
+              submitButton: new FormValidation.plugins.SubmitButton(),
+              // Submit the form when all fields are valid
+              // defaultSubmit: new FormValidation.plugins.DefaultSubmit(),
+              autoFocus: new FormValidation.plugins.AutoFocus()
+            },
+            init: instance => {
+              instance.on('plugins.message.placed', function(e) {
+                if (e.element.parentElement.classList.contains('input-group')) {
+                  e.element.parentElement.insertAdjacentElement('afterend', e.messageElement);
+                }
+              });
+            }
+          });
+        }
+
+        // Form validation for API key
+        if (formApiKey) {
+          const fvApi = FormValidation.formValidation(formApiKey, {
+            fields: {
+              apiKey: {
+                validators: {
+                  notEmpty: {
+                    message: 'Please enter API key name'
+                  }
+                }
+              }
+            },
+            plugins: {
+              trigger: new FormValidation.plugins.Trigger(),
+              bootstrap5: new FormValidation.plugins.Bootstrap5({
+                eleValidClass: ''
+              }),
+              submitButton: new FormValidation.plugins.SubmitButton(),
+              // Submit the form when all fields are valid
+              // defaultSubmit: new FormValidation.plugins.DefaultSubmit(),
+              autoFocus: new FormValidation.plugins.AutoFocus()
+            },
+            init: instance => {
+              instance.on('plugins.message.placed', function(e) {
+                if (e.element.parentElement.classList.contains('input-group')) {
+                  e.element.parentElement.insertAdjacentElement('afterend', e.messageElement);
+                }
+              });
+            }
+          });
+        }
+      })();
+    });
+
+    // Select2 (jquery)
+    $(function() {
+      var select2 = $('.select2');
+
+      // Select2 API Key
+      if (select2.length) {
+        select2.each(function() {
+          var $this = $(this);
+          select2Focus($this);
+          $this.wrap('<div class="position-relative"></div>');
+          $this.select2({
+            dropdownParent: $this.parent()
+          });
+        });
+      }
+    });
+
+
+    document.addEventListener('DOMContentLoaded', function (e) {
+  (function () {
+    const phoneMask = document.querySelector('.phone-number-otp-mask');
+
+    // Phone Number Input Mask
+    if (phoneMask) {
+      new Cleave(phoneMask, {
+        phone: true,
+        phoneRegionCode: 'US'
+      });
+    }
+
+    // Enable OTP form validation
+    FormValidation.formValidation(document.getElementById('enableOTPForm'), {
+      fields: {
+        modalEnableOTPPhone: {
+          validators: {
+            notEmpty: {
+              message: 'Please enter your mobile number'
+            }
+          }
+        }
+      },
+      plugins: {
+        trigger: new FormValidation.plugins.Trigger(),
+        bootstrap5: new FormValidation.plugins.Bootstrap5({
+          // Use this for enabling/changing valid/invalid class
+          // eleInvalidClass: '',
+          eleValidClass: '',
+          rowSelector: '.col-12'
+        }),
+        submitButton: new FormValidation.plugins.SubmitButton(),
+        // Submit the form when all fields are valid
+        // defaultSubmit: new FormValidation.plugins.DefaultSubmit(),
+        autoFocus: new FormValidation.plugins.AutoFocus()
+      },
+      init: instance => {
+        instance.on('plugins.message.placed', function (e) {
+          //* Move the error message out of the `input-group` element
+          if (e.element.parentElement.classList.contains('input-group')) {
+            e.element.parentElement.insertAdjacentElement('afterend', e.messageElement);
+          }
+        });
+      }
+    });
+  })();
+});
+
+
+
+  </script>
+
+
 {% endblock page_js %}
 
 {% block content %}
-<div class="row">
-  <div class="col-md-12">
-    <div class="nav-align-top">
-      <ul class="nav nav-pills flex-column flex-md-row mb-6 gap-2 gap-lg-0">
-        <li class="nav-item"><a class="nav-link" href="{% url 'pages-account-settings-account' %}"><i class="ri-group-line me-2"></i> Акаунт</a></li>
-        <li class="nav-item"><a class="nav-link active" href="javascript:void(0);"><i class="ri-lock-line me-2"></i> Пароль</a></li>
-      </ul>
-    </div>
-    <!-- Change Password -->
-    <div class="card mb-6">
-      <h5 class="card-header">Змінити пароль</h5>
-      <div class="card-body pt-1">
-        <form id="formAccountSettings" method="GET" onsubmit="return false">
-          <div class="row">
-            <div class="mb-5 col-md-6 form-password-toggle">
-              <div class="input-group input-group-merge">
-                <div class="form-floating form-floating-outline">
-                  <input class="form-control" type="password" name="currentPassword" id="currentPassword" placeholder="&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;" />
-                  <label for="currentPassword">Поточний пароль</label>
-                </div>
-                <span class="input-group-text cursor-pointer"><i class="ri-eye-off-line"></i></span>
-              </div>
-            </div>
-          </div>
-          <div class="row g-5 mb-6">
-            <div class="col-md-6 form-password-toggle">
-              <div class="input-group input-group-merge">
-                <div class="form-floating form-floating-outline">
-                  <input class="form-control" type="password" id="newPassword" name="newPassword" placeholder="&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;" />
-                  <label for="newPassword">Новий пароль</label>
-                </div>
-                <span class="input-group-text cursor-pointer"><i class="ri-eye-off-line"></i></span>
-              </div>
-            </div>
-            <div class="col-md-6 form-password-toggle">
-              <div class="input-group input-group-merge">
-                <div class="form-floating form-floating-outline">
-                  <input class="form-control" type="password" name="confirmPassword" id="confirmPassword" placeholder="&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;" />
-                  <label for="confirmPassword">Повторити новий пароль</label>
-                </div>
-                <span class="input-group-text cursor-pointer"><i class="ri-eye-off-line"></i></span>
-              </div>
-            </div>
-          </div>
-          <h6 class="text-body">Пароль повинен містити:</h6>
-          <ul class="ps-4 mb-0">
-            <li class="mb-4">Мінімум 8 символів, але чим більше тим краще</li>
-            <li class="mb-4">Хочаб одну велику букву</li>
-            <li>Хочаб 1 цифру чи символ</li>
-          </ul>
-          <div class="mt-6">
-            <button type="submit" class="btn btn-primary me-3">Зберегти</button>
-            <button type="reset" class="btn btn-outline-secondary">Відмінити</button>
-          </div>
-        </form>
+  <div class="row">
+    <div class="col-md-12">
+      <div class="nav-align-top">
+        <ul class="nav nav-pills flex-column flex-md-row mb-6 gap-2 gap-lg-0">
+          <li class="nav-item"><a class="nav-link" href="{% url 'pages-account-settings-account' %}"><i
+            class="ri-group-line me-2"></i> Акаунт</a></li>
+          <li class="nav-item"><a class="nav-link active" href="javascript:void(0);"><i class="ri-lock-line me-2"></i>
+            Пароль</a></li>
+        </ul>
       </div>
+      <!-- Change Password -->
+      <div class="card mb-6">
+        <h5 class="card-header">Змінити пароль</h5>
+        <div class="card-body pt-1">
+          <form id="formAccountSettings" method="GET" onsubmit="return false">
+            <div class="row">
+              <div class="mb-5 col-md-6 form-password-toggle">
+                <div class="input-group input-group-merge">
+                  <div class="form-floating form-floating-outline">
+                    <input class="form-control" type="password" name="currentPassword" id="currentPassword"
+                           placeholder="&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;" />
+                    <label for="currentPassword">Поточний пароль</label>
+                  </div>
+                  <span class="input-group-text cursor-pointer"><i class="ri-eye-off-line"></i></span>
+                </div>
+              </div>
+            </div>
+            <div class="row g-5 mb-6">
+              <div class="col-md-6 form-password-toggle">
+                <div class="input-group input-group-merge">
+                  <div class="form-floating form-floating-outline">
+                    <input class="form-control" type="password" id="newPassword" name="newPassword"
+                           placeholder="&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;" />
+                    <label for="newPassword">Новий пароль</label>
+                  </div>
+                  <span class="input-group-text cursor-pointer"><i class="ri-eye-off-line"></i></span>
+                </div>
+              </div>
+              <div class="col-md-6 form-password-toggle">
+                <div class="input-group input-group-merge">
+                  <div class="form-floating form-floating-outline">
+                    <input class="form-control" type="password" name="confirmPassword" id="confirmPassword"
+                           placeholder="&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;" />
+                    <label for="confirmPassword">Повторити новий пароль</label>
+                  </div>
+                  <span class="input-group-text cursor-pointer"><i class="ri-eye-off-line"></i></span>
+                </div>
+              </div>
+            </div>
+            <h6 class="text-body">Пароль повинен містити:</h6>
+            <ul class="ps-4 mb-0">
+              <li class="mb-4">Мінімум 8 символів, але чим більше тим краще</li>
+            </ul>
+            <div class="mt-6">
+              <button type="submit" class="btn btn-primary me-3">Зберегти</button>
+              <button type="reset" class="btn btn-outline-secondary">Відмінити</button>
+            </div>
+          </form>
+        </div>
+      </div>
+      <!--/ Change Password -->
+
+
     </div>
-    <!--/ Change Password -->
-
-
-
   </div>
-</div>
 {% endblock %}
