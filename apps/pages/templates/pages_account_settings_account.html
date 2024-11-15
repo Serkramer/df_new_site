@@ -28,7 +28,48 @@
 
 {% block page_js %}
   {{ block.super }}
-  <script src="{% static 'js/pages-account-settings-account.js' %}"></script>
+  <script>
+  document.addEventListener('DOMContentLoaded', function (e) {
+  (function () {
+
+    // Update/reset user image of account page
+    let accountUserImage = document.getElementById('uploadedAvatar');
+    const fileInput = document.querySelector('.account-file-input'),
+      resetFileInput = document.querySelector('.account-image-reset');
+
+    if (accountUserImage) {
+      const resetImage = accountUserImage.src;
+      fileInput.onchange = () => {
+        if (fileInput.files[0]) {
+          accountUserImage.src = window.URL.createObjectURL(fileInput.files[0]);
+        }
+      };
+      resetFileInput.onclick = () => {
+        fileInput.value = '';
+        accountUserImage.src = resetImage;
+      };
+    }
+  })();
+});
+
+// Select2 (jquery)
+$(function () {
+  let select2 = $('.select2');
+  // For all Select2
+  if (select2.length) {
+    select2.each(function () {
+      let $this = $(this);
+      select2Focus($this);
+      $this.wrap('<div class="position-relative"></div>');
+      $this.select2({
+        dropdownParent: $this.parent()
+      });
+    });
+  }
+});
+
+
+  </script>
 {% endblock page_js %}
 
 {% block content %}
@@ -67,45 +108,42 @@
                 <span class="d-none d-sm-block">Видалити</span>
               </button>
 
-              <div>Дозволені формати JPG, GIF чи PNG. Максимальний розмір 800K</div>
+              <div>Дозволені формати JPG, PNG. Максимальний розмір 2M</div>
             </div>
           </div>
         </div>
         <div class="card-body pt-0">
-          <form id="formAccountSettings" method="GET" onsubmit="return false">
+          <form id="formAccountSettings" method="post" action="{% url 'pages-account-settings-account' %}">
+            {% csrf_token %}
             <div class="row mt-1 g-5">
               <div class="col-md-6">
                 <div class="form-floating form-floating-outline">
-                  <input class="form-control" type="text" id="firstName" name="firstName"
-                         value="{{ request.user.profile.first_name|  capfirst }}" autofocus />
-                  <label for="firstName">Ім`я</label>
+                    {{ profile_form.first_name }}
+                    {{ profile_form.first_name.label_tag }}
                 </div>
               </div>
               <div class="col-md-6">
                 <div class="form-floating form-floating-outline">
-                  <input class="form-control" type="text" name="lastName" id="lastName"
-                         value="{{ request.user.profile.last_name|  capfirst }}" />
-                  <label for="lastName">Прізвище</label>
+                  {{ profile_form.last_name }}
+                  {{ profile_form.last_name.label_tag }}
                 </div>
               </div>
               <div class="col-md-6">
                 <div class="form-floating form-floating-outline">
-                  <input type="text" class="form-control" id="company" name="company"
-                         value="{{ request.user.profile.company|  capfirst }}" />
-                  <label for="company">Компанія</label>
+                    {{ profile_form.company }}
+                   {{ profile_form.company.label_tag }}
                 </div>
               </div>
               <div class="col-md-6">
                 <div class="form-floating form-floating-outline">
-                  <input type="text" class="form-control" id="company" name="company"
-                         value="{{ request.user.profile.position|  capfirst }}" />
-                  <label for="organization">Посада</label>
+                  {{ profile_form.position }}
+                  {{ profile_form.position.label_tag }}
                 </div>
               </div>
               <div class="col-md-6">
                 <div class="form-floating form-floating-outline">
-                  <input type="text" id="phoneNumber" name="phoneNumber" class="form-control" value="{% if  request.user.profile.phone_number %}{{ request.user.profile.phone_number }} {% else %}+380 {% endif %} "/>
-                  <label for="phoneNumber">Номер телефону</label>
+                  {{ profile_form.phone_number }}
+                  {{ profile_form.phone_number.label_tag }}
                 </div>
               </div>
 

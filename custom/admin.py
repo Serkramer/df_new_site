@@ -20,7 +20,7 @@ class PaperSizesAdmin(admin.ModelAdmin):
 
 @admin.register(PrintingMachineShafts)
 class PrintingMachineShaftsAdmin(admin.ModelAdmin):
-    list_display = ('printing_machine', 'diameter', 'quantity', 'width', 'thickness', 'date_create',
+    list_display = ('get_printing_company', 'printing_machine', 'diameter', 'quantity', 'width', 'thickness', 'date_create',
                     'input_value', 'input_value_type', 'contact', 'printing_width', 'description')
 
     autocomplete_fields = ['printing_machine', 'contact',]
@@ -28,6 +28,11 @@ class PrintingMachineShaftsAdmin(admin.ModelAdmin):
     search_fields = ('printing_machine__printing_company__id__name', 'printing_machine__name')
     form = PrintingMachineShaftsForm
     list_filter = (PrintingCompanyWithShaftsFilter, )
+
+    @admin.display(description="Друкарська компанія", ordering="printing_machine__printing_company__id__name")
+    def get_printing_company(self, obj):
+        return obj.printing_machine.printing_company if obj.printing_machine else None
+
 
 
 @admin.register(Contacts)
@@ -56,10 +61,14 @@ class PrintingMachinesAdmin(admin.ModelAdmin):
 
 @admin.register(AniloxRolls)
 class AniloxRollAdmin(admin.ModelAdmin):
-    list_display = ('printing_machine', 'line_count', 'transfer_volume', 'type', 'description')
+    list_display = ('printing_machine', 'line_count', 'transfer_volume', 'type', 'description', 'get_printing_company')
     search_fields = ('printing_machine', 'line_count')
     autocomplete_fields = ['printing_machine', ]
     form = AniloxRollForm
+
+    @admin.display(description="Друкарська компанія", ordering="printing_machine__printing_company__id__name")
+    def get_printing_company(self, obj):
+        return obj.printing_machine.printing_company if obj.printing_machine else None
 
 
 @admin.register(ContactsDetails)
@@ -75,10 +84,14 @@ class ContactInfoTypesAdmin(admin.ModelAdmin):
 
 @admin.register(PrintingMachinePresets)
 class PrintingMachinePresetsAdmin(admin.ModelAdmin):
-    list_display = ('printing_machine', 'name', 'material_thickness', 'ruling', 'raster_dot')
+    list_display = ('get_printing_company', 'printing_machine', 'name', 'material_thickness', 'ruling', 'raster_dot')
     search_fields = ('printing_machine', 'name')
     form = PrintingMachinePresetsForm
     autocomplete_fields = ['printing_machine', 'color_profile']
+
+    @admin.display(description="Друкарська компанія", ordering="printing_machine__printing_company__id__name")
+    def get_printing_company(self, obj):
+        return obj.printing_machine.printing_company if obj.printing_machine else None
 
 
 @admin.register(ColorProfiles)
@@ -102,7 +115,6 @@ class AdhesiveTapesAdmin(admin.ModelAdmin):
 @admin.register(ClicheTechnologies)
 class ClicheTechnologiesAdmin(admin.ModelAdmin):
     list_display = ('name', 'cliche_technology_type', 'len_file_resolution', 'thickness_min','thickness_max')
-
 
 
 @admin.register(CompanyClients)

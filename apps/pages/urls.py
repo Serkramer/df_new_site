@@ -29,8 +29,7 @@ urlpatterns = [
     ),
     path(
         "pages/account_settings/account/",
-        login_required(AccountSettingsView.as_view(template_name="pages_account_settings_account.html",
-                                                   form_class=ProfileForm)),
+        AccountSettingsView.as_view(),
         name="pages-account-settings-account",
     ),
     path(

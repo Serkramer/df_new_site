@@ -1,9 +1,10 @@
 from django.contrib.auth.decorators import login_required
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, JsonResponse
 from django.shortcuts import get_object_or_404
 from django.utils.decorators import method_decorator
 from django.views.generic import TemplateView
 
+from apps.pages.forms import ProfileForm
 from auth.models import Profile
 from web_project import TemplateLayout
 from django.views.generic.edit import FormMixin
@@ -24,24 +25,27 @@ class PagesView(TemplateView):
 
 
 @method_decorator(login_required, name='dispatch')
-class AccountSettingsView(TemplateView, FormMixin):
+class AccountSettingsView(TemplateView):
+    template_name = "pages_account_settings_account.html"
 
     def get_context_data(self, **kwargs):
-        # A function to init the global layout. It is defined in web_project/__init__.py file
         context = TemplateLayout.init(self, super().get_context_data(**kwargs))
         profile = get_object_or_404(Profile, user=self.request.user)
+        form = ProfileForm(instance=profile)  # Предзаполнение формы данными профиля
+        context['profile_form'] = form
         context['title'] = 'Налаштування акаунту'
-        context['profile_form'] = self.get_form()
-        context['profile'] = profile
         return context
 
     def post(self, request, *args, **kwargs):
-        form = self.get_form()
+        profile = get_object_or_404(Profile, user=self.request.user)
+        form = ProfileForm(request.POST, instance=profile)  # Связываем форму с профилем пользователя
         if form.is_valid():
-            form.save()  # Сохранение данных формы
-            return HttpResponseRedirect(self.request.path)  # Перенаправление на ту же страницу
+            form.save()  # Сохраняем изменения в профиле
+            return HttpResponseRedirect(self.request.path)  # Перенаправляем на текущую страницу
         else:
-            return self.render_to_response(self.get_context_data(form=form))
+            context = self.get_context_data()
+            context['profile_form'] = form
+            return self.render_to_response(context)
 
 
 class ProfileView(TemplateView):

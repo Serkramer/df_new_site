@@ -1467,7 +1467,7 @@ class PrintingMachines(models.Model):
         verbose_name_plural = 'Друкарські машини'
 
     def __str__(self):
-        return f"{self.printing_company} | {self.name}"
+        return f"{self.name}"
 
 
 class PrintingMaterialColors(models.Model):
