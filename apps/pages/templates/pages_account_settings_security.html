@@ -32,8 +32,8 @@
 
     document.addEventListener('DOMContentLoaded', function(e) {
       (function() {
-        const formChangePass = document.querySelector('#formAccountSettings'),
-          formApiKey = document.querySelector('#formAccountSettingsApiKey');
+        const formChangePass = document.querySelector('#formAccountSettings');
+
 
         // Form validation for Change password
         if (formChangePass) {
@@ -99,115 +99,16 @@
             }
           });
         }
-
-        // Form validation for API key
-        if (formApiKey) {
-          const fvApi = FormValidation.formValidation(formApiKey, {
-            fields: {
-              apiKey: {
-                validators: {
-                  notEmpty: {
-                    message: 'Please enter API key name'
-                  }
-                }
-              }
-            },
-            plugins: {
-              trigger: new FormValidation.plugins.Trigger(),
-              bootstrap5: new FormValidation.plugins.Bootstrap5({
-                eleValidClass: ''
-              }),
-              submitButton: new FormValidation.plugins.SubmitButton(),
-              // Submit the form when all fields are valid
-              // defaultSubmit: new FormValidation.plugins.DefaultSubmit(),
-              autoFocus: new FormValidation.plugins.AutoFocus()
-            },
-            init: instance => {
-              instance.on('plugins.message.placed', function(e) {
-                if (e.element.parentElement.classList.contains('input-group')) {
-                  e.element.parentElement.insertAdjacentElement('afterend', e.messageElement);
-                }
-              });
-            }
-          });
-        }
       })();
     });
-
-    // Select2 (jquery)
-    $(function() {
-      var select2 = $('.select2');
-
-      // Select2 API Key
-      if (select2.length) {
-        select2.each(function() {
-          var $this = $(this);
-          select2Focus($this);
-          $this.wrap('<div class="position-relative"></div>');
-          $this.select2({
-            dropdownParent: $this.parent()
-          });
-        });
-      }
-    });
-
-
-    document.addEventListener('DOMContentLoaded', function (e) {
-  (function () {
-    const phoneMask = document.querySelector('.phone-number-otp-mask');
-
-    // Phone Number Input Mask
-    if (phoneMask) {
-      new Cleave(phoneMask, {
-        phone: true,
-        phoneRegionCode: 'US'
-      });
-    }
-
-    // Enable OTP form validation
-    FormValidation.formValidation(document.getElementById('enableOTPForm'), {
-      fields: {
-        modalEnableOTPPhone: {
-          validators: {
-            notEmpty: {
-              message: 'Please enter your mobile number'
-            }
-          }
-        }
-      },
-      plugins: {
-        trigger: new FormValidation.plugins.Trigger(),
-        bootstrap5: new FormValidation.plugins.Bootstrap5({
-          // Use this for enabling/changing valid/invalid class
-          // eleInvalidClass: '',
-          eleValidClass: '',
-          rowSelector: '.col-12'
-        }),
-        submitButton: new FormValidation.plugins.SubmitButton(),
-        // Submit the form when all fields are valid
-        // defaultSubmit: new FormValidation.plugins.DefaultSubmit(),
-        autoFocus: new FormValidation.plugins.AutoFocus()
-      },
-      init: instance => {
-        instance.on('plugins.message.placed', function (e) {
-          //* Move the error message out of the `input-group` element
-          if (e.element.parentElement.classList.contains('input-group')) {
-            e.element.parentElement.insertAdjacentElement('afterend', e.messageElement);
-          }
-        });
-      }
-    });
-  })();
-});
-
-
-
   </script>
 
 
 {% endblock page_js %}
 
 {% block content %}
+
+
   <div class="row">
     <div class="col-md-12">
       <div class="nav-align-top">
@@ -222,49 +123,67 @@
       <div class="card mb-6">
         <h5 class="card-header">Змінити пароль</h5>
         <div class="card-body pt-1">
-          <form id="formAccountSettings" method="GET" onsubmit="return false">
+
+          {% if messages %}
+            <div class="alert alert-info">
+              {% for message in messages %}
+                <p>{{ message }}</p>
+              {% endfor %}
+            </div>
+          {% endif %}
+
+          <form method="post">
+            {% csrf_token %}
+           <h6 class="text-body">Пароль повинен містити мінімум 8 символів, але чим більше тим краще</h6>
+{#            <ul class="ps-4 mb-0">#}
+{#              <li class="mb-4">Мінімум 8 символів, але чим більше тим краще</li>#}
+{#            </ul>#}
+            {{ form.non_field_errors }}
+
+
             <div class="row">
               <div class="mb-5 col-md-6 form-password-toggle">
                 <div class="input-group input-group-merge">
                   <div class="form-floating form-floating-outline">
-                    <input class="form-control" type="password" name="currentPassword" id="currentPassword"
-                           placeholder="&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;" />
-                    <label for="currentPassword">Поточний пароль</label>
+                    {{ form.old_password }}
+                    {{ form.old_password.label_tag }}
                   </div>
                   <span class="input-group-text cursor-pointer"><i class="ri-eye-off-line"></i></span>
                 </div>
+                {% for error in form.old_password.errors %}
+                  <div class="text-danger mt-2">{{ error }}</div> <!-- Ошибка под полем -->
+                {% endfor %}
               </div>
             </div>
+
             <div class="row g-5 mb-6">
               <div class="col-md-6 form-password-toggle">
                 <div class="input-group input-group-merge">
                   <div class="form-floating form-floating-outline">
-                    <input class="form-control" type="password" id="newPassword" name="newPassword"
-                           placeholder="&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;" />
-                    <label for="newPassword">Новий пароль</label>
+                    {{ form.new_password1 }}
+                    {{ form.new_password1.label_tag }}
                   </div>
                   <span class="input-group-text cursor-pointer"><i class="ri-eye-off-line"></i></span>
                 </div>
+                {% for error in form.new_password1.errors %}
+                  <div class="text-danger mt-2">{{ error }}</div> <!-- Ошибка под полем -->
+                {% endfor %}
               </div>
               <div class="col-md-6 form-password-toggle">
                 <div class="input-group input-group-merge">
                   <div class="form-floating form-floating-outline">
-                    <input class="form-control" type="password" name="confirmPassword" id="confirmPassword"
-                           placeholder="&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;" />
-                    <label for="confirmPassword">Повторити новий пароль</label>
+                    {{ form.new_password2 }}
+                    {{ form.new_password2.label_tag }}
                   </div>
                   <span class="input-group-text cursor-pointer"><i class="ri-eye-off-line"></i></span>
                 </div>
+                {% for error in form.new_password2.errors %}
+                  <div class="text-danger mt-2">{{ error }}</div> <!-- Ошибка под полем -->
+                {% endfor %}
               </div>
             </div>
-            <h6 class="text-body">Пароль повинен містити:</h6>
-            <ul class="ps-4 mb-0">
-              <li class="mb-4">Мінімум 8 символів, але чим більше тим краще</li>
-            </ul>
-            <div class="mt-6">
-              <button type="submit" class="btn btn-primary me-3">Зберегти</button>
-              <button type="reset" class="btn btn-outline-secondary">Відмінити</button>
-            </div>
+
+            <button type="submit" class="btn btn-primary">Зберегти</button>
           </form>
         </div>
       </div>

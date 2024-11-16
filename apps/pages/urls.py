@@ -1,7 +1,7 @@
 from django.urls import path
 
 from .forms import ProfileForm
-from .views import PagesView, ProfileView, AccountSettingsView, UpdateAvatarView
+from .views import PagesView, ProfileView, AccountSettingsView, UpdateAvatarView, ChangePasswordView
 from .views_misc import MiscPagesView
 from django.contrib.auth.decorators import login_required
 
@@ -35,7 +35,7 @@ urlpatterns = [
     ),
     path(
         "pages/account_settings/security/",
-        login_required(PagesView.as_view(template_name="pages_account_settings_security.html")),
+        login_required(ChangePasswordView.as_view()),
         name="pages-account-settings-security",
     ),
     path(

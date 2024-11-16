@@ -1,11 +1,13 @@
+from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseRedirect, JsonResponse
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, redirect
+from django.urls import reverse_lazy
 from django.utils.decorators import method_decorator
 from django.views import View
-from django.views.generic import TemplateView
-
-from apps.pages.forms import ProfileForm
+from django.views.generic import TemplateView, FormView
+from django.contrib import messages
+from apps.pages.forms import ProfileForm, CustomPasswordChangeForm
 from auth.models import Profile
 from web_project import TemplateLayout
 from django.views.generic.edit import FormMixin
@@ -74,8 +76,34 @@ class UpdateAvatarView(View):
         return JsonResponse({'error': 'Файл не завантажено'}, status=400)
 
 
-class ProfileView(TemplateView):
+class ChangePasswordView(FormView):
+    template_name = "pages_account_settings_security.html"
+    form_class = CustomPasswordChangeForm
+    success_url = reverse_lazy('pages-account-settings-security')
 
+    def get_context_data(self, **kwargs):
+        context = TemplateLayout.init(self, super().get_context_data(**kwargs))
+        context['title'] = 'Налаштування акаунту'
+        return context
+
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['user'] = self.request.user
+        return kwargs
+
+    def form_valid(self, form):
+        form.save()
+        update_session_auth_hash(self.request, form.user)  # Чтобы не разлогинивать пользователя
+        messages.success(self.request, "Пароль успішно змінено!")
+        return super().form_valid(form)
+
+    def form_invalid(self, form):
+        messages.error(self.request, "Виправте помилки у формі.")
+        return super().form_invalid(form)
+
+
+class ProfileView(TemplateView):
     def get_context_data(self, **kwargs):
         context = TemplateLayout.init(self, super().get_context_data(**kwargs))
 
