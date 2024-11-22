@@ -37,6 +37,185 @@
 {% block page_js %}
   {{ block.super }}
   <script>
+
+
+    document.getElementById('add_color_button').addEventListener('click', function(event) {
+      event.preventDefault();
+      const container = document.getElementById('colors-container');
+      const colorBlock = document.createElement('div');
+      colorBlock.classList.add('row', 'g-3');
+
+      colorBlock.innerHTML = `
+        <div class="col-12 col-md-2">
+            <div class="form-floating form-floating-outline">
+                <input type="text" name="name" class="form-control" required>
+                <label for="id_name">Колір</label>
+            </div>
+        </div>
+        <div class="col-12 col-md-1">
+            <div class="form-floating form-floating-outline">
+                <input type="number" name="height" class="form-control" required>
+                <label for="id_height">Кут</label>
+            </div>
+        </div>
+        <div class="col-12 col-md-1">
+            <div class="form-floating form-floating-outline">
+                <input type="number" name="width" class="form-control" required>
+                <label for="id_width">Точка</label>
+            </div>
+        </div>
+        <div class="col-12 col-md-1">
+            <div class="form-floating form-floating-outline">
+                <input type="number" name="center_point" class="form-control">
+                <label for="id_center_point">lpi</label>
+            </div>
+        </div>
+        <div class="col-12 col-md-2">
+            <div class="form-floating form-floating-outline">
+                <input type="number" name="height" class="form-control" required>
+                <label for="id_height">Матеріал</label>
+            </div>
+        </div>
+        <div class="col-12 col-md-1">
+            <div class="form-floating form-floating-outline">
+                <input type="number" name="center_point" class="form-control">
+                <label for="id_center_point">стр</label>
+            </div>
+        </div>
+        <div class="col-12 col-md-1">
+            <div class="form-floating form-floating-outline">
+                <input type="number" name="center_point" class="form-control">
+                <label for="id_center_point">Ширина</label>
+            </div>
+        </div>
+        <div class="col-12 col-md-1">
+            <div class="form-floating form-floating-outline">
+                <input type="number" name="center_point" class="form-control">
+                <label for="id_center_point">Висота</label>
+            </div>
+        </div>
+
+        <div class="col-12 col-md-1">
+            <div class="form-floating form-floating-outline">
+                <input type="number" name="center_point" class="form-control">
+                <label for="id_center_point">к-сть</label>
+            </div>
+        </div>
+        <div class="col-12 col-md-1">
+            <div class="form-floating form-floating-outline">
+                <button type="button" class="btn btn-danger remove-block">X</button>
+            </div>
+        </div>
+    `;
+
+      const removeButton = colorBlock.querySelector('.remove-block');
+      removeButton.addEventListener('click', function() {
+        container.removeChild(colorBlock);
+      });
+
+      container.appendChild(colorBlock);
+    });
+
+    //добавления блока с фартуками
+    document.getElementById('add_fartuk_button').addEventListener('click', function(event) {
+      event.preventDefault(); // Остановить стандартное поведение кнопки
+
+      // Контейнер для форм
+      const container = document.getElementById('fartuk-forms-container');
+
+      // Создать блок с формой
+      const formBlock = document.createElement('div');
+      formBlock.classList.add('row', 'g-3'); // Классы для оформления
+
+      // HTML-шаблон с полями модели
+      formBlock.innerHTML = `
+        <div class="col-12 col-md-2">
+            <div class="form-floating form-floating-outline">
+                <input type="text" name="name" class="form-control" required>
+                <label for="id_name">Назва</label>
+            </div>
+        </div>
+        <div class="col-12 col-md-3">
+            <div class="form-floating form-floating-outline">
+                <input type="number" name="height" class="form-control" required>
+                <label for="id_height">Висота</label>
+            </div>
+        </div>
+        <div class="col-12 col-md-3">
+            <div class="form-floating form-floating-outline">
+                <input type="number" name="width" class="form-control" required>
+                <label for="id_width">Ширина</label>
+            </div>
+        </div>
+        <div class="col-12 col-md-3">
+            <div class="form-floating form-floating-outline">
+                <input type="number" name="center_point" class="form-control">
+                <label for="id_center_point">Центр</label>
+            </div>
+        </div>
+        <div class="col-12 col-md-1">
+            <div class="form-floating form-floating-outline">
+                <button type="button" class="btn btn-danger remove-block">X</button>
+            </div>
+        </div>
+    `;
+
+      // Добавить обработчик удаления для кнопки "X"
+      const removeButton = formBlock.querySelector('.remove-block');
+      removeButton.addEventListener('click', function() {
+        container.removeChild(formBlock);
+      });
+
+      // Добавить новый блок в контейнер
+      container.appendChild(formBlock);
+    });
+
+    document.getElementById('add_damper_button').addEventListener('click', function(event) {
+
+      event.preventDefault();
+      const container = document.getElementById('damper-container');
+      const damperBlock = document.createElement('div');
+      damperBlock.classList.add('row', 'g-3');
+
+      damperBlock.innerHTML = `
+        <div class="col-12 col-md-3">
+            <div class="form-floating form-floating-outline">
+                <input type="text" name="name" class="form-control" required>
+                <label for="id_name">Назва</label>
+            </div>
+        </div>
+        <div class="col-12 col-md-4">
+            <div class="form-floating form-floating-outline">
+                <input type="number" name="height" class="form-control" required>
+                <label for="id_height">Висота</label>
+            </div>
+        </div>
+        <div class="col-12 col-md-4">
+            <div class="form-floating form-floating-outline">
+                <input type="number" name="width" class="form-control" required>
+                <label for="id_width">Ширина</label>
+            </div>
+        </div>
+
+        <div class="col-12 col-md-1">
+            <div class="form-floating form-floating-outline">
+                <button type="button" class="btn btn-danger remove-block">X</button>
+            </div>
+        </div>
+    `;
+
+      // Добавить обработчик удаления для кнопки "X"
+      const removeButton = damperBlock.querySelector('.remove-block');
+      removeButton.addEventListener('click', function() {
+        container.removeChild(damperBlock);
+      });
+
+      // Добавить новый блок в контейнер
+      container.appendChild(damperBlock);
+
+    });
+
+
     (function() {
 
       // робота з завантаження файлів
@@ -88,7 +267,6 @@
       }
     })();
 
-
   </script>
   <script>
 
@@ -134,34 +312,11 @@
                 return '<input type="checkbox" class="dt-checkboxes form-check-input">';
               },
               checkboxes: {
-                selectRow: true,
+                {#selectRow: true,#}
                 selectAllRender: '<input type="checkbox" class="form-check-input">'
               }
-            },
-            {
-              // Label
-              targets: -1,
-              render: function(data, type, full, meta) {
-                var $status_number = full['status'];
-                var $status = {
-                  1: { title: 'Доставлено', class: 'bg-label-primary' },
-                  2: { title: 'Professional', class: ' bg-label-success' },
-                  3: { title: 'Rejected', class: ' bg-label-danger' },
-                  4: { title: 'Resigned', class: ' bg-label-warning' },
-                  5: { title: 'Applied', class: ' bg-label-info' }
-                };
-                if (typeof $status[$status_number] === 'undefined') {
-                  return data;
-                }
-                return (
-                  '<span class="badge rounded-pill ' +
-                  $status[$status_number].class +
-                  '">' +
-                  $status[$status_number].title +
-                  '</span>'
-                );
-              }
             }
+
           ],
           order: [[1, 'desc']],
           dom: '<"row"<"col-sm-12 col-md-6"l><"col-sm-12 col-md-6 d-flex justify-content-center justify-content-md-end"f>><"table-responsive"t><"row"<"col-sm-12 col-md-6"i><"col-sm-12 col-md-6"p>>',
@@ -183,120 +338,78 @@
           {# },#}
           scrollX: true
         });
-      }
-    });
 
-    // работа с формой в выпадающем окне
 
-    $(function() {
-      const select2 = $('.select2'),
-        TagifyLanguageSuggestionEl = document.querySelector('#TagifyLanguageSuggestion');
-
-      const langaugelist = ['Portuguese', 'German', 'French', 'English'];
-
-      let TagifyLanguageSuggestion = new Tagify(TagifyLanguageSuggestionEl, {
-        whitelist: langaugelist,
-        dropdown: {
-          classname: '',
-          enabled: 0,
-          closeOnSelect: false
-        }
-      });
-
-      // Select2 Country
-      if (select2.length) {
-        select2.each(function() {
-          var $this = $(this);
-          select2Focus($this);
-          $this.wrap('<div class="position-relative"></div>').select2({
-            placeholder: 'Select value',
-            dropdownParent: $this.parent()
-          });
-        });
-      }
-    });
-
-    document.addEventListener('DOMContentLoaded', function(e) {
-      (function() {
-        // variables
-        const modalEditUserTaxID = document.querySelector('.modal-edit-tax-id');
-        const modalEditUserPhone = document.querySelector('.phone-number-mask');
-
-        // Prefix
-        if (modalEditUserTaxID) {
-          new Cleave(modalEditUserTaxID, {
-            prefix: 'TIN',
-            blocks: [3, 3, 3, 4],
-            uppercase: true
-          });
-        }
-
-        // Phone Number Input Mask
-        if (modalEditUserPhone) {
-          new Cleave(modalEditUserPhone, {
-            phone: true,
-            phoneRegionCode: 'US'
-          });
-        }
-
-        // валидация формы
-        FormValidation.formValidation(document.getElementById('createOrderForm'), {
-          fields: {
-            modalEditUserFirstName: {
-              validators: {
-                notEmpty: {
-                  message: 'Please enter your first name'
-                },
-                regexp: {
-                  regexp: /^[a-zA-Zs]+$/,
-                  message: 'The first name can only consist of alphabetical'
-                }
-              }
-            },
-            modalEditUserLastName: {
-              validators: {
-                notEmpty: {
-                  message: 'Please enter your last name'
-                },
-                regexp: {
-                  regexp: /^[a-zA-Zs]+$/,
-                  message: 'The last name can only consist of alphabetical'
-                }
-              }
-            },
-            modalEditUserName: {
-              validators: {
-                notEmpty: {
-                  message: 'Please enter your username'
-                },
-                stringLength: {
-                  min: 6,
-                  max: 30,
-                  message: 'The name must be more than 6 and less than 30 characters long'
-                },
-                regexp: {
-                  regexp: /^[a-zA-Z0-9 ]+$/,
-                  message: 'The name can only consist of alphabetical, number and space'
-                }
-              }
-            }
-          },
-          plugins: {
-            trigger: new FormValidation.plugins.Trigger(),
-            bootstrap5: new FormValidation.plugins.Bootstrap5({
-              // Use this for enabling/changing valid/invalid class
-              // eleInvalidClass: '',
-              eleValidClass: '',
-              rowSelector: '.col-12'
-            }),
-            submitButton: new FormValidation.plugins.SubmitButton(),
-            // Submit the form when all fields are valid
-            // defaultSubmit: new FormValidation.plugins.DefaultSubmit(),
-            autoFocus: new FormValidation.plugins.AutoFocus()
+        // Добавление события на двойной щелчок
+        dt_select_table.on('dblclick', 'tr', function() {
+          var rowData = dt_select.row(this).data(); // Получить данные строки
+          if (rowData) {
+            // Добавьте любое действие, например, открытие модального окна
+            get_order_info(rowData.id);
           }
         });
-      })();
+      }
     });
+
+
+  </script>
+
+  <script>
+    {#function add_data_in_order_form(order_id) {#}
+    {#  let order = get_order_info(order_id);#}
+    {##}
+    {#}#}
+
+    function get_order_info(order_id) {
+      const url = `{% url "orders:get_order_info" %}?order_id=${order_id}`;
+
+      // Выполнение GET-запроса
+      fetch(url, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': getCookie('csrftoken') // Если CSRF токен нужен
+        }
+      })
+        .then(response => {
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+          return response.json(); // Преобразуем ответ в JSON
+        })
+        .then(data => {
+          // Проверяем статус ответа
+          if (data.status === 'success') {
+            console.log('Заказ:', data.order);
+            console.log('Демперы:', data.dampers);
+            console.log('Фартуки:', data.fartuks);
+            console.log('Слайсы:', data.slices);
+            console.log('Редактируемость:', data.editable);
+          } else {
+            console.error('Ошибка:', data.message);
+          }
+        })
+        .catch(error => {
+          console.error('Произошла ошибка при запросе:', error);
+        });
+    }
+
+
+    function getCookie(name) {
+      let cookieValue = null;
+      if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+          const cookie = cookies[i].trim();
+          // Проверяем, соответствует ли имя куки
+          if (cookie.startsWith(name + '=')) {
+            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+            break;
+          }
+        }
+      }
+      return cookieValue;
+    }
 
 
   </script>
@@ -343,9 +456,9 @@
     </div>
   </div>
 
-  <!-- Edit User Modal -->
+
   <div class="modal fade" id="createOrder" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-simple">
+    <div class="modal-dialog modal-xl modal-simple">
       <div class="modal-content">
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         <div class="modal-body p-0">
@@ -373,7 +486,22 @@
 
           <form id="createOrderForm" class="row g-5" onsubmit="return false">
             {% csrf_token %}
-
+            <div class="col-12 col-md-6">
+              <label class="switch">
+                <input type="checkbox" class="switch-input">
+                <span class="switch-toggle-slider">
+              <span class="switch-on"></span>
+              <span class="switch-off"></span>
+            </span>
+                <span class="switch-label">Терміновий</span>
+              </label>
+            </div>
+            <div class="col-12 col-md-6">
+              <div class="form-floating form-floating-outline">
+                {{ create_order_form.engraver }}
+                {{ create_order_form.engraver.label_tag }}
+              </div>
+            </div>
 
             <div class="col-12 col-md-6">
               <div class="form-floating form-floating-outline">
@@ -440,47 +568,133 @@
               <div class="form-floating form-floating-outline">
                 {{ create_order_form.angle_set }}
                 {{ create_order_form.angle_set.label_tag }}
-               </div>
+              </div>
             </div>
             <div class="col-12">
               <div class="form-floating form-floating-outline">
                 {{ create_order_form.color_library }}
                 {{ create_order_form.color_library.label_tag }}
-               </div>
+              </div>
+            </div>
+            <div class="col-12 col-md-2">
+              <p>параметри для кольорів</p>
             </div>
             <div class="col-12 col-md-2">
               <div class="form-floating form-floating-outline">
                 {{ create_order_form.raster_dot_default }}
                 {{ create_order_form.raster_dot_default.label_tag }}
-               </div>
+              </div>
             </div>
-                      <div class="col-12 col-md-2">
+            <div class="col-12 col-md-2">
               <div class="form-floating form-floating-outline">
                 {{ create_order_form.ruling_default }}
                 {{ create_order_form.ruling_default.label_tag }}
-               </div>
+              </div>
             </div>
-                      <div class="col-12 col-md-2">
+            <div class="col-12 col-md-2">
               <div class="form-floating form-floating-outline">
                 {{ create_order_form.materials_default }}
                 {{ create_order_form.materials_default.label_tag }}
-               </div>
+              </div>
             </div>
-                      <div class="col-12 col-md-2">
+            <div class="col-12 col-md-2">
               <div class="form-floating form-floating-outline">
                 {{ create_order_form.height_default }}
                 {{ create_order_form.height_default.label_tag }}
-               </div>
+              </div>
             </div>
-                      <div class="col-12 col-md-2">
+            <div class="col-12 col-md-2">
               <div class="form-floating form-floating-outline">
                 {{ create_order_form.width_default }}
                 {{ create_order_form.width_default.label_tag }}
-               </div>
+              </div>
             </div>
+            <div id="colors-container" class="row"></div>
+            <div class="col-12 text-center d-flex flex-wrap justify-content-center gap-4 row-gap-4">
+              <button class="btn btn-primary" id="add_color_button">додати колір</button>
+            </div>
+
+            <div id="fartuk-forms-container" class="row"></div>
+            <div class="col-12 text-center d-flex flex-wrap justify-content-center gap-4 row-gap-4">
+              <button class="btn btn-primary" id="add_fartuk_button">додати фартук</button>
+            </div>
+
+            <div id="damper-container" class="row"></div>
+
+            <div class="col-12 text-center d-flex flex-wrap justify-content-center gap-4 row-gap-4">
+              <button class="btn btn-primary" id="add_damper_button">додати демпер</button>
+            </div>
+
+            <div class="col-12 col-md-6">
+              <div class="form-floating form-floating-outline">
+                {{ delivery_form.area }}
+                {{ delivery_form.area.label_tag }}
+              </div>
+            </div>
+
+            <div class="col-12 col-md-6">
+              <div class="form-floating form-floating-outline">
+                {{ delivery_form.settlement }}
+                {{ delivery_form.settlement.label_tag }}
+              </div>
+            </div>
+
+            <div class="col-12 col-md-4">
+              <div class="form-floating form-floating-outline">
+                {{ delivery_form.delivery_type }}
+                {{ delivery_form.delivery_type.label_tag }}
+              </div>
+            </div>
+
+
+            <div class="col-12 col-md-4">
+              <div class="form-floating form-floating-outline">
+                <small class="text-light fw-medium d-block">Вид доставки</small>
+                {% for value, label in delivery_form.np_type_field.field.choices %}
+                  <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="{{ delivery_form.np_type_field.name }}"
+                           id="np_delivery_tupe_{{ forloop.counter }}" value="{{ value }}">
+                    <label class="form-check-label" for="np_delivery_tupe_{{ forloop.counter }}">{{ label }}</label>
+                  </div>
+                {% endfor %}
+
+              </div>
+            </div>
+
+            <div class="col-12 col-md-4">
+              <div class="form-floating form-floating-outline">
+                {{ delivery_form.post_office_ref }}
+                {{ delivery_form.post_office_ref.label_tag }}
+              </div>
+            </div>
+
+            <div class="col-12 col-md-8">
+              <div class="form-floating form-floating-outline">
+                {{ delivery_form.street }}
+                {{ delivery_form.street.label_tag }}
+              </div>
+            </div>
+
+            <div class="col-12 col-md-4">
+              <div class="form-floating form-floating-outline">
+                {{ delivery_form.build }}
+                {{ delivery_form.build.label_tag }}
+              </div>
+            </div>
+
+
+            <div class="col-12 ">
+              <div class="form-floating form-floating-outline">
+                {{ delivery_form.description }}
+                {{ delivery_form.description.label_tag }}
+              </div>
+            </div>
+
+
             <div class="col-12 text-center d-flex flex-wrap justify-content-center gap-4 row-gap-4">
               <button type="submit" class="btn btn-primary">Додати замовлення</button>
-              <button type="reset" class="btn btn-outline-secondary" data-bs-dismiss="modal" aria-label="Close">Очистити форму
+              <button type="reset" class="btn btn-outline-secondary" data-bs-dismiss="modal" aria-label="Close">Очистити
+                форму
               </button>
             </div>
           </form>
@@ -488,7 +702,6 @@
       </div>
     </div>
   </div>
-  <!--/ Edit User Modal -->
 
 
 

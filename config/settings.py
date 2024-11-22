@@ -89,6 +89,7 @@ INSTALLED_APPS = [
     'dal_select2',
     "orders.apps.OrdersConfig",
     'website.apps.WebsiteConfig',
+    'rest_framework',
 ]
 
 MIDDLEWARE = [

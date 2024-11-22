@@ -24,7 +24,7 @@ class ForgetPasswordView(AuthView):
 
             user = User.objects.filter(email=email).first()
             if not user:
-                messages.error(request, "No user with this email exists.")
+                messages.error(request, "Користувача з цією електронною адресою не існує.")
                 return redirect("forgot-password")
 
             # Generate a token and send a password reset email here
@@ -42,9 +42,9 @@ class ForgetPasswordView(AuthView):
             send_password_reset_email(email, token)
 
             if settings.EMAIL_HOST_USER and settings.EMAIL_HOST_PASSWORD:
-                messages.success(request, "A password reset email has been sent. Please check your inbox")
+                messages.success(request, "Електронний лист для зміни пароля надіслано. Будь ласка, перевірте свою поштову скриньку")
             else:
-                messages.error(request, "Email settings are not configured. Unable to send verification email.")
+                messages.error(request, "Не вдалося надіслати електронний лист для підтвердження.")
 
 
             return redirect("forgot-password")

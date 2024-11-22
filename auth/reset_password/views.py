@@ -17,7 +17,7 @@ class ResetPasswordView(AuthView):
         try:
             profile = Profile.objects.get(forget_password_token=token)
         except Profile.DoesNotExist:
-            messages.error(request, "Invalid or expired token.")
+            messages.error(request, "Недійсний або прострочений token.")
             return redirect("forgot-password")
 
         if request.method == "POST":
@@ -25,11 +25,11 @@ class ResetPasswordView(AuthView):
             confirm_password = request.POST.get("confirm-password")
 
             if not (new_password and confirm_password):
-                messages.error(request, "Please fill all fields.")
+                messages.error(request, "Будь ласка, заповніть усі поля.")
                 return render(request, "reset-password")
 
             if new_password != confirm_password:
-                messages.error(request, "Passwords do not match.")
+                messages.error(request, "Паролі не збігаються.")
                 return render(request, "reset-password")
 
             user = profile.user
@@ -46,5 +46,5 @@ class ResetPasswordView(AuthView):
                 login(request, authenticated_user)
                 return redirect("index")
             else:
-                messages.success(request, "Password reset successful. Please log in.")
+                messages.success(request, "Скидання пароля успішне. Будь ласка, увійдіть.")
                 return redirect("login")

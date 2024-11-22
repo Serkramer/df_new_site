@@ -1,7 +1,7 @@
 from django import forms
 from dal import autocomplete
 from custom.models import CompanyClients, PrintingCompanies, PrintingMachinePresets, ClicheTechnologies, \
-    CompressionType, AngleSetTypes, AngleSets
+    CompressionType, AngleSetTypes, AngleSets, OrderPlaneSlices, OrderFartuks, DeliveryTypes, Engravers
 from map.models import Areas, Settlements, PostOffices
 
 REVERT_CHOICES = [
@@ -9,8 +9,22 @@ REVERT_CHOICES = [
     ('reverse', 'Зворотній'),
 ]
 
+NP_DELIVERY_TIPE_CHOICES = [
+    ('post_office', 'Відділення'),
+    ('addresses', 'Адресна'),
+]
+
 
 class OrderViewForm(forms.Form):
+
+    engraver = forms.ModelChoiceField(label='Гравер', queryset=Engravers.objects.all(),
+                                      widget=autocomplete.ModelSelect2(attrs={'class': 'form-control'}))
+
+    urgency = forms.BooleanField(
+        label='Терміновий',
+        widget=forms.BooleanField()
+    )
+
     work_file = forms.ChoiceField(
         label='Вивідний файл',
         required=True,
@@ -105,43 +119,78 @@ class OrderViewForm(forms.Form):
     )
 
 
-class OrderPlaneSliceViewForm(forms.Form):
-    color_output = forms.BooleanField()
-    color_div = forms.CharField()
-    angel = forms.CharField()
-    dot = forms.CharField()
-    material = forms.CharField()
-    page_number = forms.IntegerField()
-    width = forms.IntegerField()
-    height = forms.IntegerField()
-    quantity = forms.IntegerField()
-
-
 class OrderDeliveryViewForm(forms.Form):
-    contact = forms.CharField()
-    delivery_type = forms.CharField()
+    contact = forms.ChoiceField(label="контакт з доставки", widget=forms.TextInput(attrs={'class': 'form-control'}))
+    delivery_type = forms.ModelChoiceField(label="тип доставки",
+                                           widget=autocomplete.ModelSelect2(attrs={'class': 'form-control'}),
+                                           queryset=DeliveryTypes.objects.all(),
+                                           required=True)
     delivery_date = forms.DateField()
-    np_type_field = forms.RadioSelect()
+    np_type_field = forms.ChoiceField(
+        label='вид доставки',
+        choices=NP_DELIVERY_TIPE_CHOICES,
+        widget=forms.RadioSelect(attrs={'class': 'form-check-input'}),
+    )
     area = forms.ModelChoiceField(
         label="Область",
         queryset=Areas.objects.all(),
-        widget=autocomplete.ModelSelect2(url='map:areas-autocomplete'),
+        widget=autocomplete.ModelSelect2(url='map:areas-autocomplete', attrs={'class': 'form-control'}),
         required=True
     )
     settlement = forms.ModelChoiceField(
         label='Населенний пункт',
         queryset=Settlements.objects.all(),
-        widget=autocomplete.ModelSelect2(url='map:settlements-autocomplete', forward=['area']),
+        widget=autocomplete.ModelSelect2(url='map:settlements-autocomplete', forward=['area'], attrs={'class': 'form-control'}),
         required=True
     )
 
     post_office_ref = forms.ModelChoiceField(
         label='Відділення НП',
         queryset=PostOffices.objects.all(),
-        widget=autocomplete.ModelSelect2(url='map:post-office-autocomplete', forward=['settlement_ref']),
+        widget=autocomplete.ModelSelect2(url='map:post-office-autocomplete', forward=['settlement_ref'], attrs={'class': 'form-control'}),
         required=False
+    )
+
+    street = forms.CharField(
+        label='Вулиця',
+        widget=forms.TextInput(attrs={'class': 'form-control'})
+    )
+
+    build = forms.CharField(
+        label="будинок",
+        widget=forms.TextInput(attrs={'class': 'form-control'})
+    )
+
+    description = forms.CharField(
+        label="коментар",
+        widget=forms.TextInput(attrs={'class': 'form-control'})
     )
 
 
 class FileUploadForm(forms.ModelForm):
     pass
+
+
+class PlaneSliceForm(forms.ModelForm):
+    class Meta:
+        model = OrderPlaneSlices
+        exclude = ('order', 'name', 'lineature', 'order_plane_slice_group', 'position_x', 'position_y', 'is_defect',
+                   'material_plate_type' )
+
+
+class OrderFartuksForm(forms.ModelForm):
+    class Meta:
+        model = OrderFartuks
+        exclude = ('order',)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        required_fields = ['height', 'width']
+        for field in required_fields:
+            self.fields[field].required = True
+
+
+class OrderDamperForm(forms.ModelForm):
+    pass
+

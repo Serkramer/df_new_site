@@ -6,7 +6,21 @@
 #   * Remove `managed = False` lines if you wish to allow Django to create, modify, and delete the table
 # Feel free to rename the models, but don't rename db_table values or field names.
 from django.db import models
+from django.forms import BooleanField
+
 from store.models import Materials as StoreMaterial
+
+
+class BitBooleanField(BooleanField):
+    def from_db_value(self, value, expression, connection):
+        # Преобразование значения BIT в Python bool
+        if value is None:
+            return None
+        return bool(value)
+
+    def get_prep_value(self, value):
+        # Преобразование значения Python bool в BIT
+        return 1 if value else 0
 
 
 class CompressionType(models.TextChoices):
@@ -772,8 +786,8 @@ class Employees(models.Model):
 
 class Engravers(models.Model):
     id = models.BigAutoField(primary_key=True)
-    full_name = models.CharField(max_length=50, blank=True, null=True)
-    name = models.CharField(max_length=50, blank=True, null=True)
+    full_name = models.CharField(max_length=50, blank=True, null=True, verbose_name="Повна назва")
+    name = models.CharField(max_length=50, blank=True, null=True, verbose_name="Скорочення")
 
     class Meta:
         managed = False
@@ -782,7 +796,7 @@ class Engravers(models.Model):
         verbose_name = 'Гравер'
 
     def __str__(self):
-        return self.full_name
+        return self.name
 
 
 class FartukHeights(models.Model):
@@ -1060,10 +1074,10 @@ class OrderEmployee(models.Model):
 
 class OrderFartuks(models.Model):
     id = models.BigAutoField(primary_key=True)
-    center_point = models.IntegerField(blank=True, null=True, verbose_name="центральна точка")
+    center_point = models.IntegerField(blank=True, null=True, verbose_name="центр")
     comment = models.CharField(max_length=255, blank=True, null=True, verbose_name='коментар')
-    height = models.IntegerField(blank=True, null=True, verbose_name="висота фартука")
-    width = models.IntegerField(blank=True, null=True, verbose_name='ширина фартука')
+    height = models.IntegerField(blank=True, null=True, verbose_name="висота")
+    width = models.IntegerField(blank=True, null=True, verbose_name='ширина')
     order = models.ForeignKey('Orders', models.DO_NOTHING, blank=True, null=True, verbose_name='Замовленння')
     name = models.CharField(max_length=100, blank=True, null=True, verbose_name='Назва')
 
@@ -1669,3 +1683,16 @@ class YellowRulings(models.Model):
             return f"+{self.value} %"
         else:
             return f"{self.value} %"
+
+
+class OrderDampers(models.Model):
+    id = models.BigAutoField(primary_key=True)
+    color = models.CharField(max_length=100, blank=True, null=True, verbose_name='До чього відноситься')
+    height = models.IntegerField(blank=True, null=True, verbose_name='Висота')
+    width = models.IntegerField(blank=True, null=True, verbose_name='Ширина')
+    order = models.ForeignKey(Orders, models.DO_NOTHING, blank=True, null=True, verbose_name='Замовлення')
+
+    class Meta:
+        managed = False
+        db_table = 'order_dampers'
+

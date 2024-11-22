@@ -18,13 +18,14 @@ class VerifyEmailTokenView(AuthView):
             if not request.user.is_authenticated:
                 # User is not already authenticated
                 # Perform the email verification and any other necessary actions
-                messages.success(request, "Email verified successfully")
+                messages.success(request, "Електронну пошту успішно перевірено")
             return redirect("login")
             # Now, redirect to the login page
 
         except Profile.DoesNotExist:
-            messages.error(request, "Invalid token, please try again")
+            messages.error(request, "Недійсний token, спробуйте ще раз")
             return redirect("verify-email-page")
+
 
 class VerifyEmailView(AuthView):
     def get(self, request):
@@ -44,7 +45,7 @@ class SendVerificationView(AuthView):
             send_verification_email(email, token)
             messages.success(request, message)
         else:
-            messages.error(request, "Email not found in session")
+            messages.error(request, "Електронна пошта не знайдена під час сеансу")
 
         return redirect("verify-email-page")
 
@@ -53,14 +54,14 @@ class SendVerificationView(AuthView):
             email = request.user.profile.email
 
             if settings.EMAIL_HOST_USER and settings.EMAIL_HOST_PASSWORD:
-                message = messages.success(request, "Verification email sent successfully")
+                message = messages.success(request, "Електронний лист із підтвердженням успішно надіслано")
             else:
-                message = messages.error(request, "Email settings are not configured. Unable to send verification email.")
+                message = messages.error(request, "Не вдалося надіслати електронний лист для підтвердження.")
         else:
             email = request.session.get('email')
             if settings.EMAIL_HOST_USER and settings.EMAIL_HOST_PASSWORD:
                 message = "Resend verification email successfully" if email else None
             else:
-                 message = messages.error(request, "Email settings are not configured. Unable to send verification email.")
+                 message = messages.error(request, "Не вдалося надіслати електронний лист для підтвердження.")
 
         return email, message

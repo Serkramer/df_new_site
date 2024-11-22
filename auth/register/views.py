@@ -24,13 +24,13 @@ class RegisterView(AuthView):
 
         # Check if a user with the same username or email already exists
         if User.objects.filter(username=username, email=email).exists():
-            messages.error(request, "User already exists, Try logging in.")
+            messages.error(request, "Користувач уже існує.")
             return redirect("register")
         elif User.objects.filter(email=email).exists():
-            messages.error(request, "Email already exists.")
+            messages.error(request, "Електронна адреса вже існує.")
             return redirect("register")
         elif User.objects.filter(username=username).exists():
-            messages.error(request, "Username already exists.")
+            messages.error(request, "Ім'я користувача вже існує.")
             return redirect("register")
 
         # Create the user and set their password
@@ -54,9 +54,9 @@ class RegisterView(AuthView):
         send_verification_email(email, token)
 
         if settings.EMAIL_HOST_USER and settings.EMAIL_HOST_PASSWORD:
-            messages.success(request, "Verification email sent successfully")
+            messages.success(request, "Електронний лист із підтвердженням успішно надіслано")
         else:
-            messages.error(request, "Email settings are not configured. Unable to send verification email.")
+            messages.error(request, "Не вдалося надіслати електронний лист для підтвердження.")
 
         request.session['email'] = email ## Save email in session
         # Redirect to the verification page after successful registration

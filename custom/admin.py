@@ -1,7 +1,4 @@
 from django.contrib import admin
-from django.http import HttpResponse, HttpResponseRedirect
-from django.urls import reverse, path
-from django.utils.html import format_html
 
 from .admin_filters import PrintingCompanyWithShaftsFilter
 from .forms import PrintingMachineShaftsForm, CompanyForm, DeliveryPresetsForm, PrintingMachinePresetsForm, \
@@ -20,8 +17,8 @@ class PaperSizesAdmin(admin.ModelAdmin):
 
 @admin.register(PrintingMachineShafts)
 class PrintingMachineShaftsAdmin(admin.ModelAdmin):
-    list_display = ('get_printing_company', 'printing_machine', 'diameter', 'quantity', 'width', 'thickness', 'date_create',
-                    'input_value', 'input_value_type', 'contact', 'printing_width', 'description')
+    list_display = ('get_printing_company', 'printing_machine', 'diameter', 'quantity', 'width', 'thickness',
+                    'date_create', 'input_value', 'input_value_type', 'contact', 'printing_width', 'description')
 
     autocomplete_fields = ['printing_machine', 'contact',]
 
@@ -33,6 +30,10 @@ class PrintingMachineShaftsAdmin(admin.ModelAdmin):
     def get_printing_company(self, obj):
         return obj.printing_machine.printing_company if obj.printing_machine else None
 
+
+@admin.register(Engravers)
+class EngraversAdmin(admin.ModelAdmin):
+    list_display = ('full_name', 'name')
 
 
 @admin.register(Contacts)
@@ -143,11 +144,28 @@ class CompanyOurBrandsAdmin(admin.ModelAdmin):
 
 @admin.register(Companies)
 class CompaniesAdmin(admin.ModelAdmin):
-    list_display = ('name', 'okpo', 'full_name', 'company_group')
+    list_display = ('name', 'okpo', 'full_name', 'company_group', 'custom_is_verified', 'custom_is_outdated')
     search_fields = ('name', 'okpo', 'full_name')
 
     autocomplete_fields = ['contact', 'company_group']
     form = CompanyForm
+
+    def custom_is_verified(self, obj):
+        if obj.is_verified is None:
+            return 'Невідомо'
+        return 'Так' if obj.is_verified else 'Ні'
+
+    custom_is_verified.short_description = 'Перевірений'
+
+    def custom_is_outdated(self, obj):
+        if obj.is_outdated is None:
+            return 'Невідомо'
+        info = 'Так' if obj.is_outdated else 'Ні'
+        return info
+
+    custom_is_outdated.short_description = 'Застарілий'
+
+
 
 
 @admin.register(FartukHeights)

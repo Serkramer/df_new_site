@@ -28,81 +28,6 @@
 
 {% block page_js %}
   {{ block.super }}
-  <script>
-
-    document.addEventListener('DOMContentLoaded', function(e) {
-      (function() {
-        const formChangePass = document.querySelector('#formAccountSettings');
-
-
-        // Form validation for Change password
-        if (formChangePass) {
-          const fv = FormValidation.formValidation(formChangePass, {
-            fields: {
-              currentPassword: {
-                validators: {
-                  notEmpty: {
-                    message: 'Please current password'
-                  },
-                  stringLength: {
-                    min: 8,
-                    message: 'Пароль має містити мінімум 8 символів'
-                  }
-                }
-              },
-              newPassword: {
-                validators: {
-                  notEmpty: {
-                    message: 'Введіть новий пароль'
-                  },
-                  stringLength: {
-                    min: 8,
-                    message: 'Пароль має містити мінімум 8 символів'
-                  }
-                }
-              },
-              confirmPassword: {
-                validators: {
-                  notEmpty: {
-                    message: 'повторіть новий пароль'
-                  },
-                  identical: {
-                    compare: function() {
-                      return formChangePass.querySelector('[name="newPassword"]').value;
-                    },
-                    message: 'не співпадає з новим паролем'
-                  },
-                  stringLength: {
-                    min: 8,
-                    message: 'Пароль має містити мінімум 8 символів'
-                  }
-                }
-              }
-            },
-            plugins: {
-              trigger: new FormValidation.plugins.Trigger(),
-              bootstrap5: new FormValidation.plugins.Bootstrap5({
-                eleValidClass: '',
-                rowSelector: '.col-md-6'
-              }),
-              submitButton: new FormValidation.plugins.SubmitButton(),
-              // Submit the form when all fields are valid
-              // defaultSubmit: new FormValidation.plugins.DefaultSubmit(),
-              autoFocus: new FormValidation.plugins.AutoFocus()
-            },
-            init: instance => {
-              instance.on('plugins.message.placed', function(e) {
-                if (e.element.parentElement.classList.contains('input-group')) {
-                  e.element.parentElement.insertAdjacentElement('afterend', e.messageElement);
-                }
-              });
-            }
-          });
-        }
-      })();
-    });
-  </script>
-
 
 {% endblock page_js %}
 
@@ -135,9 +60,6 @@
           <form method="post">
             {% csrf_token %}
            <h6 class="text-body">Пароль повинен містити мінімум 8 символів, але чим більше тим краще</h6>
-{#            <ul class="ps-4 mb-0">#}
-{#              <li class="mb-4">Мінімум 8 символів, але чим більше тим краще</li>#}
-{#            </ul>#}
             {{ form.non_field_errors }}
 
 
@@ -166,7 +88,7 @@
                   <span class="input-group-text cursor-pointer"><i class="ri-eye-off-line"></i></span>
                 </div>
                 {% for error in form.new_password1.errors %}
-                  <div class="text-danger mt-2">{{ error }}</div> <!-- Ошибка под полем -->
+                  <div class="text-danger mt-2">{{ error }}</div>
                 {% endfor %}
               </div>
               <div class="col-md-6 form-password-toggle">
@@ -178,7 +100,7 @@
                   <span class="input-group-text cursor-pointer"><i class="ri-eye-off-line"></i></span>
                 </div>
                 {% for error in form.new_password2.errors %}
-                  <div class="text-danger mt-2">{{ error }}</div> <!-- Ошибка под полем -->
+                  <div class="text-danger mt-2">{{ error }}</div>
                 {% endfor %}
               </div>
             </div>
