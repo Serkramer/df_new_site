@@ -32,6 +32,7 @@ Dropzone.prototype.uploadFiles = function (files) {
             if (file.upload.progress === 100) {
               if (isUploadSuccess) {
                 file.status = Dropzone.SUCCESS;
+
                 self.emit('success', file, 'success', null);
               } else {
                 file.status = Dropzone.ERROR;

@@ -15,9 +15,15 @@ import os
 import time
 import paramiko
 from django.conf import settings
-
+from django.core.serializers import serialize
 
 # Create your views here.
+from .serializers import (
+    OrdersSerializer,
+    OrderDampersSerializer,
+    OrderFartuksSerializer,
+    OrderPlaneSlicesSerializer,
+)
 
 
 class OrdersTableView(TemplateView):
@@ -105,53 +111,37 @@ class OrdersTableDataView(View):
 
 
 class GetOrderInfoView(View):
+
     def get(self, request, *args, **kwargs):
         order_id = int(request.GET.get('order_id', -1))
 
         if order_id == -1:
-            response = {
-                'status': 'error',
-                'message': 'Не вдалося зчитати номер замовлення'
-            }
-            return JsonResponse(response)
+            return JsonResponse({'status': 'error', 'message': 'Не удалось считать номер заказа'})
 
-        else:
+        user = request.user
+        if not (user.is_authenticated and user.is_active and user.is_staff):
+            return JsonResponse({'status': 'error', 'message': 'У вас нет прав для просмотра информации'})
 
-            user = request.user
-            if user.is_authenticated and user.is_active and user.is_staff:
+        editable = user.groups.filter(name="Репрограф").exists()
 
-                editable = True if user.groups.filter(name="Репрограф").exists() else False
+        order = Orders.objects.filter(pk=order_id).first()
+        if not order:
+            return JsonResponse({'status': 'error', 'message': 'Заказ не найден'})
 
-                order = Orders.objects.filter(pk=order_id).first()
-                if order:
-                    dampers = OrderDampers.objects.filter(order=order)
-                    fartuks = OrderFartuks.objects.filter(order=order)
-                    slices = OrderPlaneSlices.objects.filter(order=order)
+        # Сериализация объектов
+        order_data = OrdersSerializer(order).data
+        dampers_data = OrderDampersSerializer(OrderDampers.objects.filter(order=order), many=True).data
+        fartuks_data = OrderFartuksSerializer(OrderFartuks.objects.filter(order=order), many=True).data
+        slices_data = OrderPlaneSlicesSerializer(OrderPlaneSlices.objects.filter(order=order), many=True).data
 
-                    response = {
-                        'status': 'success',
-                        'order': order,
-                        'dampers': dampers,
-                        'fartuks': fartuks,
-                        'slices': slices,
-                        'editable': editable
-                    }
-
-                    return JsonResponse(response)
-
-                else:
-                    response = {
-                        'status': 'error',
-                        'message': 'Не вдалося зчитати номер замовлення'
-                    }
-                    return JsonResponse(response)
-
-            else:
-                response = {
-                    'status': 'error',
-                    'message': 'У вас немає прав для перегляду інформації'
-                }
-                return JsonResponse(response)
+        return JsonResponse({
+            'status': 'success',
+            'order': order_data,
+            'dampers': dampers_data,
+            'fartuks': fartuks_data,
+            'slices': slices_data,
+            'editable': editable,
+        })
 
 
 def load_work_files(self, request):
