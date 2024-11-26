@@ -18,6 +18,9 @@
   <link rel="stylesheet" href="{% static 'vendor/libs/@form-validation/form-validation.css' %}" />
   <link rel="stylesheet" href="{% static 'vendor/libs/bs-stepper/bs-stepper.css' %}" />
   <link rel="stylesheet" href="{% static 'vendor/libs/dropzone/dropzone.css' %}" />
+  <link rel="stylesheet" href="{% static 'vendor/libs/bootstrap-select/bootstrap-select.css' %}" />
+  <link rel="stylesheet" href="{% static 'vendor/libs/typeahead-js/typeahead.css' %}" />
+
 
 {% endblock vendor_css %}
 
@@ -34,10 +37,47 @@
   <script src="{% static 'vendor/libs/bs-stepper/bs-stepper.js' %}"></script>
   <script src="{% static 'vendor/libs/dropzone/dropzone_standart.js' %}"></script>
 
+  <script src="{% static 'vendor/libs/bootstrap-select/bootstrap-select.js' %}"></script>
+  <script src="{% static 'vendor/libs/typeahead-js/typeahead.js' %}"></script>
+  <script src="{% static 'vendor/libs/bloodhound/bloodhound.js' %}"></script>
+
 {% endblock vendor_js %}
 
 {% block page_js %}
   {{ block.super }}
+  <script>
+
+    $(function() {
+      const selectPicker = $('.selectpicker'),
+        select2 = $('.select2');
+
+      // Bootstrap Select
+      // --------------------------------------------------------------------
+      if (selectPicker.length) {
+        selectPicker.selectpicker();
+        handleBootstrapSelectEvents();
+      }
+
+      // Select2
+      // --------------------------------------------------------------------
+
+      // Default
+      if (select2.length) {
+        select2.each(function() {
+          var $this = $(this);
+          select2Focus($this);
+          $this.wrap('<div class="position-relative"></div>').select2({
+            placeholder: 'Обране значення',
+            dropdownParent: $this.parent()
+          });
+        });
+      }
+
+    });
+
+
+  </script>
+
   <script>
 
 
@@ -252,13 +292,61 @@
 
         });
 
+        myDropzoneMulti.on('addedfile', function(file) {
+          const existingFile = myDropzoneMulti.files.find(
+            (f) => f.name === file.name && f !== file
+          );
+          if (existingFile) {
+            myDropzoneMulti.removeFile(existingFile); // Удаляем старый файл
+          }
+        });
+
         // Добавьте обработчики для успешной загрузки или ошибок
         myDropzoneMulti.on('success', function(file, response) {
-          console.log('Серверный ответ:', response);
+          file.serverFilename = response.filename;
+          console.log(response.filename);
+
+          const workFileSelect = document.querySelector('[name="work_file"]');
+          if (workFileSelect) {
+            const option = document.createElement('option');
+            option.value = response.filename;
+            option.textContent = response.filename;
+            workFileSelect.appendChild(option);
+          }
         });
         myDropzoneMulti.on('error', function(file, response) {
           console.error('Ошибка загрузки файла:', response.error);
         });
+
+        myDropzoneMulti.on('removedfile', function(file) {
+          const tempdir = document.querySelector('[name="tempdir"]').value;
+
+          fetch(`{% url 'orders:delete_file' %}?filename=${encodeURIComponent(file.serverFilename)}&tempdir=${encodeURIComponent(tempdir)}`, {
+            method: 'DELETE',
+            headers: {
+              'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            }
+          })
+            .then(response => {
+              if (response.ok) {
+                const workFileSelect = document.querySelector('[name="work_file"]');
+                if (workFileSelect) {
+                  const options = Array.from(workFileSelect.options);
+                  const optionToRemove = options.find(option => option.value === file.serverFilename);
+                  if (optionToRemove) {
+                    workFileSelect.removeChild(optionToRemove);
+                  }
+                }
+
+              } else {
+                console.error(`Ошибка удаления файла :`, response.statusText);
+              }
+            })
+            .catch(error => {
+              console.error('Ошибка при удалении файла:', error);
+            });
+        });
+
       }
     })();
 
@@ -463,6 +551,7 @@
                 <form action="{% url 'orders:upload_files' %}" method="post" enctype="multipart/form-data"
                       class="dropzone needsclick" id="dropzone-multi">
                   {% csrf_token %}
+                  <input type="hidden" name="tempdir" value="{{ temp_dir }}">
                   <div class="dz-message needsclick">
                     Перетягніть файли сюди або натисніть, щоб завантажити
                   </div>
@@ -694,6 +783,28 @@
     </div>
   </div>
 
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const workFileSelect = document.querySelector('[name="work_file"]');
+      const nameInput = document.querySelector('[name="name"]');
+
+      // выбор рабочего файла
+
+      if (workFileSelect && nameInput) {
+        workFileSelect.addEventListener('change', function() {
+          const selectedValue = workFileSelect.value;
+          if (selectedValue === '-1') {
+            nameInput.value = ''; // Очистить поле name
+          } else {
+            const fileNameWithoutExtension = selectedValue.replace(/\.[^/.]+$/, '');
+            nameInput.value = fileNameWithoutExtension; // Установить выбранное имя файла
+          }
+        });
+      }
+    });
+
+  </script>
 
 
 {% endblock content %}

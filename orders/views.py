@@ -1,3 +1,5 @@
+import datetime
+from django.utils.timezone import now
 from aiohttp.payload import Order
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
@@ -38,6 +40,10 @@ class OrdersTableView(TemplateView):
         context['order_fartuks_form'] = OrderFartuksForm()
         context['order_plane_slice_form'] = PlaneSliceForm()
         context['delivery_form'] = OrderDeliveryViewForm()
+        username = self.request.user.username
+        timestamp = int(now().timestamp() * 1000)
+        temp_dir = f"{username}/{timestamp}"
+        context['temp_dir'] = temp_dir
         return context
 
 
@@ -148,24 +154,33 @@ def load_work_files(self, request):
     pass
 
 
-@csrf_exempt
 @login_required
 def upload_files(request):
     if request.method == 'POST' and request.FILES:
-        username = request.user.username
-        timestamp = int(time.time())
-        temp_dir = f"{username}/{timestamp}"
+        temp_dir = request.POST.get('tempdir')
 
-        # Создаем временную папку на SFTP
-        remote_dir = os.path.join(settings.UPLOAD_FOLDER, temp_dir)
+        if not temp_dir:
+            username = request.user.username
+            timestamp = int(now().timestamp() * 1000)
+            temp_dir = f"{username}/{timestamp}"
+
+        ssh_client = None
+        sftp = None
 
         try:
-            # Подключение к SFTP
-            transport = paramiko.Transport((settings.HOST, settings.PORT))
-            transport.connect(username=settings.FTP_LOGIN, password=settings.FTP_PASS)
-            sftp = paramiko.SFTPClient.from_transport(transport)
+            # Устанавливаем SSH-соединение
+            ssh_client = paramiko.SSHClient()
+            ssh_client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+            ssh_client.connect(
+                hostname=settings.HOST_SSH,
+                username=settings.SSH_LOGIN,
+                password=settings.SSH_PASS,
+                port=22
+            )
+            sftp = ssh_client.open_sftp()
+            remote_dir = os.path.join(temp_dir)
 
-            # Создаем папку для загрузки, если она еще не создана
+            # Проверяем существование директории, создаем, если не существует
             try:
                 sftp.stat(remote_dir)
             except FileNotFoundError:
@@ -177,11 +192,71 @@ def upload_files(request):
             with sftp.file(remote_path, 'wb') as sftp_file:
                 sftp_file.write(uploaded_file.read())
 
-            sftp.close()
-            transport.close()
-            return JsonResponse({"message": "Файл успешно загружен на FTP!"})
+            # Проверяем, является ли файл рабочим
+            file_extension = uploaded_file.name.split('.')[-1]
+            is_work_file = FilesAllowedExtensions.objects.filter(extension=file_extension, work_file=True).exists()
+
+            if is_work_file:
+                # Логика обработки рабочего файла
+                return JsonResponse({'filename': uploaded_file.name, 'status': 'work_file'})
+            else:
+                # Логика для других файлов
+                return JsonResponse({'filename': uploaded_file.name, 'status': 'non_work_file'})
 
         except Exception as e:
             return JsonResponse({"error": f"Ошибка загрузки файла: {str(e)}"}, status=500)
 
+        finally:
+            # Закрываем соединения
+            if sftp:
+                sftp.close()
+            if ssh_client:
+                ssh_client.close()
+
     return JsonResponse({"error": "Ошибка загрузки файла"}, status=400)
+
+
+@csrf_exempt
+@login_required
+def delete_file(request):
+    if request.method == 'DELETE':
+        filename = request.GET.get('filename')
+        tempdir = request.GET.get('tempdir')
+        username = request.user.username
+        # Получаем имя файла из параметров запроса
+        if not filename or not tempdir:
+            return JsonResponse({'error': 'Не вказані потрібні параметри'}, status=400)
+        try:
+            # Формируем путь к удаленному каталогу и файлу
+
+            file_path = os.path.join(tempdir, filename)
+
+            # Создаем SSH клиент и подключаемся
+            ssh_client = paramiko.SSHClient()
+            ssh_client.set_missing_host_key_policy(paramiko.AutoAddPolicy())  # Не проверять ключи хоста
+            ssh_client.connect(
+                hostname=settings.HOST_SSH,
+                username=settings.SSH_LOGIN,
+                password=settings.SSH_PASS,
+                port=22
+            )
+
+            # Открываем SFTP сессию
+            sftp = ssh_client.open_sftp()
+
+            # Проверяем существует ли файл на сервере
+            try:
+                sftp.stat(file_path)  # Проверяем существование файла
+                sftp.remove(file_path)  # Удаляем файл
+                return JsonResponse({'message': f'Файл {filename} успешно удалён'})
+            except FileNotFoundError:
+                return JsonResponse({'error': f'Файл {filename} не найден'}, status=404)
+            finally:
+                # Закрываем SFTP и SSH соединения
+                sftp.close()
+                ssh_client.close()
+
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
+
+    return JsonResponse({'error': 'Метод не поддерживается'}, status=405)

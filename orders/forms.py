@@ -18,7 +18,7 @@ NP_DELIVERY_TIPE_CHOICES = [
 class OrderViewForm(forms.Form):
 
     engraver = forms.ModelChoiceField(label='Гравер', queryset=Engravers.objects.all(),
-                                      widget=autocomplete.ModelSelect2(attrs={'class': 'form-control'}))
+                                      widget=autocomplete.ModelSelect2(attrs={'class': 'form-select'}))
 
     urgency = forms.BooleanField(
         label='Терміновий',
@@ -28,7 +28,8 @@ class OrderViewForm(forms.Form):
     work_file = forms.ChoiceField(
         label='Вивідний файл',
         required=True,
-        widget=forms.Select(attrs={'class': 'form-control', 'aria-label': "Default select example"})
+        widget=forms.Select(attrs={'class': 'form-select', 'aria-label': "Default select example"}),
+        choices=[('-1', '-----')],
     )
 
     name = forms.CharField(
@@ -38,25 +39,39 @@ class OrderViewForm(forms.Form):
 
     company_client = forms.ModelChoiceField(
         label='Замовник',
-        queryset=CompanyClients.objects.all(),
-        widget=autocomplete.ModelSelect2(url='custom:company-clients',
-                                         attrs={'class': 'form-control', 'aria-label': "Default select example"}, ),
+        queryset=CompanyClients.objects.all(),  # Загружаем все клиенты по умолчанию
+        widget=forms.Select(
+            attrs={
+                'class': 'select2 form-select form-select-lg',  # Совпадение с вашим HTML
+                'data-allow-clear': 'true',  # Разрешаем очистку выбора
+                'id': 'selectCompanyClients',  # Устанавливаем идентификатор
+            },
+        ),
         required=True
     )
 
     printing_company = forms.ModelChoiceField(
         label="Друкарська компанія",
         queryset=PrintingCompanies.objects.all(),
-        widget=autocomplete.ModelSelect2(url='custom:printing-companies', forward=['company_client'],
-                                         attrs={'class': 'form-control'}),
+        widget=forms.Select( #url='custom:printing-companies', forward=['company_client'],
+            attrs={
+                'class': 'select2 form-select form-select-lg',  # Совпадение с вашим HTML
+                'data-allow-clear': 'true',  # Разрешаем очистку выбора
+                'id': 'selectPrintingCompany',  # Устанавливаем идентификатор
+            },
+        ),
         required=True
     )
 
     preset = forms.ModelChoiceField(
         label="Набір налаштувань",
         queryset=PrintingMachinePresets.objects.all(),
-        widget=autocomplete.ModelSelect2(url='custom:printing-machine-presets', forward=['printing_company'],
-                                         attrs={'class': 'form-control'}),
+        widget=forms.Select(#url='custom:printing-machine-presets', forward=['printing_company'],
+            attrs={
+                'class': 'select2 form-select form-select-lg',  # Совпадение с вашим HTML
+                'data-allow-clear': 'true',  # Разрешаем очистку выбора
+                'id': 'selectPrintingMachinePreset',  # Устанавливаем идентификатор
+            },),
         required=False
 
     )
@@ -71,7 +86,7 @@ class OrderViewForm(forms.Form):
     compression = forms.ChoiceField(
         label="Компресія",
         choices=CompressionType.choices,
-        widget=forms.Select(attrs={'class': 'form-control'}),
+        widget=forms.Select(attrs={'class': 'form-select'}),
     )
 
     compression_value = forms.FloatField(label="Значення компресії",
@@ -80,33 +95,34 @@ class OrderViewForm(forms.Form):
     technology = forms.ModelChoiceField(
         label="Технологія",
         queryset=ClicheTechnologies.objects.all(),
-        widget=autocomplete.ModelSelect2(url='custom:cliche-technologies', attrs={'class': 'form-control'})
+        widget=autocomplete.ModelSelect2(url='custom:cliche-technologies', attrs={'class': 'form-select'})
+
     )
 
     angle_set = forms.ModelChoiceField(
         label="Набір кутів",
         queryset=AngleSets.objects.all(),
-        widget=forms.Select(attrs={'class': 'form-control'}),
+        widget=forms.Select(attrs={'class': 'form-select'}),
     )
 
     color_library = forms.ChoiceField(
         label="бібліотека кольорів",
-        widget=forms.Select(attrs={'class': 'form-control'})
+        widget=forms.Select(attrs={'class': 'form-select'})
     )
 
     raster_dot_default = forms.ChoiceField(
         label="точка",
-        widget=forms.Select(attrs={'class': 'form-control'})
+        widget=forms.Select(attrs={'class': 'form-select'})
     )
 
     ruling_default = forms.ChoiceField(
         label="лініатура",
-        widget=forms.Select(attrs={'class': 'form-control'})
+        widget=forms.Select(attrs={'class': 'form-select'})
     )
 
     materials_default = forms.ChoiceField(
         label="матеріал",
-        widget=forms.Select(attrs={'class': 'form-control'})
+        widget=forms.Select(attrs={'class': 'form-select'})
     )
 
     height_default = forms.IntegerField(
