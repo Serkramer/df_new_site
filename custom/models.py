@@ -1131,6 +1131,11 @@ class OrderPayment(models.Model):
     class Meta:
         managed = False
         db_table = 'order_payment'
+        verbose_name = "Оплата за замовлення"
+        verbose_name_plural = "Оплати за замовлення"
+
+    def __str__(self):
+        return f"{self.order} {self.order_payment_type} {self.value}"
 
 
 class OrderPaymentTypes(models.Model):
@@ -1140,6 +1145,11 @@ class OrderPaymentTypes(models.Model):
     class Meta:
         managed = False
         db_table = 'order_payment_types'
+        verbose_name = "Тип оплати"
+        verbose_name_plural = "Типи оплати"
+
+    def __str__(self):
+        return self.type
 
 
 class OrderPlaneSliceChecks(models.Model):

@@ -10,7 +10,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import TemplateView
 from django.db.models import Q
 from custom.models import Orders, OrderStatusList, OrderPlaneSlices, OrderFartuks, OrderDampers
-from orders.forms import OrderViewForm, OrderFartuksForm, PlaneSliceForm, OrderDeliveryViewForm
+from orders.forms import OrderViewForm, OrderFartuksForm, PlaneSliceForm, OrderDeliveryViewForm, OrderPaymentForm
 from orders.models import FilesAllowedExtensions
 from web_project import TemplateLayout
 import os
@@ -40,6 +40,7 @@ class OrdersTableView(TemplateView):
         context['order_fartuks_form'] = OrderFartuksForm()
         context['order_plane_slice_form'] = PlaneSliceForm()
         context['delivery_form'] = OrderDeliveryViewForm()
+        context['order_payment_form'] = OrderPaymentForm()
         username = self.request.user.username
         timestamp = int(now().timestamp() * 1000)
         temp_dir = f"{username}/{timestamp}"

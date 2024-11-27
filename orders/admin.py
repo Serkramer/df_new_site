@@ -1,6 +1,8 @@
 
 from django.contrib import admin
 from django.utils.safestring import mark_safe
+
+from custom.models import OrderPaymentTypes
 from orders.models import FilesAllowedExtensions, RegistrationSamples, DesignRegister
 from django.utils.html import format_html
 
@@ -48,5 +50,11 @@ class DesignRegister(admin.ModelAdmin):
             return "Не найдено"
 
     company_client_display.short_description = "Клиент"
+
+
+@admin.register(OrderPaymentTypes)
+class OrderPaymentTypesAdmin(admin.ModelAdmin):
+    list_display = ('type',)
+
 
 

@@ -1,7 +1,9 @@
 from django import forms
 from dal import autocomplete
+from django.db.models import Q
+
 from custom.models import CompanyClients, PrintingCompanies, PrintingMachinePresets, ClicheTechnologies, \
-    CompressionType, AngleSetTypes, AngleSets, OrderPlaneSlices, OrderFartuks, DeliveryTypes, Engravers
+    CompressionType, AngleSetTypes, AngleSets, OrderPlaneSlices, OrderFartuks, DeliveryTypes, Engravers, OrderPayment
 from map.models import Areas, Settlements, PostOffices
 
 REVERT_CHOICES = [
@@ -16,7 +18,6 @@ NP_DELIVERY_TIPE_CHOICES = [
 
 
 class OrderViewForm(forms.Form):
-
     engraver = forms.ModelChoiceField(label='Гравер', queryset=Engravers.objects.all(),
                                       widget=autocomplete.ModelSelect2(attrs={'class': 'form-select'}))
 
@@ -39,7 +40,8 @@ class OrderViewForm(forms.Form):
 
     company_client = forms.ModelChoiceField(
         label='Замовник',
-        queryset=CompanyClients.objects.all(),  # Загружаем все клиенты по умолчанию
+        queryset=CompanyClients.objects.filter(~Q(id__is_outdated=True)).order_by('id__name'),
+        # Загружаем все клиенты по умолчанию
         widget=forms.Select(
             attrs={
                 'class': 'select2 form-select form-select-lg',  # Совпадение с вашим HTML
@@ -53,7 +55,7 @@ class OrderViewForm(forms.Form):
     printing_company = forms.ModelChoiceField(
         label="Друкарська компанія",
         queryset=PrintingCompanies.objects.all(),
-        widget=forms.Select( #url='custom:printing-companies', forward=['company_client'],
+        widget=forms.Select(  # url='custom:printing-companies', forward=['company_client'],
             attrs={
                 'class': 'select2 form-select form-select-lg',  # Совпадение с вашим HTML
                 'data-allow-clear': 'true',  # Разрешаем очистку выбора
@@ -66,12 +68,12 @@ class OrderViewForm(forms.Form):
     preset = forms.ModelChoiceField(
         label="Набір налаштувань",
         queryset=PrintingMachinePresets.objects.all(),
-        widget=forms.Select(#url='custom:printing-machine-presets', forward=['printing_company'],
+        widget=forms.Select(  # url='custom:printing-machine-presets', forward=['printing_company'],
             attrs={
                 'class': 'select2 form-select form-select-lg',  # Совпадение с вашим HTML
                 'data-allow-clear': 'true',  # Разрешаем очистку выбора
                 'id': 'selectPrintingMachinePreset',  # Устанавливаем идентификатор
-            },),
+            }, ),
         required=False
 
     )
@@ -86,7 +88,7 @@ class OrderViewForm(forms.Form):
     compression = forms.ChoiceField(
         label="Компресія",
         choices=CompressionType.choices,
-        widget=forms.Select(attrs={'class': 'form-select'}),
+        widget=forms.Select(attrs={'class': 'form-select', 'id': 'compression'}),
     )
 
     compression_value = forms.FloatField(label="Значення компресії",
@@ -95,8 +97,9 @@ class OrderViewForm(forms.Form):
     technology = forms.ModelChoiceField(
         label="Технологія",
         queryset=ClicheTechnologies.objects.all(),
-        widget=autocomplete.ModelSelect2(url='custom:cliche-technologies', attrs={'class': 'form-select'})
-
+        widget=forms.Select(
+            # url='custom:cliche-technologies',
+            attrs={'class': 'form-select'})
     )
 
     angle_set = forms.ModelChoiceField(
@@ -138,7 +141,7 @@ class OrderViewForm(forms.Form):
 class OrderDeliveryViewForm(forms.Form):
     contact = forms.ChoiceField(label="контакт з доставки", widget=forms.TextInput(attrs={'class': 'form-control'}))
     delivery_type = forms.ModelChoiceField(label="тип доставки",
-                                           widget=autocomplete.ModelSelect2(attrs={'class': 'form-control'}),
+                                           widget=autocomplete.ModelSelect2(attrs={'class': 'form-select'}),
                                            queryset=DeliveryTypes.objects.all(),
                                            required=True)
     delivery_date = forms.DateField()
@@ -150,20 +153,22 @@ class OrderDeliveryViewForm(forms.Form):
     area = forms.ModelChoiceField(
         label="Область",
         queryset=Areas.objects.all(),
-        widget=autocomplete.ModelSelect2(url='map:areas-autocomplete', attrs={'class': 'form-control'}),
+        widget=autocomplete.ModelSelect2(url='map:areas-autocomplete', attrs={'class': 'form-select'}),
         required=True
     )
     settlement = forms.ModelChoiceField(
         label='Населенний пункт',
         queryset=Settlements.objects.all(),
-        widget=autocomplete.ModelSelect2(url='map:settlements-autocomplete', forward=['area'], attrs={'class': 'form-control'}),
+        widget=autocomplete.ModelSelect2(url='map:settlements-autocomplete', forward=['area'],
+                                         attrs={'class': 'form-select'}),
         required=True
     )
 
     post_office_ref = forms.ModelChoiceField(
         label='Відділення НП',
         queryset=PostOffices.objects.all(),
-        widget=autocomplete.ModelSelect2(url='map:post-office-autocomplete', forward=['settlement_ref'], attrs={'class': 'form-control'}),
+        widget=autocomplete.ModelSelect2(url='map:post-office-autocomplete', forward=['settlement_ref'],
+                                         attrs={'class': 'form-select'}),
         required=False
     )
 
@@ -183,21 +188,17 @@ class OrderDeliveryViewForm(forms.Form):
     )
 
 
-class FileUploadForm(forms.ModelForm):
-    pass
-
-
 class PlaneSliceForm(forms.ModelForm):
     class Meta:
         model = OrderPlaneSlices
         exclude = ('order', 'name', 'lineature', 'order_plane_slice_group', 'position_x', 'position_y', 'is_defect',
-                   'material_plate_type' )
+                   'material_plate_type')
 
 
 class OrderFartuksForm(forms.ModelForm):
     class Meta:
         model = OrderFartuks
-        exclude = ('order',)
+        exclude = ('order', 'name')
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -207,6 +208,19 @@ class OrderFartuksForm(forms.ModelForm):
             self.fields[field].required = True
 
 
-class OrderDamperForm(forms.ModelForm):
-    pass
+class OrderPaymentForm(forms.ModelForm):
+    class Meta:
+        model = OrderPayment
+        exclude = ('order',)
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        # TODO временный костыль, убрать как перестанет работать лог
+        # Исключить записи с id от 1 до 5
+        self.fields['order_payment_type'].queryset = self.fields['order_payment_type'].queryset.exclude(
+            id__in=range(1, 6))
+
+        required_fields = ['order_payment_type', 'value']
+        for field in required_fields:
+            self.fields[field].required = True

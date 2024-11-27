@@ -73,6 +73,34 @@
         });
       }
 
+      $('#selectCompanyClients').on('change', function() {
+        const selectedValue = $(this).val();
+
+        if (!selectedValue || selectedValue === '-1') {
+          $('#printing_company_div').hide();
+        } else {
+          $('#printing_company_div').show();
+        }
+      });
+
+      $('#selectPrintingCompany').on('change', function() {
+        const selectedValue = $(this).val();
+        const work_file =  $('[name="work_file"]');
+
+        if (!selectedValue || selectedValue === '-1' || !work_file.val() || work_file.val() === '-1') {
+
+          $('#preset_div').hide();
+          $('#compression_div').hide();
+          $('#compression_value_div').hide();
+          $('#revert_print_div').hide();
+        } else {
+          $('#preset_div').show();
+          $('#compression_div').show();
+          $('#compression_value_div').show();
+          $('#revert_print_div').show();
+        }
+      });
+
     });
 
 
@@ -159,57 +187,23 @@
     });
 
     //добавления блока с фартуками
+
     document.getElementById('add_fartuk_button').addEventListener('click', function(event) {
-      event.preventDefault(); // Остановить стандартное поведение кнопки
+      event.preventDefault();
 
-      // Контейнер для форм
-      const container = document.getElementById('fartuk-forms-container');
+      // Получаем шаблон формы
+      const template_fartuk = document.getElementById('fartuk-form-template').content.cloneNode(true);
 
-      // Создать блок с формой
-      const formBlock = document.createElement('div');
-      formBlock.classList.add('row', 'g-3'); // Классы для оформления
+      // Добавляем новую форму в контейнер
+      const fartukContainer = document.getElementById('fartuk-forms-container');
+      fartukContainer.appendChild(template_fartuk);
 
-      // HTML-шаблон с полями модели
-      formBlock.innerHTML = `
-        <div class="col-12 col-md-2">
-            <div class="form-floating form-floating-outline">
-                <input type="text" name="name" class="form-control" required>
-                <label for="id_name">Назва</label>
-            </div>
-        </div>
-        <div class="col-12 col-md-3">
-            <div class="form-floating form-floating-outline">
-                <input type="number" name="height" class="form-control" required>
-                <label for="id_height">Висота</label>
-            </div>
-        </div>
-        <div class="col-12 col-md-3">
-            <div class="form-floating form-floating-outline">
-                <input type="number" name="width" class="form-control" required>
-                <label for="id_width">Ширина</label>
-            </div>
-        </div>
-        <div class="col-12 col-md-3">
-            <div class="form-floating form-floating-outline">
-                <input type="number" name="center_point" class="form-control">
-                <label for="id_center_point">Центр</label>
-            </div>
-        </div>
-        <div class="col-12 col-md-1">
-            <div class="form-floating form-floating-outline">
-                <button type="button" class="btn btn-danger remove-block">X</button>
-            </div>
-        </div>
-    `;
-
-      // Добавить обработчик удаления для кнопки "X"
-      const removeButton = formBlock.querySelector('.remove-block');
-      removeButton.addEventListener('click', function() {
-        container.removeChild(formBlock);
+      // Добавляем обработчики удаления для всех кнопок в контейнере
+      fartukContainer.querySelectorAll('.remove-block').forEach(button => {
+        button.addEventListener('click', function() {
+          this.closest('.fartuk-block').remove(); // Удаляет текущий блок оплаты
+        });
       });
-
-      // Добавить новый блок в контейнер
-      container.appendChild(formBlock);
     });
 
     document.getElementById('add_damper_button').addEventListener('click', function(event) {
@@ -255,6 +249,78 @@
       // Добавить новый блок в контейнер
       container.appendChild(damperBlock);
 
+    });
+
+    document.getElementById('add_membrane_button').addEventListener('click', function(event) {
+      event.preventDefault();
+      const container = document.getElementById('membrane-container');
+      const membraneBlock = document.createElement('div');
+      membraneBlock.classList.add('row', 'g-3');
+      membraneBlock.innerHTML = `
+        <div class="col-12 col-md-3">
+            <div class="form-floating form-floating-outline">
+                <input type="text" name="name" class="form-control" required>
+                <label for="id_name">Назва</label>
+            </div>
+        </div>
+        <div class="col-12 col-md-2">
+            <div class="form-floating form-floating-outline">
+                <input type="number" name="height" class="form-control" required>
+                <label for="id_height">Висота</label>
+            </div>
+        </div>
+        <div class="col-12 col-md-2">
+            <div class="form-floating form-floating-outline">
+                <input type="number" name="width" class="form-control" required>
+                <label for="id_width">Ширина</label>
+            </div>
+        </div>
+
+        <div class="col-12 col-md-2">
+            <div class="form-floating form-floating-outline">
+                <input type="number" name="ruling" class="form-control" required>
+                <label for="id_ruling">Лініатура</label>
+            </div>
+        </div>
+        <div class="col-12 col-md-2">
+            <div class="form-floating form-floating-outline">
+                <input type="text" name="technology" class="form-control" required>
+                <label for="id_technology">Технологія</label>
+            </div>
+        </div>
+
+        <div class="col-12 col-md-1">
+            <div class="form-floating form-floating-outline">
+                <button type="button" class="btn btn-danger remove-block">X</button>
+            </div>
+        </div>
+      `;
+
+      const removeButton = membraneBlock.querySelector('.remove-block');
+      removeButton.addEventListener('click', function() {
+        container.removeChild(membraneBlock);
+      });
+
+      // Добавить новый блок в контейнер
+      container.appendChild(membraneBlock);
+    });
+
+    document.getElementById('add_payment_button').addEventListener('click', function(event) {
+      event.preventDefault();
+
+      // Получаем шаблон формы
+      const template = document.getElementById('payment-form-template').content.cloneNode(true);
+
+      // Добавляем новую форму в контейнер
+      const paymentContainer = document.getElementById('payment-container');
+      paymentContainer.appendChild(template);
+
+      // Добавляем обработчики удаления для всех кнопок в контейнере
+      paymentContainer.querySelectorAll('.remove-block').forEach(button => {
+        button.addEventListener('click', function() {
+          this.closest('.payment-block').remove(); // Удаляет текущий блок оплаты
+        });
+      });
     });
 
 
@@ -312,6 +378,9 @@
             option.value = response.filename;
             option.textContent = response.filename;
             workFileSelect.appendChild(option);
+
+            document.getElementById('work_file_div').style.display = 'inline';
+
           }
         });
         myDropzoneMulti.on('error', function(file, response) {
@@ -460,7 +529,7 @@
           // Проверяем статус ответа
           if (data.status === 'success') {
             console.log('Заказ:', data.order);
-            console.log('Демперы:', data.dampers);
+            console.log('Демпферы:', data.dampers);
             console.log('Фартуки:', data.fartuks);
             console.log('Слайсы:', data.slices);
             console.log('Редактируемость:', data.editable);
@@ -566,7 +635,7 @@
 
           <form id="createOrderForm" class="row g-5" onsubmit="return false">
             {% csrf_token %}
-            <div class="col-12 col-md-6">
+            <div class="col-12 col-md-6" id="urgency_div">
               <label class="switch">
                 <input type="checkbox" class="switch-input">
                 <span class="switch-toggle-slider">
@@ -576,44 +645,44 @@
                 <span class="switch-label">Терміновий</span>
               </label>
             </div>
-            <div class="col-12 col-md-6">
+            <div class="col-12 col-md-6" id="engraver_div">
               <div class="form-floating form-floating-outline">
                 {{ create_order_form.engraver }}
                 {{ create_order_form.engraver.label_tag }}
               </div>
             </div>
 
-            <div class="col-12 col-md-6">
+            <div class="col-12 col-md-6" id="work_file_div">
               <div class="form-floating form-floating-outline">
                 {{ create_order_form.work_file }}
                 {{ create_order_form.work_file.label_tag }}
               </div>
             </div>
-            <div class="col-12 col-md-6">
+            <div class="col-12 col-md-6" id="work_name_div">
               <div class="form-floating form-floating-outline">
                 {{ create_order_form.name }}
                 {{ create_order_form.name.label_tag }}
               </div>
             </div>
-            <div class="col-12 col-md-6">
+            <div class="col-12 col-md-6" id="company_client_div">
               <div class="form-floating form-floating-outline">
                 {{ create_order_form.company_client }}
                 {{ create_order_form.company_client.label_tag }}
               </div>
             </div>
-            <div class="col-12 col-md-6">
+            <div class="col-12 col-md-6" id="printing_company_div">
               <div class="form-floating form-floating-outline">
                 {{ create_order_form.printing_company }}
                 {{ create_order_form.printing_company.label_tag }}
               </div>
             </div>
-            <div class="col-12">
+            <div class="col-12" id="preset_div">
               <div class="form-floating form-floating-outline">
                 {{ create_order_form.preset }}
                 {{ create_order_form.preset.label_tag }}
               </div>
             </div>
-            <div class="col-12 col-md-6">
+            <div class="col-12 col-md-6" id="revert_print_div">
               <div class="form-floating form-floating-outline">
                 <small class="text-light fw-medium d-block">Друк</small>
                 {% for value, label in create_order_form.revert_print.field.choices %}
@@ -626,100 +695,102 @@
 
               </div>
             </div>
-            <div class="col-12 col-md-3">
+            <div class="col-12 col-md-3" id="compression_div">
               <div class="form-floating form-floating-outline">
                 {{ create_order_form.compression }}
                 {{ create_order_form.compression.label_tag }}
               </div>
             </div>
-            <div class="col-12 col-md-3">
+            <div class="col-12 col-md-3" id="compression_value_div">
               <div class="form-floating form-floating-outline">
                 {{ create_order_form.compression_value }}
                 {{ create_order_form.compression_value.label_tag }}
               </div>
             </div>
-            <div class="col-12 col-md-6">
+            <div class="col-12 col-md-6" id="technology_div">
               <div class="form-floating form-floating-outline">
                 {{ create_order_form.technology }}
                 {{ create_order_form.technology.label_tag }}
               </div>
             </div>
-            <div class="col-12 col-md-6">
+            <div class="col-12 col-md-6" id="angle_set">
               <div class="form-floating form-floating-outline">
                 {{ create_order_form.angle_set }}
                 {{ create_order_form.angle_set.label_tag }}
               </div>
             </div>
-            <div class="col-12">
+            <div class="col-12" id="color_library_div">
               <div class="form-floating form-floating-outline">
                 {{ create_order_form.color_library }}
                 {{ create_order_form.color_library.label_tag }}
               </div>
             </div>
-            <div class="col-12 col-md-2">
+            <div class="col-12 col-md-2" id="colors_param_title_div">
               <p>параметри для кольорів</p>
             </div>
-            <div class="col-12 col-md-2">
+            <div class="col-12 col-md-2" id="raster_dot_default_div">
               <div class="form-floating form-floating-outline">
                 {{ create_order_form.raster_dot_default }}
                 {{ create_order_form.raster_dot_default.label_tag }}
               </div>
             </div>
-            <div class="col-12 col-md-2">
+            <div class="col-12 col-md-2" id="ruling_default_div">
               <div class="form-floating form-floating-outline">
                 {{ create_order_form.ruling_default }}
                 {{ create_order_form.ruling_default.label_tag }}
               </div>
             </div>
-            <div class="col-12 col-md-2">
+            <div class="col-12 col-md-2" id="materials_default_div">
               <div class="form-floating form-floating-outline">
                 {{ create_order_form.materials_default }}
                 {{ create_order_form.materials_default.label_tag }}
               </div>
             </div>
-            <div class="col-12 col-md-2">
+            <div class="col-12 col-md-2" id="height_default_div">
               <div class="form-floating form-floating-outline">
                 {{ create_order_form.height_default }}
                 {{ create_order_form.height_default.label_tag }}
               </div>
             </div>
-            <div class="col-12 col-md-2">
+            <div class="col-12 col-md-2" id="width_default_div">
               <div class="form-floating form-floating-outline">
                 {{ create_order_form.width_default }}
                 {{ create_order_form.width_default.label_tag }}
               </div>
+
             </div>
             <div id="colors-container" class="row"></div>
-            <div class="col-12 text-center d-flex flex-wrap justify-content-center gap-4 row-gap-4">
-              <button class="btn btn-primary" id="add_color_button">додати колір</button>
-            </div>
+            <button class="btn btn-primary" id="add_color_button">+ колір</button>
 
             <div id="fartuk-forms-container" class="row"></div>
-            <div class="col-12 text-center d-flex flex-wrap justify-content-center gap-4 row-gap-4">
-              <button class="btn btn-primary" id="add_fartuk_button">додати фартук</button>
-            </div>
+            <button class="btn btn-primary" id="add_fartuk_button">+ фартук</button>
 
             <div id="damper-container" class="row"></div>
+            <button class="btn btn-primary" id="add_damper_button">+ демпфер</button>
 
-            <div class="col-12 text-center d-flex flex-wrap justify-content-center gap-4 row-gap-4">
-              <button class="btn btn-primary" id="add_damper_button">додати демпер</button>
-            </div>
 
-            <div class="col-12 col-md-6">
+            <div id="membrane-container" class="row"></div>
+            <button class="btn btn-primary" id="add_membrane_button">+ плівку</button>
+
+
+            <div id="payment-container" class="row"></div>
+            <button class="btn btn-primary" id="add_payment_button">+ оплату</button>
+
+            <div class="col-12 col-md-6" id="area_div">
               <div class="form-floating form-floating-outline">
                 {{ delivery_form.area }}
                 {{ delivery_form.area.label_tag }}
               </div>
             </div>
 
-            <div class="col-12 col-md-6">
+            <div class="col-12 col-md-6" id="settlement_div">
               <div class="form-floating form-floating-outline">
                 {{ delivery_form.settlement }}
                 {{ delivery_form.settlement.label_tag }}
               </div>
             </div>
 
-            <div class="col-12 col-md-4">
+            <div class="col-12 col-md-4" id="delivery_type_div">
               <div class="form-floating form-floating-outline">
                 {{ delivery_form.delivery_type }}
                 {{ delivery_form.delivery_type.label_tag }}
@@ -727,7 +798,7 @@
             </div>
 
 
-            <div class="col-12 col-md-4">
+            <div class="col-12 col-md-4" id="np_type_field_div">
               <div class="form-floating form-floating-outline">
                 <small class="text-light fw-medium d-block">Вид доставки</small>
                 {% for value, label in delivery_form.np_type_field.field.choices %}
@@ -741,21 +812,21 @@
               </div>
             </div>
 
-            <div class="col-12 col-md-4">
+            <div class="col-12 col-md-4" id="post_office_ref_div">
               <div class="form-floating form-floating-outline">
                 {{ delivery_form.post_office_ref }}
                 {{ delivery_form.post_office_ref.label_tag }}
               </div>
             </div>
 
-            <div class="col-12 col-md-8">
+            <div class="col-12 col-md-8" id="street_div">
               <div class="form-floating form-floating-outline">
                 {{ delivery_form.street }}
                 {{ delivery_form.street.label_tag }}
               </div>
             </div>
 
-            <div class="col-12 col-md-4">
+            <div class="col-12 col-md-4" id="build_div">
               <div class="form-floating form-floating-outline">
                 {{ delivery_form.build }}
                 {{ delivery_form.build.label_tag }}
@@ -763,7 +834,7 @@
             </div>
 
 
-            <div class="col-12 ">
+            <div class="col-12" id="description_div">
               <div class="form-floating form-floating-outline">
                 {{ delivery_form.description }}
                 {{ delivery_form.description.label_tag }}
@@ -771,8 +842,9 @@
             </div>
 
 
-            <div class="col-12 text-center d-flex flex-wrap justify-content-center gap-4 row-gap-4">
-              <button type="submit" class="btn btn-primary">Додати замовлення</button>
+            <div class="col-12 text-center d-flex flex-wrap justify-content-center gap-4 row-gap-4"
+                 id="create_order_button_div">
+              <button type="submit" class="btn btn-primary">розмістити замовлення</button>
               <button type="reset" class="btn btn-outline-secondary" data-bs-dismiss="modal" aria-label="Close">Очистити
                 форму
               </button>
@@ -784,7 +856,98 @@
   </div>
 
 
+  <!-- Шаблон для форы оплаты -->
+  <template id="payment-form-template">
+    <div class="row g-3 payment-block">
+      <div class="col-12 col-md-5">
+        <div class="form-floating form-floating-outline">
+          <select name="order_payment_type" class="form-control" required>
+            {% for choice in order_payment_form.order_payment_type.field.choices %}
+              <option value="{{ choice.0 }}">{{ choice.1 }}</option>
+            {% endfor %}
+          </select>
+          <label for="id_order_payment_type">Тип оплаты</label>
+        </div>
+      </div>
+      <div class="col-12 col-md-6">
+        <div class="form-floating form-floating-outline">
+          <input type="text" name="value" class="form-control" required>
+          <label for="id_value">Значення</label>
+        </div>
+      </div>
+      <div class="col-12 col-md-1">
+        <button type="button" class="btn btn-danger remove-block">X</button>
+      </div>
+    </div>
+  </template>
+
+  <template id="fartuk-form-template">
+    <div class="row g-3 fartuk-block">
+      <div class="col-12 col-md-2">
+        <div class="form-floating form-floating-outline">
+          <input type="text" name="name" class="form-control" required>
+          <label for="id_name">Назва</label>
+        </div>
+      </div>
+      <div class="col-12 col-md-3">
+        <div class="form-floating form-floating-outline">
+          <input type="number" name="height" class="form-control" required>
+          <label for="id_height">Висота</label>
+        </div>
+      </div>
+      <div class="col-12 col-md-3">
+        <div class="form-floating form-floating-outline">
+          <input type="number" name="width" class="form-control" required>
+          <label for="id_width">Ширина</label>
+        </div>
+      </div>
+      <div class="col-12 col-md-3">
+        <div class="form-floating form-floating-outline">
+          <input type="number" name="center_point" class="form-control">
+          <label for="id_center_point">Центр</label>
+        </div>
+      </div>
+      <div class="col-12 col-md-1">
+        <div class="form-floating form-floating-outline">
+          <button type="button" class="btn btn-danger remove-block">X</button>
+        </div>
+      </div>
+    </div>
+  </template>
+
+
+
   <script>
+
+    document.addEventListener('DOMContentLoaded', function() {
+      document.getElementById('work_file_div').style.display = 'none';
+      document.getElementById('printing_company_div').style.display = 'none';
+      document.getElementById('preset_div').style.display = 'none';
+      document.getElementById('compression_div').style.display = 'none';
+      document.getElementById('compression_value_div').style.display = 'none';
+      document.getElementById('revert_print_div').style.display = 'none';
+      document.getElementById('technology_div').style.display = 'none';
+      document.getElementById('angle_set').style.display = 'none';
+      document.getElementById('color_library_div').style.display = 'none';
+      document.getElementById('colors_param_title_div').style.display = 'none';
+      document.getElementById('raster_dot_default_div').style.display = 'none';
+      document.getElementById('ruling_default_div').style.display = 'none';
+      document.getElementById('materials_default_div').style.display = 'none';
+      document.getElementById('height_default_div').style.display = 'none';
+      document.getElementById('width_default_div').style.display = 'none';
+      document.getElementById('add_color_button').style.setProperty('display', 'none', 'important');
+      document.getElementById('add_payment_button').style.setProperty('display', 'none', 'important');
+      document.getElementById('area_div').style.display = 'none';
+      document.getElementById('settlement_div').style.display = 'none';
+      document.getElementById('delivery_type_div').style.display = 'none';
+      document.getElementById('np_type_field_div').style.display = 'none';
+      document.getElementById('post_office_ref_div').style.display = 'none';
+      document.getElementById('street_div').style.display = 'none';
+      document.getElementById('build_div').style.display = 'none';
+      document.getElementById('description_div').style.display = 'none';
+      document.getElementById('create_order_button_div').style.setProperty('display', 'none', 'important');
+    });
+
     document.addEventListener('DOMContentLoaded', function() {
       const workFileSelect = document.querySelector('[name="work_file"]');
       const nameInput = document.querySelector('[name="name"]');
@@ -799,10 +962,25 @@
           } else {
             const fileNameWithoutExtension = selectedValue.replace(/\.[^/.]+$/, '');
             nameInput.value = fileNameWithoutExtension; // Установить выбранное имя файла
+
           }
         });
       }
-    });
+
+      const compression = document.querySelector('[name="compression"]');
+      if (compression){
+        compression.addEventListener('change', function() {
+          let selectedCompressionValue  = compression.value;
+          if (selectedCompressionValue === "NONE"){
+            document.getElementById('compression_value_div').style.display = 'none';
+          }
+          else {
+            document.getElementById('compression_value_div').style.display = 'block';
+          }
+        })
+      }
+
+    })
 
   </script>
 
