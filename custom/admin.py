@@ -5,7 +5,7 @@ from .forms import PrintingMachineShaftsForm, CompanyForm, DeliveryPresetsForm, 
     AdhesiveTapeThicknessesForm, FartukHeightsForm, PrintingMachinesForm, FartuksForm, FartukRailTypesForm, \
     FartukMembraneTypesForm, AniloxRollForm
 from .inlines import PrintingMachineShaftsInline, PrintingMachinesInline, PrintingMachinePresetsInline, \
-    AniloxRollsInline
+    AniloxRollsInline, CompanyClientsInline, PrintingCompaniesInline, DeliveryPresetsInline, ContactsDetailsInline
 from .models import *
 
 
@@ -33,13 +33,15 @@ class PrintingMachineShaftsAdmin(admin.ModelAdmin):
 
 @admin.register(Engravers)
 class EngraversAdmin(admin.ModelAdmin):
-    list_display = ('full_name', 'name')
+    list_display = ('full_name', 'name', 'put_into_operation')
 
 
 @admin.register(Contacts)
 class ContactsAdmin(admin.ModelAdmin):
     list_display = ('id', 'first_name', 'last_name', 'middle_name', 'description')
     search_fields = ('first_name', 'last_name')
+
+    inlines = [ContactsDetailsInline]
 
 
 @admin.register(PrintingCompanies)
@@ -101,10 +103,6 @@ class ContactsAdmin(admin.ModelAdmin):
     list_display = ('contact', 'contact_info_type', 'value')
     search_fields = ('value', 'contact')
 
-
-@admin.register(ContactInfoTypes)
-class ContactInfoTypesAdmin(admin.ModelAdmin):
-    list_display = ('type',)
 
 
 @admin.register(PrintingMachinePresets)
@@ -168,28 +166,29 @@ class CompanyOurBrandsAdmin(admin.ModelAdmin):
 
 @admin.register(Companies)
 class CompaniesAdmin(admin.ModelAdmin):
-    list_display = ('name', 'okpo', 'full_name', 'company_group', 'custom_is_verified', 'custom_is_outdated')
+    list_display = ('name', 'okpo', 'full_name', 'company_group', 'get_is_verified', 'get_is_outdated')
     search_fields = ('name', 'okpo', 'full_name')
 
     autocomplete_fields = ['contact', 'company_group']
     form = CompanyForm
 
-    def custom_is_verified(self, obj):
-        if obj.is_verified is None:
-            return 'Невідомо'
-        return 'Так' if obj.is_verified else 'Ні'
+    inlines = [CompanyClientsInline, PrintingCompaniesInline, DeliveryPresetsInline]
 
-    custom_is_verified.short_description = 'Перевірений'
+    @admin.display(description='Перевірений', ordering='is_verified')
+    def get_is_verified(self, obj):
+        if obj.is_verified is True:
+            return "Так"
+        elif obj.is_verified is False:
+            return "Ні"
+        return "Невідомо"
 
-    def custom_is_outdated(self, obj):
-        if obj.is_outdated is None:
-            return 'Невідомо'
-        info = 'Так' if obj.is_outdated else 'Ні'
-        return info
-
-    custom_is_outdated.short_description = 'Застарілий'
-
-
+    @admin.display(description='Застарілий', ordering='is_outdated')
+    def get_is_outdated(self, obj):
+        if obj.is_outdated is True:
+            return "Так"
+        elif obj.is_outdated is False:
+            return "Ні"
+        return "Невідомо"
 
 
 @admin.register(FartukHeights)
@@ -202,7 +201,8 @@ class FartukHeightsAdmin(admin.ModelAdmin):
 
 @admin.register(DeliveryPresets)
 class DeliveryPresetAdmin(admin.ModelAdmin):
-    list_display = ('company', 'delivery_type', 'contact', 'description', 'name', 'address', 'custom_is_legal_address')
+    list_display = ('company', 'delivery_type', 'contact', 'description', 'name', 'address',
+                    'custom_is_legal_address','shipping_date_planed_start', 'shipping_date_planed_end')
     autocomplete_fields = ['contact', 'company']
     search_fields = ('company', 'delivery_type')
     form = DeliveryPresetsForm

@@ -18,7 +18,8 @@ NP_DELIVERY_TIPE_CHOICES = [
 
 
 class OrderViewForm(forms.Form):
-    engraver = forms.ModelChoiceField(label='Гравер', queryset=Engravers.objects.all(),
+    engraver = forms.ModelChoiceField(label='Гравер',
+                                      queryset=Engravers.objects.filter(put_into_operation=True),
                                       widget=autocomplete.ModelSelect2(attrs={'class': 'form-select'}))
 
     urgency = forms.BooleanField(
@@ -28,7 +29,6 @@ class OrderViewForm(forms.Form):
 
     work_file = forms.ChoiceField(
         label='Вивідний файл',
-        required=True,
         widget=forms.Select(attrs={'class': 'form-select', 'aria-label': "Default select example"}),
         choices=[('-1', '-----')],
     )
@@ -67,7 +67,7 @@ class OrderViewForm(forms.Form):
 
     preset = forms.ModelChoiceField(
         label="Набір налаштувань",
-        queryset=PrintingMachinePresets.objects.all(),
+        queryset=PrintingMachinePresets.objects.none(),
         widget=forms.Select(  # url='custom:printing-machine-presets', forward=['printing_company'],
             attrs={
                 'class': 'select2 form-select form-select-lg',  # Совпадение с вашим HTML

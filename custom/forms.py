@@ -129,7 +129,6 @@ class FartukRailTypesForm(forms.ModelForm):
         return type
 
 
-
 class FartukMembraneTypesForm(forms.ModelForm):
     class Meta:
         model = FartukMembraneTypes
@@ -157,6 +156,17 @@ class FartuksForm(forms.ModelForm):
 
 
 class CompanyForm(forms.ModelForm):
+    full_name = forms.CharField(
+        required=True,  # Поле обязательное
+        widget=forms.TextInput(attrs={
+            'placeholder': 'Введите полное имя',  # Пример заполнения
+            'class': 'form-control',  # Класс для Bootstrap
+            'style': 'width: 100%;',  # Увеличить ширину поля
+        }),
+        label="Повне ім'я",  # Ярлык
+        help_text='Обов`язково повинно співпадати символ в символ з 1С'  # Подсказка
+    )
+
     class Meta:
         model = Companies
         fields = '__all__'
@@ -210,7 +220,8 @@ class DeliveryPresetsForm(forms.ModelForm):
     class Meta:
         model = DeliveryPresets
         fields = ('company', 'name', 'delivery_type', 'area', 'settlement_ref', 'post_office_ref',
-                  'street', 'build', 'description',  'contact', 'is_legal_address')
+                  'street', 'build', 'description',  'contact', 'is_legal_address', 'shipping_date_planed_start',
+                  'shipping_date_planed_end')
 
     class Media:
         #TODO

@@ -80,6 +80,26 @@ class CompressionType(models.TextChoices):
     IN_HEIGHT = "IN_HEIGHT", "Горизонтальна"
 
 
+class DocumentDeliveryType(models.TextChoices):
+    NEVER = 'NEVER', 'Ніколи'
+    WEEKLY = 'WEEKLY', 'Раз на тиждень'
+    ALWAYS = 'ALWAYS', 'Завжди'
+
+
+class ContactTypeChoices(models.TextChoices):
+    NONE = 'NONE', 'Невідомо'
+    TELEPHONE = 'TELEPHONE', 'Телефон'
+    TELEGRAM = 'TELEGRAM', 'Телеграм'
+    TELEGRAM_ID = 'TELEGRAM_ID', 'ID телеграма'
+    VIBER = 'VIBER', 'вайбер'
+    VIBER_ID = 'VIBER_ID', 'ID вайберу'
+    WHATSAPP = 'WHATSAPP', 'ватсап'
+    WHATSAPP_ID = 'WHATSAPP_ID', 'ID ватсап'
+    FAX = 'FAX', 'Факс'
+    EMAIL = 'EMAIL', 'Пошта'
+    SKYPE = 'SKYPE', 'Скайп'
+
+
 class OrderStatusList(models.TextChoices):
     NONE = 'NONE', 'Не зазначено'
     ERROR_FILE_COUNT = 'ERROR_FILE_COUNT', 'Не вірна кількість файлів'
@@ -543,18 +563,21 @@ class Companies(models.Model):
 
 
 class CompaniesContacts(models.Model):
-    comment = models.CharField(max_length=255, blank=True, null=True)
-    position = models.CharField(max_length=100, blank=True, null=True)
+    comment = models.CharField(max_length=255, blank=True, null=True, verbose_name='Коментар')
+    position = models.CharField(max_length=100, blank=True, null=True, verbose_name='Посада')
     company = models.OneToOneField(Companies, models.DO_NOTHING,
-                                   primary_key=True)  # The composite primary key (company_id, contact_id) found, that is not supported. The first column is selected.
-    contact = models.ForeignKey('Contacts', models.DO_NOTHING)
-    is_logistic = BITField(blank=True, null=True)  # This field type is a guess.
-    percent_bonus = models.DecimalField(max_digits=5, decimal_places=4, blank=True, null=True)
+                                   primary_key=True, verbose_name='Компанія')  # The composite primary key (company_id, contact_id) found, that is not supported. The first column is selected.
+    contact = models.ForeignKey('Contacts', models.DO_NOTHING, verbose_name="Контакт")
+    is_logistic = BITField(blank=True, null=True, verbose_name='Зв`язаний з логістикою')  # This field type is a guess.
+    percent_bonus = models.DecimalField(max_digits=5, decimal_places=4, blank=True, null=True, verbose_name='Бонусний %')
 
     class Meta:
         managed = False
         db_table = 'companies_contacts'
         unique_together = (('company', 'contact'),)
+
+    def __str__(self):
+        return f"{self.contact} {self.company}"
 
 
 class CompanyClients(models.Model):
@@ -563,7 +586,7 @@ class CompanyClients(models.Model):
     debt = models.DecimalField(max_digits=19, decimal_places=2, blank=True, null=True, verbose_name='Борг')
     company_our_brand = models.ForeignKey('CompanyOurBrands', models.DO_NOTHING, blank=True, null=True,
                                           verbose_name='З якою нашою компанією працюємо')
-    document_delivery_type = models.CharField(max_length=255, blank=True, null=True,
+    document_delivery_type = models.CharField(max_length=255, blank=True, null=True, choices=DocumentDeliveryType.choices,
                                               verbose_name='Доставка документів')
     is_prepayment = BITField(blank=True, null=True,
                                         verbose_name='По передплаті')  # This field type is a guess.
@@ -655,8 +678,6 @@ class ContactInfoTypes(models.Model):
         verbose_name = 'Тип контакту'
         verbose_name_plural = "Типи контактів"
 
-    def __str__(self):
-        return self.type
 
 
 class ContactTypes(models.Model):
@@ -696,9 +717,9 @@ class Contacts(models.Model):
 
 class ContactsDetails(models.Model):
     id = models.BigAutoField(primary_key=True)
-    value = models.CharField(max_length=75)
-    contact = models.ForeignKey(Contacts, models.DO_NOTHING, blank=True, null=True)
-    contact_info_type = models.ForeignKey(ContactInfoTypes, models.DO_NOTHING, blank=True, null=True)
+    value = models.CharField(max_length=75, verbose_name='значення контакту')
+    contact = models.ForeignKey(Contacts, models.DO_NOTHING, blank=True, null=True, verbose_name='Контакт')
+    contact_info_type = models.ForeignKey(ContactInfoTypes, models.DO_NOTHING, blank=True, null=True) # old
 
     class Meta:
         managed = False
@@ -779,6 +800,9 @@ class DeliveryPresets(models.Model):
     is_legal_address = BITField(blank=True, null=True,
                                            verbose_name="Перевірена адреса")  # This field type is a guess.
 
+    shipping_date_planed_end = models.TimeField(blank=True, null=True, verbose_name='Час доставки по')
+    shipping_date_planed_start = models.TimeField(blank=True, null=True, verbose_name="Час доставки з")
+
     class Meta:
         managed = False
         db_table = 'delivery_presets'
@@ -854,6 +878,7 @@ class Engravers(models.Model):
     id = models.BigAutoField(primary_key=True)
     full_name = models.CharField(max_length=50, blank=True, null=True, verbose_name="Повна назва")
     name = models.CharField(max_length=50, blank=True, null=True, verbose_name="Скорочення")
+    put_into_operation = BITField(blank=True, null=True, verbose_name="Працює")  # This field type is a guess.
 
     class Meta:
         managed = False
@@ -862,7 +887,7 @@ class Engravers(models.Model):
         verbose_name = 'Гравер'
 
     def __str__(self):
-        return self.name
+        return self.full_name
 
 
 class FartukHeights(models.Model):
@@ -1781,3 +1806,17 @@ class OrderDampers(models.Model):
     class Meta:
         managed = False
         db_table = 'order_dampers'
+
+
+class OrderFilms(models.Model):
+    id = models.BigAutoField(primary_key=True)
+    color = models.CharField(max_length=100, blank=True, null=True, verbose_name="Колір")
+    height = models.IntegerField(blank=True, null=True, verbose_name='Висота')
+    ruling = models.IntegerField(blank=True, null=True, verbose_name="лініатура")
+    width = models.IntegerField(blank=True, null=True, verbose_name="Ширина")
+    cliche_technology = models.ForeignKey(ClicheTechnologies, models.DO_NOTHING, blank=True, null=True, verbose_name="Технологія")
+    order = models.ForeignKey('Orders', models.DO_NOTHING, blank=True, null=True, verbose_name="Замовлення")
+
+    class Meta:
+        managed = False
+        db_table = 'order_films'

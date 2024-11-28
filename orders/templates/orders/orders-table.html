@@ -85,7 +85,7 @@
 
       $('#selectPrintingCompany').on('change', function() {
         const selectedValue = $(this).val();
-        const work_file =  $('[name="work_file"]');
+        const work_file = $('[name="work_file"]');
 
         if (!selectedValue || selectedValue === '-1' || !work_file.val() || work_file.val() === '-1') {
 
@@ -968,19 +968,18 @@
       }
 
       const compression = document.querySelector('[name="compression"]');
-      if (compression){
+      if (compression) {
         compression.addEventListener('change', function() {
-          let selectedCompressionValue  = compression.value;
-          if (selectedCompressionValue === "NONE"){
+          let selectedCompressionValue = compression.value;
+          if (selectedCompressionValue === 'NONE') {
             document.getElementById('compression_value_div').style.display = 'none';
-          }
-          else {
+          } else {
             document.getElementById('compression_value_div').style.display = 'block';
           }
-        })
+        });
       }
 
-    })
+    });
 
   </script>
 
