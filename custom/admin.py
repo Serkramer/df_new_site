@@ -44,11 +44,35 @@ class ContactsAdmin(admin.ModelAdmin):
 
 @admin.register(PrintingCompanies)
 class PrintingCompaniesAdmin(admin.ModelAdmin):
-    list_display = ('id', 'process_id', 'color_library')
+    list_display = ('id', 'process_id', 'color_library', 'get_use_low_base', 'get_need_printout', 'get_label')
     search_fields = ('id__name',)
 
     autocomplete_fields = ['id', ]
     inlines = (PrintingMachinesInline,)
+
+    @admin.display(description='Використовує занижений цоколь', ordering='use_low_base')
+    def get_use_low_base(self, obj):
+        if obj.use_low_base is True:
+            return "Так"
+        elif obj.use_low_base is False:
+            return "Ні"
+        return "Невідомо"
+
+    @admin.display(description='Чи потрібны документи', ordering='need_printout')
+    def get_need_printout(self, obj):
+        if obj.need_printout is True:
+            return "Так"
+        elif obj.need_printout is False:
+            return "Ні"
+        return "Невідомо"
+
+    @admin.display(description='Чи потрібен підпис', ordering='need_label')
+    def get_label(self, obj):
+        if obj.need_label is True:
+            return "Так"
+        elif obj.need_label is False:
+            return "Ні"
+        return "Невідомо"
 
 
 @admin.register(PrintingMachines)
