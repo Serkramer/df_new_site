@@ -118,6 +118,18 @@ class OrderStatusList(models.TextChoices):
     DELIVERED = "DELIVERED", "Доставлено"
 
 
+class ContactPositionsList(models.TextChoices):
+   NONE = "NONE", ""
+   OWNER = "OWNER" , "Власник"
+   DIRECTOR = "DIRECTOR" , "Директор"
+   MANAGER = "MANAGER" , "Менеджер"
+   DESIGNER = "DESIGNER" , "Дизайнер"
+   TECHNOLOGIST = "TECHNOLOGIST" , "Технолог"
+   BOOKKEEPER = "BOOKKEEPER" , "Бухгалтер"
+   COURIER = "COURIER" , "Кур'ер"
+   MANUFACTURER = "MANUFACTURER", "Працівник виробництва"
+
+
 class PrintingMachineShaftsInputValueTypeList(models.TextChoices):
     DIAMETER = "DIAMETER", "Друкарський діаметр"
     RAPPORT = "RAPPORT", "Рапорт"
@@ -564,7 +576,7 @@ class Companies(models.Model):
 
 class CompaniesContacts(models.Model):
     comment = models.CharField(max_length=255, blank=True, null=True, verbose_name='Коментар')
-    position = models.CharField(max_length=100, blank=True, null=True, verbose_name='Посада')
+    position = models.CharField(max_length=100, blank=True, null=True, verbose_name='Посада', choices=ContactPositionsList.choices)
     company = models.OneToOneField(Companies, models.DO_NOTHING,
                                    primary_key=True, verbose_name='Компанія')  # The composite primary key (company_id, contact_id) found, that is not supported. The first column is selected.
     contact = models.ForeignKey('Contacts', models.DO_NOTHING, verbose_name="Контакт")
@@ -679,10 +691,9 @@ class ContactInfoTypes(models.Model):
         verbose_name_plural = "Типи контактів"
 
 
-
 class ContactTypes(models.Model):
     contacts_detail = models.ForeignKey('ContactsDetails', models.DO_NOTHING)
-    type = models.CharField(max_length=15, blank=True, null=True)
+    type = models.CharField(max_length=15, blank=True, null=True, choices=ContactTypeChoices.choices)
 
     class Meta:
         managed = False
@@ -696,14 +707,14 @@ class Contacts(models.Model):
     last_name = models.CharField(max_length=30, blank=True, null=True, verbose_name="Прізвище")
     middle_name = models.CharField(max_length=30, blank=True, null=True, verbose_name="по-батькові")
     contacts_detail = models.ForeignKey('ContactsDetails', models.DO_NOTHING, blank=True, null=True,
-                                        verbose_name='контакти')
+                                        verbose_name='контакти') #old
     mail_contacts_detail = models.ForeignKey('ContactsDetails', models.DO_NOTHING,
                                              related_name='contacts_mail_contacts_detail_set', blank=True, null=True,
-                                             verbose_name='пошти')
+                                             verbose_name='пошта за умовчанням')
     phone_contacts_detail = models.ForeignKey('ContactsDetails', models.DO_NOTHING,
                                               related_name='contacts_phone_contacts_detail_set', blank=True, null=True,
-                                              verbose_name='телефони')
-    bonus_area = models.DecimalField(max_digits=10, decimal_places=4, blank=True, null=True)
+                                              verbose_name='телефон за умовчанням')
+    bonus_area = models.DecimalField(max_digits=10, decimal_places=4, blank=True, null=True, verbose_name='бонусна площа')
 
     class Meta:
         managed = False
@@ -728,7 +739,12 @@ class ContactsDetails(models.Model):
         verbose_name_plural = 'контактна інформація'
 
     def __str__(self):
-        return self.value
+        return f"{self.value}"
+
+    def delete(self, *args, **kwargs):
+        # Удаляем все связанные записи в ContactTypes перед удалением самого объекта
+        self.contacttypes_set.all().delete()
+        super().delete(*args, **kwargs)
 
 
 class Curriers(models.Model):

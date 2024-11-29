@@ -1,8 +1,9 @@
 from django.contrib import admin
 
-from .inline_forms import PrintingMachinesInlineForm
+from .forms import ContactsDetailsForm
+from .inline_forms import PrintingMachinesInlineForm, ContactsDetailsInlineForm
 from .models import PrintingMachines, PrintingMachineShafts, PrintingMachinePresets, AniloxRolls, CompanyClients, \
-    PrintingCompanies, DeliveryPresets, CompaniesContacts, ContactsDetails
+    PrintingCompanies, DeliveryPresets, CompaniesContacts, ContactsDetails, ContactTypeChoices
 from django.utils.html import format_html
 from django.urls import reverse
 
@@ -76,8 +77,22 @@ class DeliveryPresetsInline(admin.TabularInline):
 
 class ContactsDetailsInline(admin.TabularInline):
     model = ContactsDetails
-    fields = ('value',)
-    extra = 1
+    form = ContactsDetailsInlineForm
+    fields = ('value', 'types')  # Add the 'type' field here
+    extra = 0
     verbose_name = "Контактна інформація"
     verbose_name_plural = "Контактна інформація"
+
+
+class CompaniesContactsForContactInline(admin.TabularInline):
+    model = CompaniesContacts
+    fields = ('company', 'position', 'is_logistic', 'percent_bonus', 'comment')
+    autocomplete_fields = ['company']
+    extra = 1
+    verbose_name = "З якими компаніями зв'язаний"
+    verbose_name_plural = "З якими компаніями зв'язаний"
+
+
+
+
 

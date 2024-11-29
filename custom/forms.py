@@ -4,7 +4,7 @@ from pydantic import ValidationError
 
 from custom.models import PrintingMachineShafts, Companies, DeliveryPresets, Addresses, PrintingMachinePresets, \
     AdhesiveTapeThicknesses, FartukHeights, PrintingMachines, Fartuks, FartukRailTypes, FartukMembraneTypes, \
-    AniloxRolls
+    AniloxRolls, ContactsDetails, Contacts, ContactTypeChoices
 from map.models import Areas, PostOffices, Settlements
 
 
@@ -190,6 +190,43 @@ class AddressesForm(forms.ModelForm):
     class Meta:
         model = Addresses
         fields = ('settlement_ref', 'post_office_ref', 'street', 'number')
+
+
+class ContactsDetailsForm(forms.ModelForm):
+
+    class Meta:
+        model = ContactsDetails
+        exclude = ('contact_info_type',)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        # Указываем обязательные поля
+        required_fields = ['contact',]
+        for field in required_fields:
+            self.fields[field].required = True
+
+
+class ContactsForm(forms.ModelForm):
+
+    class Meta:
+        model = Contacts
+        exclude = ('contacts_detail',)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        required_fields = ['first_name', ]
+        for field in required_fields:
+            self.fields[field].required = True
+
+        if self.instance and self.instance.pk:
+            self.fields['mail_contacts_detail'].queryset = ContactsDetails.objects.filter(contact=self.instance,
+                                                                                          contacttypes__type=ContactTypeChoices.EMAIL)
+            self.fields['phone_contacts_detail'].queryset = ContactsDetails.objects.filter(contact=self.instance, contacttypes__type=ContactTypeChoices.TELEPHONE)
+        else:
+            self.fields['mail_contacts_detail'].queryset = ContactsDetails.objects.none()
+            self.fields['phone_contacts_detail'].queryset = ContactsDetails.objects.none()
+
 
 
 class DeliveryPresetsForm(forms.ModelForm):

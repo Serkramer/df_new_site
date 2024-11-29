@@ -3,9 +3,10 @@ from django.contrib import admin
 from .admin_filters import PrintingCompanyWithShaftsFilter
 from .forms import PrintingMachineShaftsForm, CompanyForm, DeliveryPresetsForm, PrintingMachinePresetsForm, \
     AdhesiveTapeThicknessesForm, FartukHeightsForm, PrintingMachinesForm, FartuksForm, FartukRailTypesForm, \
-    FartukMembraneTypesForm, AniloxRollForm
+    FartukMembraneTypesForm, AniloxRollForm, ContactsDetailsForm, ContactsForm
 from .inlines import PrintingMachineShaftsInline, PrintingMachinesInline, PrintingMachinePresetsInline, \
-    AniloxRollsInline, CompanyClientsInline, PrintingCompaniesInline, DeliveryPresetsInline, ContactsDetailsInline
+    AniloxRollsInline, CompanyClientsInline, PrintingCompaniesInline, DeliveryPresetsInline, ContactsDetailsInline, \
+    CompaniesContactsForContactInline
 from .models import *
 
 
@@ -41,7 +42,9 @@ class ContactsAdmin(admin.ModelAdmin):
     list_display = ('id', 'first_name', 'last_name', 'middle_name', 'description')
     search_fields = ('first_name', 'last_name')
 
-    inlines = [ContactsDetailsInline]
+    form = ContactsForm
+
+    inlines = [ContactsDetailsInline, CompaniesContactsForContactInline]
 
 
 @admin.register(PrintingCompanies)
@@ -103,6 +106,7 @@ class ContactsAdmin(admin.ModelAdmin):
     list_display = ('contact', 'contact_info_type', 'value')
     search_fields = ('value', 'contact')
 
+    form = ContactsDetailsForm
 
 
 @admin.register(PrintingMachinePresets)
