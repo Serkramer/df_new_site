@@ -119,8 +119,8 @@ class OrderStatusList(models.TextChoices):
 
 
 class ContactPositionsList(models.TextChoices):
-   NONE = "NONE", ""
-   OWNER = "OWNER" , "Власник"
+   NONE = "NONE", "Невідомо"
+   OWNER = "OWNER", "Власник"
    DIRECTOR = "DIRECTOR" , "Директор"
    MANAGER = "MANAGER" , "Менеджер"
    DESIGNER = "DESIGNER" , "Дизайнер"
