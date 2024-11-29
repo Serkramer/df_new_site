@@ -723,7 +723,10 @@ class Contacts(models.Model):
         verbose_name_plural = 'Контакти'
 
     def __str__(self):
-        return f"{self.first_name} {self.last_name} | {self.description}"
+        contact_info = (f"{self.first_name} {self.last_name if self.last_name else ''} {self.middle_name if self.middle_name else ''}"
+                        f"{self.description if self.description else ''}")
+        #TODO добавить в скобках компании, с которыми связанный
+        return contact_info
 
 
 class ContactsDetails(models.Model):
