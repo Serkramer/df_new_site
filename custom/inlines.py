@@ -1,9 +1,10 @@
 from django.contrib import admin
+from django.core.exceptions import ValidationError
 
 from .forms import ContactsDetailsForm
-from .inline_forms import PrintingMachinesInlineForm, ContactsDetailsInlineForm
+from .inline_forms import PrintingMachinesInlineForm, ContactsDetailsInlineForm, CompaniesContactsInlineForm
 from .models import PrintingMachines, PrintingMachineShafts, PrintingMachinePresets, AniloxRolls, CompanyClients, \
-    PrintingCompanies, DeliveryPresets, CompaniesContacts, ContactsDetails, ContactTypeChoices
+    PrintingCompanies, DeliveryPresets, CompaniesContacts, ContactsDetails, ContactTypeChoices, Contacts
 from django.utils.html import format_html
 from django.urls import reverse
 
@@ -70,9 +71,32 @@ class PrintingCompaniesInline(admin.StackedInline):
 class DeliveryPresetsInline(admin.TabularInline):
     model = DeliveryPresets
     fields = ('delivery_type', 'name', 'address', 'description', 'contact', 'is_legal_address')
-    extra = 1
+    extra = 0
     verbose_name = "Доставка"
     verbose_name_plural = "Доставки"
+
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == "contact":
+            # Получаем текущую компанию из запроса
+            obj_id = request.resolver_match.kwargs.get('object_id')
+            if obj_id:
+                # Фильтруем контакты, связанные с текущей компанией
+                kwargs["queryset"] = Contacts.objects.filter(
+                    id__in=CompaniesContacts.objects.filter(company_id=obj_id).values_list('contact_id', flat=True)
+                )
+            else:
+                # Если компания не выбрана, контакты пустые
+                kwargs["queryset"] = Contacts.objects.none()
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
+
+
+
+class CompaniesContactsInline(admin.TabularInline):
+    model = CompaniesContacts
+    fields = ('contact', 'position', 'is_logistic', 'comment', 'percent_bonus')
+    extra = 1
+    verbose_name = "Контакт компанії"
+    verbose_name_plural = "Контакти компанії"
 
 
 class ContactsDetailsInline(admin.TabularInline):
@@ -91,6 +115,7 @@ class CompaniesContactsForContactInline(admin.TabularInline):
     extra = 1
     verbose_name = "З якими компаніями зв'язаний"
     verbose_name_plural = "З якими компаніями зв'язаний"
+
 
 
 

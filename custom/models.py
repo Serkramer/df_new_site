@@ -9,7 +9,8 @@ from django.db import models
 from django.core.exceptions import ValidationError
 from store.models import Materials as StoreMaterial
 from django.forms import Select, TypedChoiceField
-
+from django.db.models.signals import post_delete
+from django.dispatch import receiver
 
 class BITField(models.Field):
     description = "Boolean field stored as BIT(1) in the database with custom labels"
@@ -744,10 +745,6 @@ class ContactsDetails(models.Model):
     def __str__(self):
         return f"{self.value}"
 
-    def delete(self, *args, **kwargs):
-        # Удаляем все связанные записи в ContactTypes перед удалением самого объекта
-        self.contacttypes_set.all().delete()
-        super().delete(*args, **kwargs)
 
 
 class Curriers(models.Model):

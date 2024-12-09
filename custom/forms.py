@@ -4,7 +4,7 @@ from pydantic import ValidationError
 
 from custom.models import PrintingMachineShafts, Companies, DeliveryPresets, Addresses, PrintingMachinePresets, \
     AdhesiveTapeThicknesses, FartukHeights, PrintingMachines, Fartuks, FartukRailTypes, FartukMembraneTypes, \
-    AniloxRolls, ContactsDetails, Contacts, ContactTypeChoices
+    AniloxRolls, ContactsDetails, Contacts, ContactTypeChoices, CompaniesContacts
 from map.models import Areas, PostOffices, Settlements
 
 
@@ -182,8 +182,12 @@ class CompanyForm(forms.ModelForm):
             # Фильтрация queryset для поля delivery_preset
             if self.instance and self.instance.pk:
                 self.fields['delivery_preset'].queryset = DeliveryPresets.objects.filter(company=self.instance)
+                self.fields['contact'].queryset = Contacts.objects.filter(
+                    id__in=CompaniesContacts.objects.filter(company=self.instance).values_list('contact_id', flat=True)
+                )
             else:
                 self.fields['delivery_preset'].queryset = DeliveryPresets.objects.none()
+                self.fields['contact'].queryset = Contacts.objects.none()
 
 
 class AddressesForm(forms.ModelForm):
@@ -220,12 +224,45 @@ class ContactsForm(forms.ModelForm):
             self.fields[field].required = True
 
         if self.instance and self.instance.pk:
-            self.fields['mail_contacts_detail'].queryset = ContactsDetails.objects.filter(contact=self.instance,
-                                                                                          contacttypes__type=ContactTypeChoices.EMAIL)
-            self.fields['phone_contacts_detail'].queryset = ContactsDetails.objects.filter(contact=self.instance, contacttypes__type=ContactTypeChoices.TELEPHONE)
+            self.fields['mail_contacts_detail'].queryset = ContactsDetails.objects.filter(
+                contact=self.instance,
+                contacttypes__type=ContactTypeChoices.EMAIL
+            )
+            self.fields['phone_contacts_detail'].queryset = ContactsDetails.objects.filter(
+                contact=self.instance,
+                contacttypes__type=ContactTypeChoices.TELEPHONE
+            )
         else:
             self.fields['mail_contacts_detail'].queryset = ContactsDetails.objects.none()
             self.fields['phone_contacts_detail'].queryset = ContactsDetails.objects.none()
+
+    def clean(self):
+        cleaned_data = super().clean()
+
+        # Проверяем дубли в связанных таблицах
+        mail_contact = cleaned_data.get('mail_contacts_detail')
+        phone_contact = cleaned_data.get('phone_contacts_detail')
+
+        if mail_contact and ContactsDetails.objects.filter(
+            contact=self.instance,
+            value=mail_contact.value
+        ).exclude(pk=mail_contact.pk).exists():
+            raise forms.ValidationError(f"Контакт с почтовым значением {mail_contact.value} уже существует.")
+
+        if phone_contact and ContactsDetails.objects.filter(
+            contact=self.instance,
+            value=phone_contact.value
+        ).exclude(pk=phone_contact.pk).exists():
+            raise forms.ValidationError(f"Контакт с телефонным значением {phone_contact.value} уже существует.")
+
+        # Проверка дубликатов в таблице companies_contacts
+        contact_id = self.instance.pk  # или self.cleaned_data.get('contact') если не существует
+        company_id = self.cleaned_data.get('company_id')  # предполагаем, что вы передаете company_id
+        if company_id:
+            if CompaniesContacts.objects.filter(contact_id=contact_id, company_id=company_id).exists():
+                raise forms.ValidationError("Этот контакт уже связан с этой компанией.")
+
+        return cleaned_data
 
 
 

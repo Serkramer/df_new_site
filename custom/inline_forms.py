@@ -1,7 +1,9 @@
 from django import forms
 from django.forms import ModelForm
+from django.core.exceptions import ValidationError
+from custom.models import PrintingMachines, ContactsDetails, ContactTypes, ContactTypeChoices, CompaniesContacts
 
-from custom.models import PrintingMachines, ContactsDetails, ContactTypes, ContactTypeChoices
+from django_select2.forms import Select2MultipleWidget  # Импорт виджета Select2
 
 
 class PrintingMachinesInlineForm(forms.ModelForm):
@@ -22,56 +24,74 @@ class ContactsDetailsInlineForm(forms.ModelForm):
         model = ContactsDetails
         fields = '__all__'
 
+    # Поле types с виджетом Select2
     types = forms.MultipleChoiceField(
-        choices=ContactTypeChoices.choices,  # Передаем доступные значения типа из ContactTypeChoices
+        choices=ContactTypeChoices.choices,  # Доступные значения типа
         required=False,
-        widget=forms.CheckboxSelectMultiple,  # Виджет для отображения чекбоксов
+        widget=Select2MultipleWidget,  # Виджет для отображения Select2
         label='Типи контактів'
     )
 
     def __init__(self, *args, **kwargs):
-        # Инициализируем форму
         super().__init__(*args, **kwargs)
 
-        # Получаем связанный объект, если он уже существует
+        # Если объект уже существует, получаем связанные типы контактов
         if self.instance.pk:
-            # Получаем связанные типы контактов для текущего объекта ContactsDetails
             selected_types = self.instance.contacttypes_set.values_list('type', flat=True)
-            # Преобразуем QuerySet в список
             selected_types_list = list(selected_types)
-
-            # Добавим отладочный вывод для проверки значений
-            print(f"selected_types_list: {selected_types_list}")
-
-            # Устанавливаем выбранные типы в поле 'types'
             self.fields['types'].initial = selected_types_list
 
     def save(self, commit=True):
+        # Получаем данные из формы
+        contact = self.cleaned_data['contact']
+        value = self.cleaned_data['value']
+        selected_types = set(self.cleaned_data.get('types', []))  # Типы из формы
+
+        # Ищем существующий объект с такими же contact и value
+        existing_instance = ContactsDetails.objects.filter(contact=contact, value=value).first()
+
+        if existing_instance:
+            # Проверяем, совпадают ли типы
+            existing_types = set(existing_instance.contacttypes_set.values_list('type', flat=True))
+            if existing_types == selected_types:
+                # Если объект и типы совпадают, ничего не делаем
+                return None
+            else:
+                # Если объект существует, но типы отличаются, обновляем их
+                for contact_type in (existing_types - selected_types):
+                    existing_instance.contacttypes_set.filter(type=contact_type).delete()
+                for contact_type in (selected_types - existing_types):
+                    # Добавляем только отсутствующие связи
+                    ContactTypes.objects.create(
+                        contacts_detail=existing_instance,
+                        type=contact_type
+                    )
+                return existing_instance
+
+        # Если объекта с такими contact и value нет, создаём новый
         instance = super().save(commit=False)
 
-        # Сохраняем выбранные типы
         if commit:
-            instance.save()  # Сначала сохраняем контакт
-            # Теперь создаем связи с типами контактов
-            # Получаем все текущие связи с типами
-            existing_types = set(self.instance.contacttypes_set.values_list('type', flat=True))
+            # Сохраняем объект в базу данных
+            instance.save()
 
-            # Получаем выбранные типы из формы
-            selected_types = set(self.cleaned_data['types'])
-
-            # Удаляем связи для тех типов, которые не были выбраны
-            types_to_delete = existing_types - selected_types
-            for contact_type in types_to_delete:
-                self.instance.contacttypes_set.filter(type=contact_type).delete()
-
-            # Добавляем новые связи
-            types_to_add = selected_types - existing_types
-            for contact_type in types_to_add:
+            # Добавляем выбранные типы
+            for contact_type in selected_types:
                 ContactTypes.objects.create(
                     contacts_detail=instance,
                     type=contact_type
                 )
 
         return instance
+
+
+class CompaniesContactsInlineForm(forms.ModelForm):
+    class Meta:
+        model = CompaniesContacts
+        fields = '__all__'
+
+
+
+
 
 

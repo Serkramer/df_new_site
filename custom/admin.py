@@ -1,4 +1,6 @@
 from django.contrib import admin
+from django.db.models import Subquery, OuterRef, F, Value
+from django.db.models.functions import Coalesce
 
 from .admin_filters import PrintingCompanyWithShaftsFilter
 from .forms import PrintingMachineShaftsForm, CompanyForm, DeliveryPresetsForm, PrintingMachinePresetsForm, \
@@ -6,7 +8,7 @@ from .forms import PrintingMachineShaftsForm, CompanyForm, DeliveryPresetsForm, 
     FartukMembraneTypesForm, AniloxRollForm, ContactsDetailsForm, ContactsForm
 from .inlines import PrintingMachineShaftsInline, PrintingMachinesInline, PrintingMachinePresetsInline, \
     AniloxRollsInline, CompanyClientsInline, PrintingCompaniesInline, DeliveryPresetsInline, ContactsDetailsInline, \
-    CompaniesContactsForContactInline
+    CompaniesContactsForContactInline, CompaniesContactsInline
 from .models import *
 
 
@@ -39,12 +41,31 @@ class EngraversAdmin(admin.ModelAdmin):
 
 @admin.register(Contacts)
 class ContactsAdmin(admin.ModelAdmin):
-    list_display = ('id', 'first_name', 'last_name', 'middle_name', 'description')
-    search_fields = ('first_name', 'last_name')
+    list_display = ('id', 'first_name', 'last_name', 'middle_name', 'description', 'get_company_from_contact')
+    search_fields = ('first_name', 'last_name', 'description',  'companies_search')
 
     form = ContactsForm
 
     inlines = [ContactsDetailsInline, CompaniesContactsForContactInline]
+
+    @admin.display(description="З якими компаніями пов'язаний")
+    def get_company_from_contact(self, obj):
+        # Группировка через Python
+        companies = CompaniesContacts.objects.filter(contact=obj).select_related('company')
+        return ", ".join(set(company.company.name for company in companies if company.company))
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        # Группируем компании через подзапрос
+        companies = CompaniesContacts.objects.filter(contact=OuterRef('pk')).values('company__name')
+        annotated_companies = qs.annotate(
+            companies_search=Coalesce(
+                Subquery(companies[:1]),  # Берём только первую строку в случае отсутствия агрегатов
+                Value(''),
+            )
+        )
+        return annotated_companies
+
 
 
 @admin.register(PrintingCompanies)
@@ -173,10 +194,10 @@ class CompaniesAdmin(admin.ModelAdmin):
     list_display = ('name', 'okpo', 'full_name', 'company_group', 'get_is_verified', 'get_is_outdated')
     search_fields = ('name', 'okpo', 'full_name')
 
-    autocomplete_fields = ['contact', 'company_group']
+    autocomplete_fields = ['company_group']
     form = CompanyForm
 
-    inlines = [CompanyClientsInline, PrintingCompaniesInline, DeliveryPresetsInline]
+    inlines = [CompanyClientsInline, PrintingCompaniesInline, CompaniesContactsInline, DeliveryPresetsInline]
 
     @admin.display(description='Перевірений', ordering='is_verified')
     def get_is_verified(self, obj):
