@@ -193,7 +193,7 @@ class CompanyForm(forms.ModelForm):
 class AddressesForm(forms.ModelForm):
     class Meta:
         model = Addresses
-        fields = ('settlement_ref', 'post_office_ref', 'street', 'number')
+        fields = ('settlement_ref', 'post_office_ref', 'street', 'build')
 
 
 class ContactsDetailsForm(forms.ModelForm):

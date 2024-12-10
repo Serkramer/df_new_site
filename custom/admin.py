@@ -5,7 +5,7 @@ from django.db.models.functions import Coalesce
 from .admin_filters import PrintingCompanyWithShaftsFilter
 from .forms import PrintingMachineShaftsForm, CompanyForm, DeliveryPresetsForm, PrintingMachinePresetsForm, \
     AdhesiveTapeThicknessesForm, FartukHeightsForm, PrintingMachinesForm, FartuksForm, FartukRailTypesForm, \
-    FartukMembraneTypesForm, AniloxRollForm, ContactsDetailsForm, ContactsForm
+    FartukMembraneTypesForm, AniloxRollForm, ContactsDetailsForm, ContactsForm, AddressesForm
 from .inlines import PrintingMachineShaftsInline, PrintingMachinesInline, PrintingMachinePresetsInline, \
     AniloxRollsInline, CompanyClientsInline, PrintingCompaniesInline, DeliveryPresetsInline, ContactsDetailsInline, \
     CompaniesContactsForContactInline, CompaniesContactsInline
@@ -152,6 +152,30 @@ class ColorProfileAdmin(admin.ModelAdmin):
 class AdhesiveTapeThicknessAdmin(admin.ModelAdmin):
     list_display = ('thickness',)
     form = AdhesiveTapeThicknessesForm
+
+
+@admin.register(Addresses)
+class AddressesAdmin(admin.ModelAdmin):
+    list_display = ('get_settlement_ref', 'get_post_office_ref', 'street', 'build')
+    search_fields = ('street', 'build', 'get_settlement_ref', 'get_post_office_ref')
+    form = AddressesForm
+
+    @admin.display(description='Населенний пункт')
+    def get_settlement_ref(self, obj):
+        if obj.settlement_ref:
+            settlement = Settlements.objects.filter(ref=obj.settlement_ref).first()
+            if settlement:
+                return settlement.description
+        return '---'
+
+    @admin.display(description="Відділення НП")
+    def get_post_office_ref(self, obj):
+        if obj.post_office_ref:
+            post_office = PostOffices.objects.filter(ref=obj.post_office_ref).first()
+            if post_office:
+                return post_office.description
+        return '---'
+
 
 
 @admin.register(AdhesiveTapes)

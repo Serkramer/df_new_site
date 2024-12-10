@@ -7,6 +7,8 @@
 # Feel free to rename the models, but don't rename db_table values or field names.
 from django.db import models
 from django.core.exceptions import ValidationError
+
+from map.models import Settlements, PostOffices
 from store.models import Materials as StoreMaterial
 from django.forms import Select, TypedChoiceField
 from django.db.models.signals import post_delete
@@ -164,19 +166,27 @@ class Addressees(models.Model):
 
 class Addresses(models.Model):
     id = models.BigAutoField(primary_key=True)
-    build = models.CharField(max_length=10, blank=True, null=True)
-    post_office_ref = models.CharField(max_length=36, blank=True, null=True)
-    settlement_ref = models.CharField(max_length=36, blank=True, null=True)
-    street = models.CharField(max_length=256, blank=True, null=True)
-    addressescol = models.CharField(max_length=45, blank=True, null=True)
-    number = models.CharField(max_length=15, blank=True, null=True)
+    build = models.CharField(max_length=10, blank=True, null=True, verbose_name="Будинок")
+    post_office_ref = models.CharField(max_length=36, blank=True, null=True, verbose_name="Відділення НП")
+    settlement_ref = models.CharField(max_length=36, blank=True, null=True, verbose_name="Населенний пункт")
+    street = models.CharField(max_length=256, blank=True, null=True, verbose_name='Вулиця')
+    addressescol = models.CharField(max_length=45, blank=True, null=True) # old
+    number = models.CharField(max_length=15, blank=True, null=True) # old
 
     class Meta:
         managed = False
         db_table = 'addresses'
+        verbose_name = 'Адреса доставки'
+        verbose_name_plural = "Адреси доставки"
 
     def __str__(self):
-        return f"{self.street} {self.build}"
+        settlement = Settlements.objects.filter(ref=self.settlement_ref).first() if self.settlement_ref else None
+        post_office = PostOffices.objects.filter(ref=self.post_office_ref).first() if self.post_office_ref else None
+        address_str = (f"{settlement.description if self.settlement_ref else ''} "
+                       f"{post_office.description if self.post_office_ref else ''} "
+                       f"{self.street if self.street else ''} {self.build if self.build else ''}")
+        return address_str
+
 
 
 class AdhesiveTapeThicknesses(models.Model):
@@ -590,7 +600,59 @@ class CompaniesContacts(models.Model):
         unique_together = (('company', 'contact'),)
 
     def __str__(self):
-        return f"{self.contact} {self.company}"
+        try:
+            company = self.company if self.company else "Нет компании"
+        except self._meta.get_field('company').related_model.DoesNotExist:
+            company = "Нет компании"
+
+        try:
+            contact = self.contact if self.contact else "Нет контакта"
+        except self._meta.get_field('contact').related_model.DoesNotExist:
+            contact = "Нет контакта"
+
+        return f"{contact} {company}"
+
+    def save(self, *args, **kwargs):
+        # Если объект уже существует (обновление записи)
+        if self.pk:
+            # Получаем все записи с одинаковой связкой company и contact
+            existing_instance = CompaniesContacts.objects.filter(company=self.company, contact=self.contact).first()
+
+            if existing_instance:
+                # Проверяем, изменились ли другие поля
+                updated = False
+
+                if existing_instance.comment != self.comment:
+                    existing_instance.comment = self.comment
+                    updated = True
+
+                if existing_instance.position != self.position:
+                    existing_instance.position = self.position
+                    updated = True
+
+                if existing_instance.is_logistic != self.is_logistic:
+                    existing_instance.is_logistic = self.is_logistic
+                    updated = True
+
+                if existing_instance.percent_bonus != self.percent_bonus:
+                    existing_instance.percent_bonus = self.percent_bonus
+                    updated = True
+
+                # Если были изменения, сохраняем запись
+                if updated:
+                    # Обновляем запись в базе данных без вызова save() для текущего объекта
+                    CompaniesContacts.objects.filter(pk=existing_instance.pk).update(
+                        comment=existing_instance.comment,
+                        position=existing_instance.position,
+                        is_logistic=existing_instance.is_logistic,
+                        percent_bonus=existing_instance.percent_bonus
+                    )
+
+                # Не создаем новый объект, если запись существует и обновлена
+                return
+
+        # Если записи с такой связкой (company, contact) нет, создаем новую
+        super().save(*args, **kwargs)
 
 
 class CompanyClients(models.Model):
@@ -808,7 +870,7 @@ class DeliveryPresets(models.Model):
     id = models.BigAutoField(primary_key=True)
     description = models.CharField(max_length=255, blank=True, null=True, verbose_name='Коментар')
     name = models.CharField(max_length=100, verbose_name="Назва доставки")
-    address = models.ForeignKey(Addresses, models.DO_NOTHING, blank=True, null=True, verbose_name="Адресса")
+    address = models.ForeignKey(Addresses, models.DO_NOTHING, blank=True, null=True, verbose_name="Адреса")
     company = models.ForeignKey(Companies, models.DO_NOTHING, blank=True, null=True, verbose_name="Компанія")
     delivery_type = models.ForeignKey('DeliveryTypes', models.DO_NOTHING, blank=True, null=True,
                                       verbose_name='Тип доставки')

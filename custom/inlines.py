@@ -90,7 +90,6 @@ class DeliveryPresetsInline(admin.TabularInline):
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
 
-
 class CompaniesContactsInline(admin.TabularInline):
     model = CompaniesContacts
     fields = ('contact', 'position', 'is_logistic', 'comment', 'percent_bonus')
