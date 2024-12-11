@@ -1,5 +1,5 @@
 from django.contrib import admin
-from django.db.models import Subquery, OuterRef, F, Value
+from django.db.models import Subquery, OuterRef, F, Value, Func, CharField
 from django.db.models.functions import Coalesce
 
 from .admin_filters import PrintingCompanyWithShaftsFilter
@@ -8,9 +8,13 @@ from .forms import PrintingMachineShaftsForm, CompanyForm, DeliveryPresetsForm, 
     FartukMembraneTypesForm, AniloxRollForm, ContactsDetailsForm, ContactsForm, AddressesForm
 from .inlines import PrintingMachineShaftsInline, PrintingMachinesInline, PrintingMachinePresetsInline, \
     AniloxRollsInline, CompanyClientsInline, PrintingCompaniesInline, DeliveryPresetsInline, ContactsDetailsInline, \
-    CompaniesContactsForContactInline, CompaniesContactsInline
+    CompaniesContactsForContactInline, CompaniesContactsInline, DeliveryPresetsInAddressInline
 from .models import *
 
+
+class GroupConcat(Func):
+    function = 'GROUP_CONCAT'
+    template = '%(function)s(%(expressions)s SEPARATOR ", ")'
 
 @admin.register(PaperSizes)
 class PaperSizesAdmin(admin.ModelAdmin):
@@ -41,8 +45,9 @@ class EngraversAdmin(admin.ModelAdmin):
 
 @admin.register(Contacts)
 class ContactsAdmin(admin.ModelAdmin):
-    list_display = ('id', 'first_name', 'last_name', 'middle_name', 'description', 'get_company_from_contact')
-    search_fields = ('first_name', 'last_name', 'description',  'companies_search')
+    list_display = ('id', 'first_name', 'last_name', 'middle_name', 'description', 'get_company_from_contact',
+                    'get_contact_details')
+    search_fields = ('first_name', 'last_name', 'description', 'companies_search', 'contact_details_search')
 
     form = ContactsForm
 
@@ -50,22 +55,39 @@ class ContactsAdmin(admin.ModelAdmin):
 
     @admin.display(description="З якими компаніями пов'язаний")
     def get_company_from_contact(self, obj):
-        # Группировка через Python
         companies = CompaniesContacts.objects.filter(contact=obj).select_related('company')
         return ", ".join(set(company.company.name for company in companies if company.company))
 
+    @admin.display(description="Контактна інформація")
+    def get_contact_details(self, obj):
+        contact_details = ContactsDetails.objects.filter(contact=obj)
+        return ", ".join(set(contact_details.value for contact_details in contact_details if contact_details and contact_details.value))
+
     def get_queryset(self, request):
         qs = super().get_queryset(request)
-        # Группируем компании через подзапрос
-        companies = CompaniesContacts.objects.filter(contact=OuterRef('pk')).values('company__name')
-        annotated_companies = qs.annotate(
+
+        # Агрегация значений компаний через GROUP_CONCAT
+        companies = CompaniesContacts.objects.filter(contact=OuterRef('pk')).annotate(
+            companies_agg=GroupConcat('company__name')
+        ).values('companies_agg')
+
+        # Агрегация значений контактной информации через GROUP_CONCAT
+        contact_details = ContactsDetails.objects.filter(contact=OuterRef('pk')).annotate(
+            details_agg=GroupConcat('value')
+        ).values('details_agg')
+
+        # Добавляем аннотации для поиска
+        annotated_queryset = qs.annotate(
             companies_search=Coalesce(
-                Subquery(companies[:1]),  # Берём только первую строку в случае отсутствия агрегатов
-                Value(''),
+                Subquery(companies[:1], output_field=CharField()),
+                Value('')
+            ),
+            contact_details_search=Coalesce(
+                Subquery(contact_details[:1], output_field=CharField()),
+                Value('')
             )
         )
-        return annotated_companies
-
+        return annotated_queryset
 
 
 @admin.register(PrintingCompanies)
@@ -154,28 +176,29 @@ class AdhesiveTapeThicknessAdmin(admin.ModelAdmin):
     form = AdhesiveTapeThicknessesForm
 
 
-@admin.register(Addresses)
-class AddressesAdmin(admin.ModelAdmin):
-    list_display = ('get_settlement_ref', 'get_post_office_ref', 'street', 'build')
-    search_fields = ('street', 'build', 'get_settlement_ref', 'get_post_office_ref')
-    form = AddressesForm
-
-    @admin.display(description='Населенний пункт')
-    def get_settlement_ref(self, obj):
-        if obj.settlement_ref:
-            settlement = Settlements.objects.filter(ref=obj.settlement_ref).first()
-            if settlement:
-                return settlement.description
-        return '---'
-
-    @admin.display(description="Відділення НП")
-    def get_post_office_ref(self, obj):
-        if obj.post_office_ref:
-            post_office = PostOffices.objects.filter(ref=obj.post_office_ref).first()
-            if post_office:
-                return post_office.description
-        return '---'
-
+# @admin.register(Addresses)
+# class AddressesAdmin(admin.ModelAdmin):
+#     list_display = ('get_settlement_ref', 'get_post_office_ref', 'street', 'build')
+#     search_fields = ('street', 'build', 'get_settlement_ref', 'get_post_office_ref')
+#     form = AddressesForm
+#
+#     inlines = [DeliveryPresetsInAddressInline]
+#
+#     @admin.display(description='Населенний пункт')
+#     def get_settlement_ref(self, obj):
+#         if obj.settlement_ref:
+#             settlement = Settlements.objects.filter(ref=obj.settlement_ref).first()
+#             if settlement:
+#                 return settlement.description
+#         return '---'
+#
+#     @admin.display(description="Відділення НП")
+#     def get_post_office_ref(self, obj):
+#         if obj.post_office_ref:
+#             post_office = PostOffices.objects.filter(ref=obj.post_office_ref).first()
+#             if post_office:
+#                 return post_office.description
+#         return '---'
 
 
 @admin.register(AdhesiveTapes)
@@ -253,7 +276,7 @@ class DeliveryPresetAdmin(admin.ModelAdmin):
     list_display = ('company', 'delivery_type', 'contact', 'description', 'name', 'address',
                     'custom_is_legal_address','shipping_date_planed_start', 'shipping_date_planed_end')
     autocomplete_fields = ['contact', 'company']
-    search_fields = ('company', 'delivery_type')
+    search_fields = ('company__name', 'delivery_type__type')
     form = DeliveryPresetsForm
 
     def custom_is_legal_address(self, obj):
@@ -351,9 +374,6 @@ class FartuksAdmin(admin.ModelAdmin):
     list_display = ("type", "description", "max_height", "max_width", "bottom_fartuk_rail_type",
                     "fartuk_membrane_type",
                     "top_fartuk_rail_type", "is_fixed", )
-    #
-    # list_editable = ("description",  "max_height", "max_width", "bottom_fartuk_rail_type", "fartuk_membrane_type",
-    #                  "top_fartuk_rail_type",)
 
     form = FartuksForm
 

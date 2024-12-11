@@ -191,9 +191,61 @@ class CompanyForm(forms.ModelForm):
 
 
 class AddressesForm(forms.ModelForm):
+
+    area = forms.ModelChoiceField(
+        label='Область',
+        queryset=Areas.objects.all(),
+        widget=autocomplete.ModelSelect2(url='map:areas-autocomplete'),
+        required=True
+    )
+
+    settlement_ref = forms.ModelChoiceField(
+        label='Населенний пункт',
+        queryset=Settlements.objects.all(),
+        widget=autocomplete.ModelSelect2(
+            url='map:settlements-autocomplete',
+            forward=['area']
+        ),
+        required=True
+    )
+
+    post_office = forms.ModelChoiceField(
+        label='Відділення НП',
+        queryset=PostOffices.objects.all(),
+        widget=autocomplete.ModelSelect2(url='map:post-office-autocomplete', forward=['settlement_ref']),
+        required=False
+    )
+
+
     class Meta:
         model = Addresses
-        fields = ('settlement_ref', 'post_office_ref', 'street', 'build')
+        fields = ('area', 'settlement_ref', 'post_office', 'street', 'build')
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Если объект уже содержит settlement_ref, выбираем соответствующий объект Settlements
+        if self.instance and self.instance.settlement_ref:
+            settlement = Settlements.objects.get(ref=self.instance.settlement_ref)
+            area = settlement.area_ref
+
+            self.fields['area'].initial = area
+            self.fields['settlement_ref'].initial = settlement
+
+            if self.instance.post_office_ref:
+                post_office = PostOffices.objects.get(ref=self.instance.post_office_ref)
+                self.fields['post_office'].initial = post_office
+
+    def save(self, commit=True):
+        instance = super().save(commit=False)
+        settlement = self.cleaned_data.get('settlement_ref')
+        post_office = self.cleaned_data.get('post_office')
+        if settlement:
+            instance.settlement_ref = settlement.ref  # Сохраняем ref выбранного Settlements
+        if post_office:
+            instance.post_office_ref = post_office.ref
+        if commit:
+            instance.save()
+        return instance
 
 
 class ContactsDetailsForm(forms.ModelForm):
@@ -290,10 +342,32 @@ class DeliveryPresetsForm(forms.ModelForm):
         ),
         required=True
     )
+    contact = forms.ModelChoiceField(
+        queryset=Contacts.objects.all(),  # Изначально пустой queryset
+        widget=autocomplete.ModelSelect2(
+            url='custom:contact-autocomplete',
+            forward=['company'],  # Передаём выбранную компанию
+        ),
+        label="Контакт",
+        required=False
+    )
+
+    # Новое поле с переключателем для типа доставки
+    DELIVERY_CHOICES = [
+        ('post_office', 'Доставка на відділення'),
+        ('address', 'Адресна доставка'),
+    ]
+
+    delivery_type_selector = forms.ChoiceField(
+        label='Тип доставки НП',
+        choices=DELIVERY_CHOICES,
+        widget=forms.RadioSelect,
+        required=False
+    )
 
     class Meta:
         model = DeliveryPresets
-        fields = ('company', 'name', 'delivery_type', 'area', 'settlement_ref', 'post_office_ref',
+        fields = ('company', 'name', 'delivery_type', "delivery_type_selector", 'area', 'settlement_ref', 'post_office_ref',
                   'street', 'build', 'description',  'contact', 'is_legal_address', 'shipping_date_planed_start',
                   'shipping_date_planed_end')
 
@@ -321,6 +395,12 @@ class DeliveryPresetsForm(forms.ModelForm):
                 self.fields['build'].initial = address.build
                 self.fields['post_office_ref'].initial = address.post_office_ref
                 self.fields['settlement_ref'].initial = address.settlement_ref
+                if self.instance.delivery_type:
+                    if self.instance.delivery_type.id == 3:  # Например, доставка на отделение (id 3)
+                        if address.post_office_ref:  # Проверяем, есть ли значение в post_office_ref
+                            self.fields['delivery_type_selector'].initial = 'post_office'  # Если есть, выбираем "Доставка на відділення"
+                        else:
+                            self.fields['delivery_type_selector'].initial = 'address'
 
     def save(self, commit=True):
         instance = super().save(commit=False)
@@ -337,4 +417,5 @@ class DeliveryPresetsForm(forms.ModelForm):
             )
             instance.address = address
             instance.save()
+
         return instance

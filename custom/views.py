@@ -4,7 +4,8 @@ from django.shortcuts import render
 
 from django.shortcuts import render
 from dal import autocomplete
-from .models import CompanyClients, PrintingCompanies, PrintingMachinePresets, ClicheTechnologies
+from .models import CompanyClients, PrintingCompanies, PrintingMachinePresets, ClicheTechnologies, CompaniesContacts, \
+    Contacts
 from django.db.models import Q
 
 
@@ -80,5 +81,31 @@ class ClicheTechnologiesAutocomplete(autocomplete.Select2QuerySetView):
 
         if self.q:
             qs = qs.filter(name__icontains=self.q)
+
+        return qs
+
+
+class ContactAutocomplete(autocomplete.Select2QuerySetView):
+    def get_queryset(self):
+        # Ensure the user is authenticated
+        if not self.request.user.is_authenticated:
+            return Contacts.objects.none()
+
+        qs = Contacts.objects.all()
+
+        # Filter by the selected company (via CompaniesContacts)
+        company_id = self.forwarded.get('company', None)
+        if company_id:
+            # Filter Contacts related to the given company through CompaniesContacts
+            qs = qs.filter(companiescontacts__company_id=company_id)
+
+        # Filter by text search (contact name or description)
+        if self.q:
+            qs = qs.filter(
+                Q(first_name__icontains=self.q) |
+                Q(last_name__icontains=self.q) |
+                Q(middle_name__icontains=self.q) |
+                Q(description__icontains=self.q)
+            )
 
         return qs

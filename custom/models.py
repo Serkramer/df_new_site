@@ -180,12 +180,18 @@ class Addresses(models.Model):
         verbose_name_plural = "Адреси доставки"
 
     def __str__(self):
+        # Получаем населённый пункт, если он указан
         settlement = Settlements.objects.filter(ref=self.settlement_ref).first() if self.settlement_ref else None
+        # Получаем отделение, если оно указано
         post_office = PostOffices.objects.filter(ref=self.post_office_ref).first() if self.post_office_ref else None
-        address_str = (f"{settlement.description if self.settlement_ref else ''} "
-                       f"{post_office.description if self.post_office_ref else ''} "
-                       f"{self.street if self.street else ''} {self.build if self.build else ''}")
-        return address_str
+        # Формируем строку
+        address_str = (
+            f"{settlement.description if settlement else ''} "  # Проверяем существование объекта
+            f"{post_office.description if post_office else ''} "
+            f"{self.street if self.street else ''} "
+            f"{self.build if self.build else ''}"
+        ).strip()  # Убираем лишние пробелы
+        return address_str if address_str else "Без адреса"
 
 
 

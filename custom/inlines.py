@@ -1,3 +1,5 @@
+from dal import autocomplete
+from django import forms
 from django.contrib import admin
 from django.core.exceptions import ValidationError
 
@@ -116,7 +118,39 @@ class CompaniesContactsForContactInline(admin.TabularInline):
     verbose_name_plural = "З якими компаніями зв'язаний"
 
 
+class DeliveryPresetsForm(forms.ModelForm):
+    contact = forms.ModelChoiceField(
+        queryset=CompaniesContacts.objects.none(),  # Изначально пустой queryset
+        widget=autocomplete.ModelSelect2(
+            url='custom:contact-autocomplete',
+            forward=['company'],  # Передаём выбранную компанию
+        ),
+        label="Контакт"
+    )
+
+    class Meta:
+        model = DeliveryPresets
+        fields = '__all__'
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        # Проверяем, что есть instance с заполненным значением `contact`
+        if self.instance and self.instance.pk:
+            # Фильтруем queryset для контакта по текущей компании
+            self.fields['contact'].queryset = CompaniesContacts.objects.filter(company=self.instance.company)
+
+            # Устанавливаем начальное значение
+            self.fields['contact'].initial = self.instance.contact
 
 
+class DeliveryPresetsInAddressInline(admin.TabularInline):
+    model = DeliveryPresets
+    form = DeliveryPresetsForm
+    fields = ('company', 'delivery_type', 'name', 'description', 'contact', 'is_legal_address',
+              'shipping_date_planed_start', 'shipping_date_planed_end', )
+    extra = 0
+    verbose_name = "Доставка"
+    verbose_name_plural = "Доставки"
 
 

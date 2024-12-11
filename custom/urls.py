@@ -10,6 +10,7 @@ urlpatterns = [
 
     path('printing-companies/', login_required(views.PrintingCompaniesAutocomplete.as_view()), name='printing-companies'),
     path('printing-machine-presets/', login_required(views.PrintingMachinePresetsAutocomplete.as_view()), name='printing-machine-presets'),
-    path('cliche-technologies/', login_required(views.ClicheTechnologiesAutocomplete.as_view()), name='cliche-technologies')
+    path('cliche-technologies/', login_required(views.ClicheTechnologiesAutocomplete.as_view()), name='cliche-technologies'),
+    path('contact-autocomplete/', views.ContactAutocomplete.as_view(), name='contact-autocomplete'),
 
 ]
