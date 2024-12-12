@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.db.models import Subquery, OuterRef, F, Value, Func, CharField
 from django.db.models.functions import Coalesce
-
+import pytz
 from .admin_filters import PrintingCompanyWithShaftsFilter
 from .forms import PrintingMachineShaftsForm, CompanyForm, DeliveryPresetsForm, PrintingMachinePresetsForm, \
     AdhesiveTapeThicknessesForm, FartukHeightsForm, PrintingMachinesForm, FartuksForm, FartukRailTypesForm, \
@@ -10,6 +10,7 @@ from .inlines import PrintingMachineShaftsInline, PrintingMachinesInline, Printi
     AniloxRollsInline, CompanyClientsInline, PrintingCompaniesInline, DeliveryPresetsInline, ContactsDetailsInline, \
     CompaniesContactsForContactInline, CompaniesContactsInline, DeliveryPresetsInAddressInline
 from .models import *
+from datetime import datetime, time, timedelta
 
 
 class GroupConcat(Func):
@@ -274,7 +275,7 @@ class FartukHeightsAdmin(admin.ModelAdmin):
 @admin.register(DeliveryPresets)
 class DeliveryPresetAdmin(admin.ModelAdmin):
     list_display = ('company', 'delivery_type', 'contact', 'description', 'name', 'address',
-                    'custom_is_legal_address','shipping_date_planed_start', 'shipping_date_planed_end')
+                    'custom_is_legal_address', 'shipping_date_planed_start_display', 'shipping_date_planed_end_display')
     autocomplete_fields = ['contact', 'company']
     search_fields = ('company__name', 'delivery_type__type')
     form = DeliveryPresetsForm
@@ -286,6 +287,35 @@ class DeliveryPresetAdmin(admin.ModelAdmin):
 
     custom_is_legal_address.short_description = 'Перевірена адреса'
 
+    def shipping_date_planed_start_display(self, obj):
+        if obj.shipping_date_planed_start:
+            kiev_tz = pytz.timezone('Europe/Kiev')  # Используем pytz для работы с временными зонами
+
+            # Преобразуем время (datetime.time) в datetime с сегодняшней датой
+            time_as_datetime = datetime.combine(datetime.today(), obj.shipping_date_planed_start)
+
+            # Преобразуем в UTC, затем в Киевскую временную зону
+            local_time = time_as_datetime.replace(tzinfo=pytz.utc).astimezone(kiev_tz).time()
+
+            return local_time.strftime('%H:%M')
+        return '-'
+
+    shipping_date_planed_start_display.short_description = 'Час доставки з'
+
+    def shipping_date_planed_end_display(self, obj):
+        if obj.shipping_date_planed_end:
+            kiev_tz = pytz.timezone('Europe/Kiev')  # Используем pytz для работы с временными зонами
+
+            # Преобразуем время (datetime.time) в datetime с сегодняшней датой
+            time_as_datetime = datetime.combine(datetime.today(), obj.shipping_date_planed_end)
+
+            # Преобразуем в UTC, затем в Киевскую временную зону
+            local_time = time_as_datetime.replace(tzinfo=pytz.utc).astimezone(kiev_tz).time()
+
+            return local_time.strftime('%H:%M')
+        return '-'
+
+    shipping_date_planed_end_display.short_description = 'Час доставки по'
 
 @admin.register(AngleSetTypes)
 class AngleSetTypesAdmin(admin.ModelAdmin):

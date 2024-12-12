@@ -6,6 +6,38 @@ from custom.models import PrintingMachineShafts, Companies, DeliveryPresets, Add
     AdhesiveTapeThicknesses, FartukHeights, PrintingMachines, Fartuks, FartukRailTypes, FartukMembraneTypes, \
     AniloxRolls, ContactsDetails, Contacts, ContactTypeChoices, CompaniesContacts
 from map.models import Areas, PostOffices, Settlements
+from pytz import timezone
+from django.utils.timezone import is_aware, make_naive, make_aware
+from datetime import datetime, time, timedelta
+from django.forms.widgets import TimeInput
+
+
+class KievTimeInput(forms.TimeInput):
+    def format_value(self, value):
+        if value:
+            kiev_tz = timezone('Europe/Kiev')
+
+            # Проверка типа значения
+            if isinstance(value, datetime):  # Если значение - datetime
+                value = value.astimezone(kiev_tz).time()
+            elif isinstance(value, time):  # Если значение - time
+                # Конвертируем через datetime.combine
+                value = (
+                    datetime.combine(datetime.today(), value)
+                    .replace(tzinfo=timezone('UTC'))
+                    .astimezone(kiev_tz)
+                    .time()
+                )
+            else:
+                # Если передано значение неподобающего типа
+                value = None  # Чтобы не отображать некорректное значение
+
+            # Проверка времени, что оно в допустимом диапазоне
+            if value and not (0 <= value.hour < 24 and 0 <= value.minute < 60):
+                value = None  # Устанавливаем None, чтобы не было неправильного времени
+
+            return value.strftime('%H:%M') if value else super().format_value(value)
+        return super().format_value(value)
 
 
 class AniloxRollForm(forms.ModelForm):
@@ -317,7 +349,6 @@ class ContactsForm(forms.ModelForm):
         return cleaned_data
 
 
-
 class DeliveryPresetsForm(forms.ModelForm):
     street = forms.CharField(label='Вулиця', required=False)
     build = forms.CharField(label='Номер будинку', required=False)
@@ -365,6 +396,18 @@ class DeliveryPresetsForm(forms.ModelForm):
         required=False
     )
 
+    shipping_date_planed_start = forms.TimeField(
+        label="Час доставки з",
+        widget=KievTimeInput(format='%H:%M'),
+        required=False
+    )
+    shipping_date_planed_end = forms.TimeField(
+        label="Час доставки по",
+        widget=KievTimeInput(format='%H:%M'),
+        required=False
+    )
+
+
     class Meta:
         model = DeliveryPresets
         fields = ('company', 'name', 'delivery_type', "delivery_type_selector", 'area', 'settlement_ref', 'post_office_ref',
@@ -402,8 +445,85 @@ class DeliveryPresetsForm(forms.ModelForm):
                         else:
                             self.fields['delivery_type_selector'].initial = 'address'
 
+    def clean(self):
+        cleaned_data = super().clean()
+        delivery_type_selector = cleaned_data.get('delivery_type_selector')
+        delivery_type = cleaned_data.get('delivery_type')
+        if delivery_type.pk == 3:
+            if delivery_type_selector == 'address':
+                # Если выбрана адресная доставка
+                street = cleaned_data.get('street')
+                build = cleaned_data.get('build')
+                if not street:
+                    self.add_error('street', 'Поле "Вулиця" є обов’язковим для адресної доставки.')
+                if not build:
+                    self.add_error('build', 'це поле є обов’язковим полем для цього типу доставки.')
+                # Очистить поле "post_office_ref"
+                cleaned_data['post_office_ref'] = None
+
+            elif delivery_type_selector == 'post_office':
+                # Если выбрана доставка на отделение
+                post_office_ref = cleaned_data.get('post_office_ref')
+                if not post_office_ref:
+                    self.add_error('post_office_ref', 'Поле "Відділення НП" є обов’язковим для доставки на відділення.')
+                # Очистить поле "street"
+                cleaned_data['street'] = None
+                cleaned_data['build'] = None
+            else:
+                self.add_error('delivery_type_selector', "Треба обрати тип доставки НП")
+        else:
+            street = cleaned_data.get('street')
+            build = cleaned_data.get('build')
+            if not street:
+                self.add_error('street', 'Поле "Вулиця" є обов’язковим полем для цього типу доставки.')
+            if not build:
+                self.add_error('build', 'це поле є обов’язковим полем для цього типу доставки.')
     def save(self, commit=True):
+        kiev_tz = timezone('Europe/Kiev')
+
+        # Преобразование времени из формы в UTC перед сохранением
+        shipping_date_planed_start = self.cleaned_data.get('shipping_date_planed_start')
+        shipping_date_planed_end = self.cleaned_data.get('shipping_date_planed_end')
+
+        if shipping_date_planed_start:
+            # Убедитесь, что shipping_date_planed_start - это объект времени
+            if isinstance(shipping_date_planed_start, str):
+                # Если это строка, преобразуем её в объект time
+                shipping_date_planed_start = datetime.strptime(shipping_date_planed_start, '%H:%M').time()
+
+            # Преобразуем time в datetime для добавления 2 минут
+            start_time_datetime = datetime.combine(datetime.today(), shipping_date_planed_start)
+
+            # Прибавляем 2 минуты
+            new_start_time = start_time_datetime + timedelta(minutes=2)
+
+            # Преобразуем обратно в time и конвертируем в UTC
+            self.instance.shipping_date_planed_start = (
+                new_start_time.replace(tzinfo=kiev_tz)
+                .astimezone(timezone('UTC'))
+                .time()
+            )
+
+        if shipping_date_planed_end:
+            # Убедитесь, что shipping_date_planed_end - это объект времени
+            if isinstance(shipping_date_planed_end, str):
+                # Если это строка, преобразуем её в объект time
+                shipping_date_planed_end = datetime.strptime(shipping_date_planed_end, '%H:%M').time()
+
+            # Преобразуем time в datetime для добавления 2 минут
+            end_time_datetime = datetime.combine(datetime.today(), shipping_date_planed_end)
+
+            # Прибавляем 2 минуты
+            new_end_time = end_time_datetime + timedelta(minutes=2)
+
+            # Преобразуем обратно в time и конвертируем в UTC
+            self.instance.shipping_date_planed_end = (
+                new_end_time.replace(tzinfo=kiev_tz)
+                .astimezone(timezone('UTC'))
+                .time()
+            )
         instance = super().save(commit=False)
+
         if commit:
             # Сохранение адреса
             address_data = {

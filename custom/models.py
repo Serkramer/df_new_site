@@ -896,16 +896,9 @@ class DeliveryPresets(models.Model):
     def __str__(self):
         delivery_str = f"{self.delivery_type} | "
 
-        if self.address.settlement_ref:
+        if self.address:
             delivery_str += f"{self.address} "
 
-        if self.delivery_type.id == 3 and self.address.post_office_ref:
-
-            # TODO get_post_office_str
-            # delivery_str += f"{self.address.post_office_ref} "
-            delivery_str += f"{self.name} "
-        else:
-            delivery_str += f"{self.address} "
         return delivery_str
 
 
