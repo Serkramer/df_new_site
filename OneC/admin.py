@@ -8,7 +8,7 @@ from OneC.models import Price, CompanyWithNuances
 @admin.register(Price)
 class PriceAdmin(admin.ModelAdmin):
     form = PriceForm
-    list_display = ('id', 'price', 'get_company', 'thickness_list', 'get_materials_list',)
+    list_display = ('id', 'price', 'get_company', 'price_type', 'thickness_list', 'get_materials_list',)
     search_fields = ('price', 'company_id', 'thickness_list')
 
     def get_company(self, obj):

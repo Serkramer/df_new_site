@@ -3,7 +3,7 @@ from django.core.exceptions import ValidationError
 from django_select2.forms import Select2MultipleWidget
 from dal import autocomplete
 from custom.models import CompanyClients
-from .models import Price, Materials, Companies, CompanyWithNuances
+from .models import Price, Materials, Companies, CompanyWithNuances, PriceType
 
 
 class PriceForm(forms.ModelForm):
@@ -16,14 +16,17 @@ class PriceForm(forms.ModelForm):
     )
 
     # Поле для выбора материалов
-    materials = forms.ModelMultipleChoiceField(
+    materials = forms.ModelMultipleChoiceField(  # Изменено на ModelMultipleChoiceField
         queryset=Materials.objects.using('store').all(),
         label="Матеріали",
         required=False,
-        widget=Select2MultipleWidget  # Применяем виджет Select2
+        widget=autocomplete.ModelSelect2Multiple(  # Применяем виджет для множественного выбора
+            url='store:materials',
+            forward=['thickness']  # Передаем значение поля thickness
+        )
     )
 
-    # Поле для выбора толщины (список уникальных значений Materials.thickness)
+
     thickness = forms.MultipleChoiceField(
         choices=[(thickness, thickness) for thickness in
                  Materials.objects.using('store').values_list('thickness', flat=True).distinct()],
@@ -44,13 +47,17 @@ class PriceForm(forms.ModelForm):
 
         # Сохраняем ID компании, не показывая поле company_id в форме
         instance.company_id = self.cleaned_data['company'].id.id
+        if instance.price_type != PriceType.PRICE_MATERIAL:
+            instance.thickness_list = []
+            instance.material_ids = []
+        else:
+            # Сохраняем ID материалов (только если materials не пустое)
+            materials = self.cleaned_data.get('materials')
+            instance.material_ids = [material.id for material in materials] if materials else []
 
-        if instance.price_type == 'PRICE_MATERIAL':
-
-            # Сохраняем ID материалов
-            instance.material_ids = [material.id for material in self.cleaned_data['materials']]
-
-            instance.thickness_list = [float(thickness) for thickness in self.cleaned_data['thickness']]
+            # Сохраняем список толщин (только если thickness не пустое)
+            thickness = self.cleaned_data.get('thickness')
+            instance.thickness_list = [f"{float(t):.3f}" for t in thickness] if thickness else []
 
         if commit:
             instance.save()
@@ -59,15 +66,25 @@ class PriceForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
         if self.instance and self.instance.pk:
             # Установите начальные данные для поля materials
             self.fields['materials'].initial = Materials.objects.using('store').filter(
                 id__in=self.instance.material_ids
             )
-            # Установите начальные данные для поля thickness
+
             if isinstance(self.instance.thickness_list, list):
-                self.fields['thickness'].initial = [(thickness, thickness) for thickness in
-                                                    self.instance.thickness_list]
+                print("Инициализация толщин:", self.instance.thickness_list)  # Отладочный вывод
+
+                # Сохраняем все доступные толщины в choices
+                all_thicknesses = Materials.objects.using('store').values_list('thickness', flat=True).distinct()
+                thickness_choices = [(str(thickness), str(thickness)) for thickness in all_thicknesses]
+                self.fields['thickness'].choices = thickness_choices
+
+                # Устанавливаем начальные данные для поля thickness
+                # Убедитесь, что передаете список строковых значений толщин
+                self.fields['thickness'].initial = [str(thickness) for thickness in self.instance.thickness_list]
+
             # Установите начальное значение для поля company
             self.initial['company'] = Companies.objects.using('custom').get(id=self.instance.company_id)
 

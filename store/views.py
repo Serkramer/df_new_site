@@ -16,7 +16,10 @@ class MaterialsAutocomplete(autocomplete.Select2QuerySetView):
 
         qs = Materials.objects.all().order_by('name')
 
+        thickness_list = self.forwarded.get('thickness')
+        if thickness_list:
+            qs = qs.filter(thickness__in=thickness_list)
+
         if self.q:
             qs = qs.filter(name__icontains=self.q)
         return qs
-
