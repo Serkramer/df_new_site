@@ -39,7 +39,7 @@ class Price(models.Model):
 
 
 class CompanyWithNuances(models.Model):
-    company_id = models.IntegerField(verbose_name="ID компаниї", unique=True)
+    company_id = models.IntegerField(verbose_name="ID компаниї", primary_key=True, auto_created=False, unique=True)
     check_with_cents = models.BooleanField(verbose_name="Разунок з копійками", default=False)
     name_order_in_check = models.BooleanField(verbose_name="Назва замовлення в рахунку", default=True)
     group_orders = models.BooleanField(verbose_name="Групувати замовлення в один рахунок", default=False)
@@ -47,7 +47,7 @@ class CompanyWithNuances(models.Model):
                                    default="Кліше")
     unique_order_name = models.BooleanField(verbose_name="Є нюанси в назві замовлення", default=False)
     add_prepress_in_square = models.BooleanField(verbose_name="Додавати додруківку у площу", default=True)
-    prepress = models.BooleanField(verbose_name="Включати в площу додрукарську підготовку", default=True)
+
 
     def get_company(self):
         return Companies.objects.using('custom').get(id=self.company_id)
@@ -73,4 +73,7 @@ class Check(models.Model):
         verbose_name = "Рахунок"
         verbose_name_plural = "Рахунки"
 
+
+class OrdersInCheck(models.Model):
+    pass
 

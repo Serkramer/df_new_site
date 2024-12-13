@@ -98,7 +98,7 @@ class CompanyWithNuancesForm(forms.ModelForm):
     class Meta:
         model = CompanyWithNuances
         fields = ['company', 'check_with_cents', 'name_order_in_check', 'group_orders', 'text_before',
-                  'unique_order_name', 'prepress']
+                  'unique_order_name', ]
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

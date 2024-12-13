@@ -123,3 +123,4 @@ def generate_check(request):
             else:
                 pass
 
+            return JsonResponse({'check': check})

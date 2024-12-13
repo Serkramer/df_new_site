@@ -145,9 +145,9 @@ DATABASES = {
     "default": {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'df_crm',
-        'USER': 'admin',
-        'PASSWORD': os.environ.get("DF_CRM_PASS", default='RuTTUue_9D9sCm6m-5h6Kp4_S2A9jR5v'),
-        'HOST': '192.168.11.82',
+        'USER': 'root',
+        'PASSWORD': os.environ.get("DF_CRM_PASS", default='Lbaaepbz22'),
+        'HOST': '127.0.0.1',
         'PORT': '3306',
     },
     'store': {

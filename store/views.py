@@ -11,7 +11,7 @@ from django.db.models import Q
 class MaterialsAutocomplete(autocomplete.Select2QuerySetView):
     def get_queryset(self):
         # Убедитесь, что пользователь аутентифицирован
-        if not self.request.user.is_authenticated and self.request.user.is_staff:
+        if not self.request.user.is_authenticated:
             return Materials.objects.none()
 
         qs = Materials.objects.all().order_by('name')

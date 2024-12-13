@@ -11,7 +11,8 @@ from .inlines import PrintingMachineShaftsInline, PrintingMachinesInline, Printi
     CompaniesContactsForContactInline, CompaniesContactsInline, DeliveryPresetsInAddressInline
 from .models import *
 from datetime import datetime, time, timedelta
-
+from django.utils.html import format_html
+from django.urls import reverse
 
 class GroupConcat(Func):
     function = 'GROUP_CONCAT'
@@ -46,13 +47,22 @@ class EngraversAdmin(admin.ModelAdmin):
 
 @admin.register(Contacts)
 class ContactsAdmin(admin.ModelAdmin):
-    list_display = ('id', 'first_name', 'last_name', 'middle_name', 'description', 'get_company_from_contact',
+    list_display = ('edit_button', 'first_name', 'last_name', 'middle_name', 'description', 'get_company_from_contact',
                     'get_contact_details')
     search_fields = ('first_name', 'last_name', 'description', 'companies_search', 'contact_details_search')
 
     form = ContactsForm
 
     inlines = [ContactsDetailsInline, CompaniesContactsForContactInline]
+
+    @admin.display(description="Редагувати")
+    def edit_button(self, obj):
+        url = reverse('admin:custom_contacts_change', args=[obj.id])
+        return format_html(
+            '<a href="{}"  title="Редагувати">'
+            '✏️</a>',
+            url
+        )
 
     @admin.display(description="З якими компаніями пов'язаний")
     def get_company_from_contact(self, obj):

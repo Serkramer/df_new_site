@@ -40,17 +40,45 @@
 
 {% block page_js %}
   {{ block.super }}
-  <script src="{% static 'js/forms-pickers.js' %}"></script>
+
   <script src="{% static 'js/forms-selects.js' %}"></script>
   <script src="{% static 'js/forms-typeahead.js' %}"></script>
+  <script>
 
+    $(function() {
+
+      // Bootstrap Daterange Picker
+      // --------------------------------------------------------------------
+      let bsRangePickerBasic = $('#bs-rangepicker-basic'),
+          bsRangePickerSingle = $('#bs-rangepicker-single');
+
+      // Basic
+      if (bsRangePickerBasic.length) {
+        bsRangePickerBasic.daterangepicker({
+          opens: isRtl ? 'left' : 'right'
+        });
+      }
+
+      // Single
+      if (bsRangePickerSingle.length) {
+        bsRangePickerSingle.daterangepicker({
+          singleDatePicker: true,
+          opens: isRtl ? 'left' : 'right'
+        });
+      }
+
+    })
+
+
+
+  </script>
   <script>
 
     function getOrders(startDay, endDay, clientId) {
       console.log(startDay, endDay, clientId);
       $.ajax({
         type: 'POST',
-        url: 'get_orders_from_clients_and_dates', // Replace with your actual URL path
+        url: '{% url "1C:get_orders_from_clients_and_dates" %}', // Replace with your actual URL path
         data: JSON.stringify({
           company_id: clientId,
           start_day: startDay,
@@ -153,6 +181,7 @@
         let dateRange = $('#bs-rangepicker-basic').val().split(' - '); // Assuming the format is "YYYY-MM-DD - YYYY-MM-DD"
         let startDay = dateRange[0] || ''; // Extract the start date
         let endDay = dateRange[1] || '';   // Extract the end date
+        console.log(startDay)
 
         if (clientId !== -1) {
           $ourCompanyBlock.show();
