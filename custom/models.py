@@ -567,7 +567,7 @@ class Colors(models.Model):
 
 class Companies(models.Model):
     id = models.BigAutoField(primary_key=True)
-    full_name = models.CharField(max_length=255, blank=True, null=True, verbose_name="Повне ім`я",
+    full_name = models.CharField(max_length=255, blank=True, null=True, verbose_name="Повне ім`я компанії",
                                  help_text='обов`язково повинно співпадати символ в символ з 1С')
     name = models.CharField(unique=True, max_length=50, blank=True, null=True, verbose_name="Ім`я")
     okpo = models.CharField(max_length=15, blank=True, null=True, verbose_name="ЄРДПО")
@@ -1545,7 +1545,7 @@ class PrintingCompanies(models.Model):
     color_library = models.ForeignKey(ColorLibraries, models.DO_NOTHING, blank=True, null=True,
                                       verbose_name='Бібліотека кольорів')
     need_printout = BITField(blank=True, null=True,
-                             verbose_name='Чи потрібны документи')  # This field type is a guess.
+                             verbose_name='Чи потрібні документи')  # This field type is a guess.
     use_low_base = BITField(blank=True, null=True,
                             verbose_name='Використовує занижений цоколь')  # This field type is a guess.
     need_label = BITField(blank=True, null=True,

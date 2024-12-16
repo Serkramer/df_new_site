@@ -1,11 +1,15 @@
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404, redirect
 
 # Create your views here.
 
 from django.shortcuts import render
 from dal import autocomplete
+from django.views.generic import TemplateView, FormView
+
+from web_project import TemplateLayout
+from .forms import CompaniesCardViewForm
 from .models import CompanyClients, PrintingCompanies, PrintingMachinePresets, ClicheTechnologies, CompaniesContacts, \
-    Contacts
+    Contacts, Companies
 from django.db.models import Q
 
 
@@ -109,3 +113,66 @@ class ContactAutocomplete(autocomplete.Select2QuerySetView):
             )
 
         return qs
+
+
+class CompaniesCardView(FormView):
+    template_name = 'custom/companies_card.html'
+    form_class = CompaniesCardViewForm
+
+    def get_initial(self):
+        """
+        Устанавливает начальные данные для формы при редактировании.
+        """
+        initial = super().get_initial()
+        company_id = self.kwargs.get('id')  # Получаем id из URL
+        if company_id:
+            company = get_object_or_404(Companies, id=company_id)
+            initial.update({
+                'full_name': company.full_name,
+                'name': company.name,
+                'okpo': company.okpo,
+                'delivery_preset': company.delivery_preset,
+                'number': company.number,
+                # Другие поля, если нужно
+            })
+        return initial
+
+    def get_form_kwargs(self):
+        """
+        Передает instance в форму для редактирования объекта.
+        """
+        kwargs = super().get_form_kwargs()
+        company_id = self.kwargs.get('id')
+        if company_id:
+            kwargs['instance'] = get_object_or_404(Companies, id=company_id)
+        return kwargs
+
+    def form_valid(self, form):
+        """
+        Сохраняем данные формы и formset.
+        """
+        form.instance = form.save()  # Сохраняем компанию
+        clients_formset = form.clients_formset
+        printing_company_formset = form.printing_company_formset
+        company_contacts_formset = form.company_contacts_formset
+        if company_contacts_formset.is_valid():
+            company_contacts_formset.save()
+        if printing_company_formset.is_valid():
+            printing_company_formset.save()
+        if clients_formset.is_valid():
+            clients_formset.save()  # Сохраняем данные из formset
+
+        if form.printing_machines_formset:
+            if form.printing_machines_formset.is_valid():
+                form.printing_machines_formset.save()
+        return redirect('company_card')  # Перенаправление после сохранения
+
+    def get_context_data(self, **kwargs):
+        """
+        Добавляем контекст для шаблона.
+        """
+        context = TemplateLayout.init(self, super().get_context_data(**kwargs))
+        company_id = self.kwargs.get('id')
+        context['title'] = 'Редагувати компанію' if company_id else 'Додати компанію'
+        return context
+

@@ -1,10 +1,10 @@
 from django import forms
 from dal import autocomplete
 from pydantic import ValidationError
-
+from django.forms.models import inlineformset_factory
 from custom.models import PrintingMachineShafts, Companies, DeliveryPresets, Addresses, PrintingMachinePresets, \
     AdhesiveTapeThicknesses, FartukHeights, PrintingMachines, Fartuks, FartukRailTypes, FartukMembraneTypes, \
-    AniloxRolls, ContactsDetails, Contacts, ContactTypeChoices, CompaniesContacts
+    AniloxRolls, ContactsDetails, Contacts, ContactTypeChoices, CompaniesContacts, CompanyClients, PrintingCompanies
 from map.models import Areas, PostOffices, Settlements
 from pytz import timezone
 from django.utils.timezone import is_aware, make_naive, make_aware
@@ -539,3 +539,165 @@ class DeliveryPresetsForm(forms.ModelForm):
             instance.save()
 
         return instance
+
+
+class CompaniesCardViewForm(forms.ModelForm):
+    is_client = forms.BooleanField(
+        required=False,
+        label="Є замовником",
+        widget=forms.CheckboxInput(attrs={
+            'class': 'form-check-input',
+        })
+    )
+
+    is_printing_company = forms.BooleanField(
+        required=False,
+        label="Є друкарською компанією",
+        widget=forms.CheckboxInput(attrs={
+            'class': 'form-check-input',
+        })
+    )
+
+    class Meta:
+        model = Companies
+        fields = '__all__'
+        widgets = {
+            'full_name': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'обов`язково повинно співпадати символ в символ з 1С',
+                'id': 'company-full-name'
+            }),
+            'name': forms.TextInput(attrs={
+                'class': 'form-control',
+                'id': 'company-name'
+            }),
+            'okpo': forms.TextInput(attrs={
+                'class': 'form-control',
+                'id': 'company-okpo'
+            }),
+            'company_group': forms.Select(attrs={
+                'class': 'form-select',
+            }),
+            'contact': forms.Select(attrs={
+                'class': 'form-select',
+            }),
+
+            'is_verified': forms.CheckboxInput(attrs={
+                'class': 'form-check-input'
+            }),
+
+            'is_outdated': forms.CheckboxInput(attrs={
+                'class': 'form-check-input'
+            }),
+
+            'delivery_preset': forms.Select(attrs={
+                'class': 'form-select',
+            }),
+            'number': forms.TextInput(attrs={
+                'class': 'form-control',
+            }),
+        }
+
+    CompanyClientsFormSet = inlineformset_factory(
+        Companies,
+        CompanyClients,
+        fields='__all__',
+        extra=0,
+        can_delete=False,
+        widgets={
+            'debt': forms.NumberInput(attrs={'class': 'form-control'}),
+            'is_banned': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'company_our_brand': forms.Select(attrs={'class': 'form-select'}),
+            'document_delivery_type': forms.Select(attrs={'class': 'form-select'}),
+            'is_prepayment': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+        }
+    )
+
+    PrintingCompaniesFormSet = inlineformset_factory(
+        Companies,
+        PrintingCompanies,
+        fields='__all__',
+        extra=0,
+        can_delete=False,
+        widgets={
+            'process_id': forms.TextInput(attrs={'class': 'form-control'}),
+            'color_library': forms.Select(attrs={'class': 'form-select'}),
+            'need_printout': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'use_low_base': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'need_label': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+        }
+    )
+
+    CompaniesContactsFormSet = inlineformset_factory(
+        Companies,
+        CompaniesContacts,
+        fields='__all__',
+        extra=1,
+        can_delete=True,
+        widgets={
+            'contact': forms.Select(attrs={'class': 'form-select'}),
+            'position': forms.Select(attrs={'class': 'form-select'}),
+            'is_logistic': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'comment': forms.TextInput(attrs={'class': 'form-control'}),
+        }
+    )
+
+    PrintingMachinesForm = inlineformset_factory(
+        PrintingCompanies,
+        PrintingMachines,
+        exclude=('material_thickness',),
+        extra=0,
+        can_delete=True,
+        widgets={
+            'name': forms.TextInput(attrs={'class': 'form-control'}),
+            'section': forms.NumberInput(attrs={'class': 'form-control'}),
+            'module': forms.NumberInput(attrs={'class': 'form-control'}),
+            'fartuk': forms.Select(attrs={'class': 'form-select'}),
+        }
+    )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.clients_formset = self.CompanyClientsFormSet(instance=self.instance)
+        self.printing_company_formset = self.PrintingCompaniesFormSet(instance=self.instance)
+        self.company_contacts_formset = self.CompaniesContactsFormSet(instance=self.instance)
+
+        printing_company_instance = PrintingCompanies.objects.filter(id=self.instance).first()
+        if printing_company_instance:
+            self.printing_machines_formset = self.PrintingMachinesForm(instance=printing_company_instance)
+        else:
+            self.printing_machines_formset = None
+
+        # Указываем обязательные поля
+        required_fields = ['full_name', 'name',]
+        for field in required_fields:
+            self.fields[field].required = True
+
+            # Фильтрация queryset для поля delivery_preset
+            if self.instance and self.instance.pk:
+                self.fields['delivery_preset'].queryset = DeliveryPresets.objects.filter(company=self.instance)
+                self.fields['contact'].queryset = Contacts.objects.filter(
+                    id__in=CompaniesContacts.objects.filter(company=self.instance).values_list('contact_id', flat=True)
+                )
+                company_client = CompanyClients.objects.filter(id=self.instance).first()
+                if company_client:
+                    self.fields['is_client'].initial = True  # Устанавливаем флажок как активный
+                    self.fields['is_client'].widget.attrs['disabled'] = False  # Делаем поле активным
+                else:
+                    self.fields['is_client'].initial = False  # Снимаем флажок
+                    self.fields['is_client'].widget.attrs['disabled'] = True  # Делаем поле неактивным
+
+                printing_company = PrintingCompanies.objects.filter(id=self.instance).first()
+                if printing_company:
+                    self.fields['is_printing_company'].initial = True
+                    self.fields['is_printing_company'].widget.attrs['disabled'] = False  # Делаем поле активным
+                else:
+                    self.fields['is_printing_company'].initial = False
+                    self.fields['is_printing_company'].widget.attrs['disabled'] = True
+
+            else:
+                self.fields['delivery_preset'].queryset = DeliveryPresets.objects.none()
+                self.fields['contact'].queryset = Contacts.objects.none()
+
+
+

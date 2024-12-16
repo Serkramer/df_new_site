@@ -50,6 +50,12 @@
       "slug": ""
     },
     {
+      "url": "custom:company_card",
+      "icon": "menu-icon tf-icons ri-table-alt-line",
+      "name": "Карточка клієнта",
+      "slug": ""
+    },
+    {
       "url": "info:printing-rollers",
       "icon": "menu-icon tf-icons ri-table-alt-line",
       "name": "Вали",

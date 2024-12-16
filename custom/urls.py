@@ -5,6 +5,8 @@ from . import views
 app_name = 'custom'
 
 urlpatterns = [
+    path('company-card/', login_required(views.CompaniesCardView.as_view()), name='company_card'),
+    path('company-card/<int:id>/', login_required(views.CompaniesCardView.as_view()), name='edit_company_card'),
     path('company-clients/', login_required(views.CompanyClientsAutocomplete.as_view()),
          name='company-clients'),
 
