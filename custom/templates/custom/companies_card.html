@@ -13,8 +13,6 @@
 {% block vendor_js %}
   {{ block.super }}
 
-
-
   <script src="{% static 'vendor/libs/jquery-repeater/jquery-repeater.js' %}"></script>
 {% endblock vendor_js %}
 
@@ -64,7 +62,7 @@
 
     <div class="row my-6">
       <div class="col">
-        <h2> Карточка компанії </h2>
+        <h2> Карточка компанії {% if company %} <strong>{{ company.name }}</strong> {% endif %}</h2>
         <div class="accordion" id="collapsibleSection">
           <div class="accordion-item active">
             <h2 class="accordion-header" id="headingCompany">
@@ -76,377 +74,545 @@
             <div id="collapseCompany" class="accordion-collapse collapse show"
                  data-bs-parent="#collapsibleSection">
               <div class="accordion-body">
-                <div class="row g-6">
+                <form method="post"
+                      action="{% url 'custom:company_card' %}{% if company %}{{ company.id }}/{% endif %}">
+                  <div class="row g-6">
 
+                    {% csrf_token %}
+                    <div class="col-md-12">
+                      <div class="form-floating form-floating-outline">
+                        {{ form.full_name }}
+                        <label for="{{ form.full_name.id_for_label }}">{{ form.full_name.label }}</label>
+                      </div>
+                    </div>
+                    <div class="col-md-12">
+                      <div class="form-floating form-floating-outline">
+                        {{ form.name }}
+                        <label for="{{ form.name.id_for_label }}">{{ form.name.label }}</label>
+                      </div>
+                    </div>
+                    <div class="col-12">
+                      <div class="form-floating form-floating-outline">
+                        {{ form.okpo }}
+                        <label for="{{ form.okpo.id_for_label }}">{{ form.okpo.label }}</label>
+                      </div>
+                    </div>
+
+                    <div class="col-md-12">
+                      <div class="form-floating form-floating-outline">
+                        {{ form.delivery_preset }}
+                        <label for="{{ form.delivery_preset.id_for_label }}">{{ form.delivery_preset.label }}</label>
+                      </div>
+                    </div>
+                    <div class="col-md-12">
+                      <div class="form-floating form-floating-outline">
+                        {{ form.number }}
+                        <label for="{{ form.number.id_for_label }}">{{ form.number.label }}</label>
+                      </div>
+                    </div>
+
+                    <div class="col-md-12">
+                      <div class="form-floating form-floating-outline">
+                        {{ form.company_group }}
+                        <label for="{{ form.company_group.id_for_label }}">{{ form.company_group.label }}</label>
+                      </div>
+                    </div>
+
+                    <div class="col-md-12">
+                      <div class="form-floating form-floating-outline">
+                        {{ form.contact }}
+                        <label for="{{ form.contact.id_for_label }}"></label>
+                      </div>
+                    </div>
+
+                    <div class="col-md-12">
+
+                      <div class="form-check form-switch mb-2">
+                        {{ form.is_verified }}
+                        <label class="form-check-label"
+                               for="{{ form.is_verified.id_for_label }}">{{ form.is_verified.label }}</label>
+                      </div>
+
+                    </div>
+
+                    <div class="col-md-12">
+                      <div class="form-check form-switch mb-2">
+                        {{ form.is_client }}
+                        <label class="form-check-label"
+                               for="{{ form.is_client.id_for_label }}">{{ form.is_client.label }}</label>
+                      </div>
+                    </div>
+
+                    <div class="col-md-12">
+                      <div class="form-check form-switch mb-2">
+                        {{ form.is_printing_company }}
+                        <label class="form-check-label"
+                               for="{{ form.is_printing_company.id_for_label }}">{{ form.is_printing_company.label }}</label>
+                      </div>
+                    </div>
+
+                  </div>
+                  <div class="mt-5">
+
+                    <button type="submit" name="action" value="save_company" class="btn btn-primary me-4">
+                      {% if form.instance.pk %} Зберегти зміни {% else %}
+                        Додати компанію {% endif %}</button>
+                    <button type="reset" class="btn btn-outline-secondary">Відмінити</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+          {% if company %}
+            <div class="accordion-item">
+              <h2 class="accordion-header" id="headingCompanyClient">
+                <button type="button" class="accordion-button" data-bs-toggle="collapse"
+                        data-bs-target="#collapseCompanyClient" aria-expanded="true"
+                        aria-controls="collapseCompanyClient"> Замовник
+                </button>
+              </h2>
+              <div id="collapseCompanyClient" class="accordion-collapse collapse"
+                   data-bs-parent="#collapsibleSection">
+                <div class="accordion-body">
+                  <form method="post"
+                        action="{% url 'custom:company_card' %}{% if company %}{{ company.id }}/{% endif %}">
+                    {% csrf_token %}
+                    {% for form_clients_formset in form.clients_formset %}
+                      <div style="display: none;">
+                        <input type="hidden" name="company" value="{{ company.id }}">
+                      </div>
+                      <div class="row g-6">
+                        <div class="col-md-12">
+                          <div class="form-floating form-floating-outline">
+                            {{ form_clients_formset.company_our_brand }}
+                            <label
+                              for="{{ form_clients_formset.company_our_brand.id_for_label }}">{{ form_clients_formset.company_our_brand.label }}</label>
+                          </div>
+                        </div>
+                        <div class="col-md-12">
+                          <div class="form-check form-switch mb-2">
+                            {{ form_clients_formset.is_banned }}
+                            <label class="form-check-label"
+                                   for="{{ form_clients_formset.is_banned.id_for_label }}">{{ form_clients_formset.is_banned.label }}</label>
+                          </div>
+                        </div>
+                        <div class="col-md-12">
+                          <div class="form-floating form-floating-outline">
+                            {{ form_clients_formset.debt }}
+                            <label class="form-check-label"
+                                   for="{{ form_clients_formset.debt.id_for_label }}">{{ form_clients_formset.debt.label }}</label>
+                          </div>
+                        </div>
+                        <div class="col-md-12">
+                          <div class="form-floating form-floating-outline">
+                            {{ form_clients_formset.document_delivery_type }}
+                            <label class="form-check-label"
+                                   for="{{ form_clients_formset.document_delivery_type.id_for_label }}">{{ form_clients_formset.document_delivery_type.label }}</label>
+                          </div>
+                        </div>
+                        <div class="col-md-12">
+                          <div class="form-check form-switch mb-2">
+                            {{ form_clients_formset.is_prepayment }}
+                            <label class="form-check-label"
+                                   for="{{ form_clients_formset.is_prepayment.id_for_label }}">{{ form_clients_formset.is_prepayment.label }}</label>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="mt-5">
+
+                    {% endfor %}
+
+                    <button type="submit" name="action" value="save_client" class="btn btn-primary me-4">Зберегти
+                      зміни
+                    </button>
+                    <button type="reset" class="btn btn-outline-secondary">Відмінити</button>
+                    </div>
+                  </form>
+                </div>
+
+              </div>
+            </div>
+          {% endif %}
+          {% if company %}
+            <div class="accordion-item">
+              <h2 class="accordion-header" id="headingPrintingCompany">
+                <button type="button" class="accordion-button" data-bs-toggle="collapse"
+                        data-bs-target="#collapsePrintingCompany" aria-expanded="true"
+                        aria-controls="collapsePrintingCompany"> Друкарська компанія
+                </button>
+              </h2>
+              <div id="collapsePrintingCompany" class="accordion-collapse collapse"
+                   data-bs-parent="#collapsibleSection">
+                <div class="accordion-body">
                   {% csrf_token %}
-                  <div class="col-md-12">
-                    <div class="form-floating form-floating-outline">
-                      {{ form.full_name }}
-                      <label for="{{ form.full_name.id_for_label }}">{{ form.full_name.label }}</label>
-                    </div>
-                  </div>
-                  <div class="col-md-12">
-                    <div class="form-floating form-floating-outline">
-                      {{ form.name }}
-                      <label for="{{ form.name.id_for_label }}">{{ form.name.label }}</label>
-                    </div>
-                  </div>
-                  <div class="col-12">
-                    <div class="form-floating form-floating-outline">
-                      {{ form.okpo }}
-                      <label for="{{ form.okpo.id_for_label }}">{{ form.okpo.label }}</label>
-                    </div>
-                  </div>
+                  {% for form_printing_companies_formset in form.printing_company_formset %}
 
-                  <div class="col-md-12">
-                    <div class="form-floating form-floating-outline">
-                      {{ form.delivery_preset }}
-                      <label for="{{ form.delivery_preset.id_for_label }}">{{ form.delivery_preset.label }}</label>
+                    <div class="row g-6">
+                      <div class="col-md-12">
+                        <div class="form-floating form-floating-outline">
+                          {{ form_printing_companies_formset.process_id }}
+                          <label
+                            for="{{ form_printing_companies_formset.process_id.id_for_label }}">{{ form_printing_companies_formset.process_id.label }}</label>
+                        </div>
+                      </div>
+                      <div class="col-md-12">
+                        <div class="form-floating form-floating-outline">
+                          {{ form_printing_companies_formset.color_library }}
+                          <label class="form-check-label"
+                                 for="{{ form_printing_companies_formset.color_library.id_for_label }}">{{ form_printing_companies_formset.color_library.label }}</label>
+                        </div>
+                      </div>
+                      <div class="col-md-12">
+                        <div class="form-check form-switch mb-2">
+                          {{ form_printing_companies_formset.need_printout }}
+                          <label class="form-check-label"
+                                 for="{{ form_printing_companies_formset.need_printout.id_for_label }}">{{ form_printing_companies_formset.need_printout.label }}</label>
+                        </div>
+                      </div>
+                      <div class="col-md-12">
+                        <div class="form-check form-switch mb-2">
+                          {{ form_printing_companies_formset.use_low_base }}
+                          <label class="form-check-label"
+                                 for="{{ form_printing_companies_formset.use_low_base.id_for_label }}">{{ form_printing_companies_formset.use_low_base.label }}</label>
+                        </div>
+                      </div>
+                      <div class="col-md-12">
+                        <div class="form-check form-switch mb-2">
+                          {{ form_printing_companies_formset.need_label }}
+                          <label class="form-check-label"
+                                 for="{{ form_printing_companies_formset.need_label.id_for_label }}">{{ form_printing_companies_formset.need_label.label }}</label>
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                  <div class="col-md-12">
-                    <div class="form-floating form-floating-outline">
-                      {{ form.number }}
-                      <label for="{{ form.number.id_for_label }}">{{ form.number.label }}</label>
-                    </div>
-                  </div>
+                    <div class="mt-5">
 
-                  <div class="col-md-12">
-                    <div class="form-floating form-floating-outline">
-                      {{ form.company_group }}
-                      <label for="{{ form.company_group.id_for_label }}">{{ form.company_group.label }}</label>
-                    </div>
-                  </div>
+                  {% endfor %}
 
-                  <div class="col-md-12">
-                    <div class="form-floating form-floating-outline">
-                      {{ form.contact }}
-                      <label for="{{ form.contact.id_for_label }}"></label>
-                    </div>
-                  </div>
-
-                  <div class="col-md-12">
-
-                    <div class="form-check form-switch mb-2">
-                      {{ form.is_verified }}
-                      <label class="form-check-label"
-                             for="{{ form.is_verified.id_for_label }}">{{ form.is_verified.label }}</label>
-                    </div>
-
-                  </div>
-
-                  <div class="col-md-12">
-                    <div class="form-check form-switch mb-2">
-                      {{ form.is_verified }}
-                      <label class="form-check-label"  for="{{ form.is_outdated.id_for_label }}">{{ form.is_outdated.label }}</label>
-                    </div>
-                  </div>
-
-                  <div class="col-md-12">
-                    <div class="form-check form-switch mb-2">
-                      {{ form.is_client }}
-                      <label class="form-check-label"  for="{{ form.is_client.id_for_label }}">{{ form.is_client.label }}</label>
-                    </div>
-                  </div>
-
-                  <div class="col-md-12">
-                    <div class="form-check form-switch mb-2">
-                      {{ form.is_printing_company }}
-                      <label class="form-check-label"  for="{{ form.is_printing_company.id_for_label }}">{{ form.is_printing_company.label }}</label>
-                    </div>
-                  </div>
-
-                </div>
-                <div class="mt-5">
-
-                  <button type="submit" class="btn btn-primary me-4">{% if form.instance.pk %} Зберегти зміни {% else %} Додати компанію {% endif %}</button>
+                  <button type="submit" name="action" value="save_printing_company" class="btn btn-primary me-4">
+                    Зберегти зміни
+                  </button>
                   <button type="reset" class="btn btn-outline-secondary">Відмінити</button>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-          <div class="accordion-item">
-            <h2 class="accordion-header" id="headingCompanyClient">
-              <button type="button" class="accordion-button" data-bs-toggle="collapse"
-                      data-bs-target="#collapseCompanyClient" aria-expanded="true"
-                      aria-controls="collapseCompanyClient"> Замовник
-              </button>
-            </h2>
-            <div id="collapseCompanyClient" class="accordion-collapse collapse"
-                 data-bs-parent="#collapsibleSection">
-              <div class="accordion-body">
-              {% csrf_token %}
-               {% for form_clients_formset in form.clients_formset %}
+          {% endif %}
+          {% if company %}
+            <div class="accordion-item">
+              <h2 class="accordion-header" id="headingCompanyContacts">
+                <button type="button" class="accordion-button collapsed" data-bs-toggle="collapse"
+                        data-bs-target="#collapseCompanyContacts" aria-expanded="false"
+                        aria-controls="collapseCompanyContacts"> Контакти компанії
+                </button>
+              </h2>
+              <div id="collapseCompanyContacts" class="accordion-collapse collapse"
+                   aria-labelledby="headingCompanyContacts" data-bs-parent="#collapsibleSection">
+                <div class="accordion-body">
+                  <div class="row">
+                    <form method="post" class="form-repeater">
+                      {% csrf_token %}
+                      {{ form.company_contacts_formset.management_form }}
+                      <div data-repeater-list="company-contacts">
+                        {% for form in form.company_contacts_formset %}
+                          <div data-repeater-item>
+                            <div class="row">
+                              <!-- Поле Contact -->
+                              <div class="mb-6 col-lg-6 col-xl-3 col-12 mb-0">
+                                <div class="form-floating form-floating-outline">
+                                  {{ form.contact }}
+                                  <label for="{{ form.contact.id_for_label }}">{{ form.contact.label }}</label>
+                                </div>
+                              </div>
+                              <!-- Поле Position -->
+                              <div class="mb-6 col-lg-6 col-xl-3 col-12 mb-0">
+                                <div class="form-floating form-floating-outline">
+                                  {{ form.position }}
+                                  <label for="{{ form.position.id_for_label }}">{{ form.position.label }}</label>
+                                </div>
+                              </div>
+                              <!-- Поле Is Logistic -->
+                              <div class="mb-6 col-lg-6 col-xl-2 col-12 mb-0">
+                                <div class="form-check form-switch mb-2">
+                                  {{ form.is_logistic }}
+                                  <label for="{{ form.is_logistic.id_for_label }}">{{ form.is_logistic.label }}</label>
+                                </div>
+                              </div>
+                              <!-- Поле Comment -->
+                              <div class="mb-6 col-lg-6 col-xl-2 col-12 mb-0">
+                                <div class="form-floating form-floating-outline">
+                                  {{ form.comment }}
+                                  <label for="{{ form.comment.id_for_label }}">{{ form.comment.label }}</label>
+                                </div>
+                              </div>
+                              <!-- Удаление -->
+                              <div class="mb-6 col-lg-12 col-xl-2 col-12 d-flex align-items-center mb-0">
 
-                <div class="row g-6">
-                  <div class="col-md-12">
-                    <div class="form-floating form-floating-outline">
-                      {{ form_clients_formset.company_our_brand }}
-                      <label for="{{ form_clients_formset.company_our_brand.id_for_label }}">{{ form_clients_formset.company_our_brand.label }}</label>
-                    </div>
-                  </div>
-                  <div class="col-md-12">
-                    <div class="form-check form-switch mb-2">
-                      {{ form_clients_formset.is_banned }}
-                      <label class="form-check-label"  for="{{ form_clients_formset.is_banned.id_for_label }}">{{ form_clients_formset.is_banned.label }}</label>
-                    </div>
-                  </div>
-                  <div class="col-md-12">
-                    <div class="form-floating form-floating-outline">
-                      {{ form_clients_formset.debt }}
-                      <label class="form-check-label"  for="{{ form_clients_formset.debt.id_for_label }}">{{ form_clients_formset.debt.label }}</label>
-                    </div>
-                  </div>
-                  <div class="col-md-12">
-                    <div class="form-floating form-floating-outline">
-                      {{ form_clients_formset.document_delivery_type }}
-                      <label class="form-check-label"  for="{{ form_clients_formset.document_delivery_type.id_for_label }}">{{ form_clients_formset.document_delivery_type.label }}</label>
-                    </div>
-                  </div>
-                  <div class="col-md-12">
-                    <div class="form-check form-switch mb-2">
-                      {{ form_clients_formset.is_prepayment }}
-                      <label class="form-check-label"  for="{{ form_clients_formset.is_prepayment.id_for_label }}">{{ form_clients_formset.is_prepayment.label }}</label>
-                    </div>
-                  </div>
-                </div>
-                <div class="mt-5">
+                                <button class="btn btn-outline-danger btn-xl" data-repeater-delete>
+                                  <i class="ri-close-line ri-24px me-1"></i>
+                                  <span class="align-middle">Видалити</span>
+                                </button>
+                              </div>
+                            </div>
+                            <hr class="mt-0">
+                          </div>
+                        {% endfor %}
+                      </div>
+                      <!-- Кнопка для добавления -->
+                      <div class="mb-0">
+                        <button class="btn btn-primary" data-repeater-create>
+                          <i class="ri-add-line me-1"></i>
+                          <span class="align-middle">Додати</span>
+                        </button>
 
-            {% endfor %}
+                        <button type="submit" name="action" value="save_company_contacts" class="btn btn-primary me-4">
+                          Зберегти
+                        </button>
+                      </div>
+                    </form>
+                  </div>
 
-                  <button type="submit" class="btn btn-primary me-4">Зберегти зміни</button>
-                  <button type="reset" class="btn btn-outline-secondary">Відмінити</button>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="accordion-item">
-            <h2 class="accordion-header" id="headingPrintingCompany">
-              <button type="button" class="accordion-button" data-bs-toggle="collapse"
-                      data-bs-target="#collapsePrintingCompany" aria-expanded="true"
-                      aria-controls="collapsePrintingCompany"> Друкарська компанія
-              </button>
-            </h2>
-            <div id="collapsePrintingCompany" class="accordion-collapse collapse"
-                 data-bs-parent="#collapsibleSection">
-              <div class="accordion-body">
-              {% csrf_token %}
-               {% for form_printing_companies_formset in form.printing_company_formset %}
-
-                <div class="row g-6">
-                  <div class="col-md-12">
-                    <div class="form-floating form-floating-outline">
-                      {{ form_printing_companies_formset.process_id }}
-                      <label for="{{ form_printing_companies_formset.process_id.id_for_label }}">{{ form_printing_companies_formset.process_id.label }}</label>
-                    </div>
-                  </div>
-                  <div class="col-md-12">
-                    <div class="form-floating form-floating-outline">
-                      {{ form_printing_companies_formset.color_library }}
-                      <label class="form-check-label"  for="{{ form_printing_companies_formset.color_library.id_for_label }}">{{ form_printing_companies_formset.color_library.label }}</label>
-                    </div>
-                  </div>
-                  <div class="col-md-12">
-                    <div class="form-check form-switch mb-2">
-                      {{ form_printing_companies_formset.need_printout }}
-                      <label class="form-check-label"  for="{{ form_printing_companies_formset.need_printout.id_for_label }}">{{ form_printing_companies_formset.need_printout.label }}</label>
-                    </div>
-                  </div>
-                  <div class="col-md-12">
-                    <div class="form-check form-switch mb-2">
-                      {{ form_printing_companies_formset.use_low_base }}
-                      <label class="form-check-label"  for="{{ form_printing_companies_formset.use_low_base.id_for_label }}">{{ form_printing_companies_formset.use_low_base.label }}</label>
-                    </div>
-                  </div>
-                  <div class="col-md-12">
-                    <div class="form-check form-switch mb-2">
-                      {{ form_printing_companies_formset.need_label }}
-                      <label class="form-check-label"  for="{{ form_printing_companies_formset.need_label.id_for_label }}">{{ form_printing_companies_formset.need_label.label }}</label>
-                    </div>
-                  </div>
-                </div>
-                <div class="mt-5">
-
-            {% endfor %}
-
-                  <button type="submit" class="btn btn-primary me-4">Зберегти зміни</button>
-                  <button type="reset" class="btn btn-outline-secondary">Відмінити</button>
                 </div>
               </div>
             </div>
-          </div>
-          <div class="accordion-item">
-            <h2 class="accordion-header" id="headingDeliveryOptions">
-              <button type="button" class="accordion-button collapsed" data-bs-toggle="collapse"
-                      data-bs-target="#collapseDeliveryOptions" aria-expanded="false"
-                      aria-controls="collapseDeliveryOptions"> Контакти компанії
-              </button>
-            </h2>
-            <div id="collapseDeliveryOptions" class="accordion-collapse collapse"
-                 aria-labelledby="headingDeliveryOptions" data-bs-parent="#collapsibleSection">
-              <div class="accordion-body">
-                <div class="row">
-  <form method="post" class="form-repeater">
-    {% csrf_token %}
-    {{ form.company_contacts_formset.management_form }}
-    <div data-repeater-list="company-contacts">
-      {% for form in form.company_contacts_formset %}
-      <div data-repeater-item>
-        <div class="row">
-          <!-- Поле Contact -->
-          <div class="mb-6 col-lg-6 col-xl-3 col-12 mb-0">
-            <div class="form-floating form-floating-outline">
-              {{ form.contact }}
-              <label for="{{ form.contact.id_for_label }}">{{ form.contact.label }}</label>
-            </div>
-          </div>
-          <!-- Поле Position -->
-          <div class="mb-6 col-lg-6 col-xl-3 col-12 mb-0">
-            <div class="form-floating form-floating-outline">
-              {{ form.position }}
-              <label for="{{ form.position.id_for_label }}">{{ form.position.label }}</label>
-            </div>
-          </div>
-          <!-- Поле Is Logistic -->
-          <div class="mb-6 col-lg-6 col-xl-2 col-12 mb-0">
-            <div class="form-check form-switch mb-2">
-              {{ form.is_logistic }}
-              <label for="{{ form.is_logistic.id_for_label }}">{{ form.is_logistic.label }}</label>
-            </div>
-          </div>
-          <!-- Поле Comment -->
-          <div class="mb-6 col-lg-6 col-xl-2 col-12 mb-0">
-            <div class="form-floating form-floating-outline">
-              {{ form.comment }}
-              <label for="{{ form.comment.id_for_label }}">{{ form.comment.label }}</label>
-            </div>
-          </div>
-          <!-- Удаление -->
-          <div class="mb-6 col-lg-12 col-xl-2 col-12 d-flex align-items-center mb-0">
+          {% endif %}
+          {% if company %}
+            <div class="accordion-item">
+              <h2 class="accordion-header" id="headingDeliveryPresets">
+                <button type="button" class="accordion-button collapsed" data-bs-toggle="collapse"
+                        data-bs-target="#collapseDeliveryPresets" aria-expanded="false"
+                        aria-controls="collapseDeliveryPresets"> Доставки для компанї
+                </button>
+              </h2>
+              <div id="collapseDeliveryPresets" class="accordion-collapse collapse"
+                   aria-labelledby="headingDeliveryPresets" data-bs-parent="#collapsibleSection">
+                <div class="accordion-body">
+                  <div class="row">
+                    <form method="post" class="form-repeater">
+                      {% csrf_token %}
+                      {{ form.delivery_preset_formset.management_form }}
+                      <div data-repeater-list="company-contacts">
+                        {% for form in form.delivery_preset_formset %}
+                          <div data-repeater-item>
+                            <div class="row g-6">
 
-            <button class="btn btn-outline-danger btn-xl" data-repeater-delete>
-              <i class="ri-close-line ri-24px me-1"></i>
-              <span class="align-middle">Видалити</span>
-            </button>
-          </div>
+                              <div class="col-md-12">
+                                <div class="form-floating form-floating-outline">
+                                  {{ form.name }}
+                                  <label for="{{ form.name.id_for_label }}">{{ form.name.label }}</label>
+                                </div>
+                              </div>
+
+                              <div class="col-md-12">
+                                <div class="form-floating form-floating-outline">
+                                  {{ form.delivery_type }}
+                                  <label
+                                    for="{{ form.delivery_type.id_for_label }}">{{ form.delivery_type.label }}</label>
+                                </div>
+                              </div>
+
+                              <div class="col-md-12">
+                                <small class="text-light fw-medium d-block">Тип доставки НП</small>
+                                {% for value, label in form.delivery_type_selector.field.choices %}
+                                  <div class="form-check form-check-inline mt-4">
+                                    <input
+                                      type="radio"
+                                      name="{{ form.delivery_type_selector.html_name }}"
+                                      value="{{ value }}"
+                                      id="{{ form.delivery_type_selector.id_for_label }}_{{ forloop.counter }}"
+                                      class="form-check-input"
+                                      {% if form.delivery_type_selector.value == value %}checked{% endif %}
+                                    >
+                                    <label for="{{ form.delivery_type_selector.id_for_label }}_{{ forloop.counter }}"
+                                           class="form-check-label">
+                                      {{ label }}
+                                    </label>
+                                  </div>
+                                {% endfor %}
+                              </div>
+                              <div class="col-md-6">
+                                <div class="form-floating form-floating-outline">
+                                  {{ form.area }}
+                                  <label
+                                    for="{{ form.area.id_for_label }}">{{ form.area.label }}</label>
+                                </div>
+                              </div>
+
+                              <div class="col-md-6">
+                                <div class="form-floating form-floating-outline">
+                                  {{ form.settlement_ref }}
+                                  <label
+                                    for="{{ form.settlement_ref.id_for_label }}">{{ form.settlement_ref.label }}</label>
+                                </div>
+                              </div>
+
+
+                              <div class="col-md-12">
+                                <div class="form-floating form-floating-outline">
+                                  {{ form.post_office_ref }}
+                                  <label
+                                    for="{{ form.post_office_ref.id_for_label }}">{{ form.post_office_ref.label }}</label>
+                                </div>
+                              </div>
+
+                              <div class="col-md-6">
+                                <div class="form-floating form-floating-outline">
+                                  {{ form.street }}
+                                  <label
+                                    for="{{ form.street.id_for_label }}">{{ form.street.label }}</label>
+                                </div>
+                              </div>
+
+                              <div class="col-md-6">
+                                <div class="form-floating form-floating-outline">
+                                  {{ form.build }}
+                                  <label
+                                    for="{{ form.build.id_for_label }}">{{ form.build.label }}</label>
+                                </div>
+                              </div>
+
+                              <div class="col-md-12">
+                                <div class="form-floating form-floating-outline">
+                                  {{ form.description }}
+                                  <label for="{{ form.description.id_for_label }}">{{ form.description.label }}</label>
+                                </div>
+                              </div>
+
+                              <div class="col-md-12">
+                                <div class="form-check form-switch mb-2">
+                                  {{ form.is_legal_address }}
+                                  <label
+                                    for="{{ form.is_legal_address.id_for_label }}">{{ form.is_legal_address.label }}</label>
+                                </div>
+                              </div>
+
+                              <div class="col-md-12">
+                                <div class="form-floating form-floating-outline">
+                                  {{ form.contact }}
+                                  <label for="{{ form.contact.id_for_label }}">{{ form.contact.label }}</label>
+                                </div>
+                              </div>
+
+                              <div class="col-md-6">
+                                <div class="form-floating form-floating-outline">
+                                  {{ form.shipping_date_planed_start }}
+                                  <label
+                                    for="{{ form.shipping_date_planed_start.id_for_label }}">{{ form.shipping_date_planed_start.label }}</label>
+                                </div>
+                              </div>
+                              <div class="col-md-6">
+                                <div class="form-floating form-floating-outline">
+                                  {{ form.shipping_date_planed_end }}
+                                  <label
+                                    for="{{ form.shipping_date_planed_end.id_for_label }}">{{ form.shipping_date_planed_end.label }}</label>
+                                </div>
+                              </div>
+
+
+                              <div class="col-md-12 d-flex align-items-center">
+
+                                <button class="btn btn-outline-danger btn-xl" data-repeater-delete>
+                                  <i class="ri-close-line ri-24px me-1"></i>
+                                  <span class="align-middle">Видалити</span>
+                                </button>
+                              </div>
+                            </div>
+                            <hr class="mt-0">
+                          </div>
+                        {% endfor %}
+                      </div>
+                      <!-- Кнопка для добавления -->
+                      <div class="mb-0">
+                        <button class="btn btn-primary" data-repeater-create>
+                          <i class="ri-add-line me-1"></i>
+                          <span class="align-middle">Додати</span>
+                        </button>
+
+                        <button type="submit" name="action" value="save_delivery_presets" class="btn btn-primary me-4">
+                          Зберегти
+                        </button>
+                      </div>
+                    </form>
+                  </div>
+
+                </div>
+              </div>
+            </div>
+          {% endif %}
+          {% if company %}
+            <div class="accordion-item">
+              <h2 class="accordion-header" id="headingPrintingMachines">
+                <button type="button" class="accordion-button collapsed" data-bs-toggle="collapse"
+                        data-bs-target="#collapsePrintingMachines" aria-expanded="false"
+                        aria-controls="collapsePrintingMachines"> Друкарські машини
+                </button>
+              </h2>
+              <div id="collapsePrintingMachines" class="accordion-collapse collapse"
+                   aria-labelledby="headingPrintingMachines" data-bs-parent="#collapsibleSection">
+
+                <div class="accordion-body">
+
+
+                  <form method="post" class="form-repeater">
+                    <div data-repeater-list="company-contacts">
+                      {% csrf_token %}
+                      {{ form.printing_machines_formset.management_form }}
+                      {% for formset_form in form.printing_machines_formset %}
+                        <div class="row">
+                          <div class="mb-6 col-lg-6 col-xl-3 col-12 mb-0">
+                            <div class="form-floating form-floating-outline">
+                              {{ formset_form.name }}
+                              <label for="{{ formset_form.name.id_for_label }}">{{ formset_form.name.label }}</label>
+                            </div>
+                          </div>
+                          <div class="mb-6 col-lg-6 col-xl-3 col-12 mb-0">
+                            <div class="form-floating form-floating-outline">
+                              {{ formset_form.section }}
+                              <label
+                                for="{{ formset_form.section.id_for_label }}">{{ formset_form.section.label }}</label>
+                            </div>
+                          </div>
+
+                          <div class="mb-6 col-lg-6 col-xl-3 col-12 mb-0">
+                            <div class="form-floating form-floating-outline">
+                              {{ formset_form.module }}
+                              <label
+                                for="{{ formset_form.module.id_for_label }}">{{ formset_form.module.label }}</label>
+                            </div>
+                          </div>
+
+                          <div class="mb-6 col-lg-6 col-xl-3 col-12 mb-0">
+                            <div class="form-floating form-floating-outline">
+                              {{ formset_form.module }}
+                              <label
+                                for="{{ formset_form.fartuk.id_for_label }}">{{ formset_form.fartuk.label }}</label>
+                            </div>
+                          </div>
+                          <hr>
+                        </div>
+                      {% endfor %}
+
+
+                    </div>
+                    <!-- Кнопка для добавления -->
+                    <div class="mb-0">
+                      <button class="btn btn-primary" data-repeater-create>
+                        <i class="ri-add-line me-1"></i>
+                        <span class="align-middle">Додати</span>
+                      </button>
+
+                      <button type="submit" name="action" value="save_printing_machines" class="btn btn-primary me-4">
+                        Зберегти
+                      </button>
+                    </div>
+                  </form>
+
+
+                </div>
+              </div>
+            </div>
+          {% endif %}
         </div>
-        <hr class="mt-0">
       </div>
-      {% endfor %}
-    </div>
-    <!-- Кнопка для добавления -->
-    <div class="mb-0">
-      <button class="btn btn-primary" data-repeater-create>
-        <i class="ri-add-line me-1"></i>
-        <span class="align-middle">Додати</span>
-      </button>
-
-        <button type="submit" class="btn btn-primary me-4">Зберегти</button>
-    </div>
-  </form>
-</div>
-
-              </div>
-            </div>
-          </div>
-          <div class="accordion-item">
-            <h2 class="accordion-header" id="headingDeliveryOptions">
-              <button type="button" class="accordion-button collapsed" data-bs-toggle="collapse"
-                      data-bs-target="#collapseDeliveryOptions" aria-expanded="false"
-                      aria-controls="collapseDeliveryOptions"> Контакти компанії
-              </button>
-            </h2>
-            <div id="collapseDeliveryOptions" class="accordion-collapse collapse"
-                 aria-labelledby="headingDeliveryOptions" data-bs-parent="#collapsibleSection">
-              <div class="accordion-body">
-                <div class="row">
-  <form method="post" class="form-repeater">
-    {% csrf_token %}
-    {{ form.company_contacts_formset.management_form }}
-    <div data-repeater-list="company-contacts">
-      {% for form in form.company_contacts_formset %}
-      <div data-repeater-item>
-        <div class="row">
-          <!-- Поле Contact -->
-          <div class="mb-6 col-lg-6 col-xl-3 col-12 mb-0">
-            <div class="form-floating form-floating-outline">
-              {{ form.contact }}
-              <label for="{{ form.contact.id_for_label }}">{{ form.contact.label }}</label>
-            </div>
-          </div>
-          <!-- Поле Position -->
-          <div class="mb-6 col-lg-6 col-xl-3 col-12 mb-0">
-            <div class="form-floating form-floating-outline">
-              {{ form.position }}
-              <label for="{{ form.position.id_for_label }}">{{ form.position.label }}</label>
-            </div>
-          </div>
-          <!-- Поле Is Logistic -->
-          <div class="mb-6 col-lg-6 col-xl-2 col-12 mb-0">
-            <div class="form-check form-switch mb-2">
-              {{ form.is_logistic }}
-              <label for="{{ form.is_logistic.id_for_label }}">{{ form.is_logistic.label }}</label>
-            </div>
-          </div>
-          <!-- Поле Comment -->
-          <div class="mb-6 col-lg-6 col-xl-2 col-12 mb-0">
-            <div class="form-floating form-floating-outline">
-              {{ form.comment }}
-              <label for="{{ form.comment.id_for_label }}">{{ form.comment.label }}</label>
-            </div>
-          </div>
-          <!-- Удаление -->
-          <div class="mb-6 col-lg-12 col-xl-2 col-12 d-flex align-items-center mb-0">
-
-            <button class="btn btn-outline-danger btn-xl" data-repeater-delete>
-              <i class="ri-close-line ri-24px me-1"></i>
-              <span class="align-middle">Видалити</span>
-            </button>
-          </div>
-        </div>
-        <hr class="mt-0">
-      </div>
-      {% endfor %}
-    </div>
-    <!-- Кнопка для добавления -->
-    <div class="mb-0">
-      <button class="btn btn-primary" data-repeater-create>
-        <i class="ri-add-line me-1"></i>
-        <span class="align-middle">Додати</span>
-      </button>
-
-        <button type="submit" class="btn btn-primary me-4">Зберегти</button>
-    </div>
-  </form>
-</div>
-
-              </div>
-            </div>
-          </div>
-
-        </div>
-      </div>
-
-      {% if form.printing_machines_formset %}
-        <h3>Printing Machines</h3>
-        {{ form.printing_machines_formset.management_form }}
-        {% for formset_form in form.printing_machines_formset %}
-            <div class="form-group">
-                {{ formset_form.name.label_tag }} {{ formset_form.name }}
-            </div>
-            <div class="form-group">
-                {{ formset_form.section.label_tag }} {{ formset_form.section }}
-            </div>
-            <div class="form-group">
-                {{ formset_form.module.label_tag }} {{ formset_form.module }}
-            </div>
-            <div class="form-group">
-                {{ formset_form.fartuk.label_tag }} {{ formset_form.fartuk }}
-            </div>
-            {{ formset_form.DELETE }}
-            <hr>
-        {% endfor %}
-    {% endif %}
 
 
     </div>

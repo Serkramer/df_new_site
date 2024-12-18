@@ -13,15 +13,17 @@ from django.forms.widgets import TimeInput
 
 
 class KievTimeInput(forms.TimeInput):
+    def __init__(self, attrs=None, format=None):
+        # Передаем attrs и format в родительский класс
+        super().__init__(attrs=attrs, format=format)
+
     def format_value(self, value):
         if value:
             kiev_tz = timezone('Europe/Kiev')
 
-            # Проверка типа значения
             if isinstance(value, datetime):  # Если значение - datetime
                 value = value.astimezone(kiev_tz).time()
             elif isinstance(value, time):  # Если значение - time
-                # Конвертируем через datetime.combine
                 value = (
                     datetime.combine(datetime.today(), value)
                     .replace(tzinfo=timezone('UTC'))
@@ -29,12 +31,7 @@ class KievTimeInput(forms.TimeInput):
                     .time()
                 )
             else:
-                # Если передано значение неподобающего типа
-                value = None  # Чтобы не отображать некорректное значение
-
-            # Проверка времени, что оно в допустимом диапазоне
-            if value and not (0 <= value.hour < 24 and 0 <= value.minute < 60):
-                value = None  # Устанавливаем None, чтобы не было неправильного времени
+                value = None
 
             return value.strftime('%H:%M') if value else super().format_value(value)
         return super().format_value(value)
@@ -350,24 +347,24 @@ class ContactsForm(forms.ModelForm):
 
 
 class DeliveryPresetsForm(forms.ModelForm):
-    street = forms.CharField(label='Вулиця', required=False)
-    build = forms.CharField(label='Номер будинку', required=False)
+    street = forms.CharField(label='Вулиця', required=False,  widget=forms.TextInput(attrs={'class': 'form-control'}))
+    build = forms.CharField(label='Номер будинку', required=False,  widget=forms.TextInput(attrs={'class': 'form-control'}))
     post_office_ref = forms.ModelChoiceField(
         label='Відділення НП',
         queryset=PostOffices.objects.all(),
-        widget=autocomplete.ModelSelect2(url='map:post-office-autocomplete', forward=['settlement_ref']),
+        widget=autocomplete.ModelSelect2(attrs={'class': 'form-select'}, url='map:post-office-autocomplete', forward=['settlement_ref']),
         required=False
     )
     area = forms.ModelChoiceField(
         label='Область',
         queryset=Areas.objects.all(),
-        widget=autocomplete.ModelSelect2(url='map:areas-autocomplete'),
+        widget=autocomplete.ModelSelect2(attrs={'class': 'form-select'}, url='map:areas-autocomplete'),
         required=True
     )
     settlement_ref = forms.ModelChoiceField(
         label='Населенний пункт',
         queryset=Settlements.objects.all(),
-        widget=autocomplete.ModelSelect2(
+        widget=autocomplete.ModelSelect2(attrs={'class': 'form-select'},
             url='map:settlements-autocomplete',
             forward=['area']
         ),
@@ -375,7 +372,7 @@ class DeliveryPresetsForm(forms.ModelForm):
     )
     contact = forms.ModelChoiceField(
         queryset=Contacts.objects.all(),  # Изначально пустой queryset
-        widget=autocomplete.ModelSelect2(
+        widget=autocomplete.ModelSelect2(attrs={'class': 'form-select'},
             url='custom:contact-autocomplete',
             forward=['company'],  # Передаём выбранную компанию
         ),
@@ -392,18 +389,18 @@ class DeliveryPresetsForm(forms.ModelForm):
     delivery_type_selector = forms.ChoiceField(
         label='Тип доставки НП',
         choices=DELIVERY_CHOICES,
-        widget=forms.RadioSelect,
+        widget=forms.RadioSelect(attrs={'class': 'form-check-input'}),
         required=False
     )
 
     shipping_date_planed_start = forms.TimeField(
         label="Час доставки з",
-        widget=KievTimeInput(format='%H:%M'),
+        widget=KievTimeInput(format='%H:%M', attrs={'class': 'form-control', 'type': "time"}),
         required=False
     )
     shipping_date_planed_end = forms.TimeField(
         label="Час доставки по",
-        widget=KievTimeInput(format='%H:%M'),
+        widget=KievTimeInput(format='%H:%M', attrs={'class': 'form-control', 'type': "time"}),
         required=False
     )
 
@@ -605,6 +602,7 @@ class CompaniesCardViewForm(forms.ModelForm):
         extra=0,
         can_delete=False,
         widgets={
+            'id': forms.HiddenInput(),
             'debt': forms.NumberInput(attrs={'class': 'form-control'}),
             'is_banned': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
             'company_our_brand': forms.Select(attrs={'class': 'form-select'}),
@@ -656,17 +654,36 @@ class CompaniesCardViewForm(forms.ModelForm):
         }
     )
 
+    DeliveryPresetsFormSet = inlineformset_factory(
+        Companies,
+        DeliveryPresets,
+        form=DeliveryPresetsForm,  # Используем кастомную форму
+        fields='__all__',  # Выбираем нужные поля
+        extra=0,  # Количество пустых форм для добавления
+        can_delete=True,  # Позволяем удалять записи
+        widgets={
+            'name': forms.TextInput(attrs={'class': 'form-control'}),
+            'delivery_type': forms.Select(attrs={'class': 'form-select'}),
+            'description': forms.Textarea(attrs={'class': 'form-control h-px-100'}),
+            'is_legal_address': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'contact': forms.Select(attrs={'class': 'form-select'}),
+            'shipping_date_planed_end': forms.TimeInput(attrs={'class': 'form-control'}),
+            'shipping_date_planed_start': forms.TimeInput(attrs={'class': 'form-control'}),
+        }
+    )
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.clients_formset = self.CompanyClientsFormSet(instance=self.instance)
+        self.clients_formset = self.CompanyClientsFormSet(instance=self.instance, initial=[{'id': self.instance.id}])
         self.printing_company_formset = self.PrintingCompaniesFormSet(instance=self.instance)
         self.company_contacts_formset = self.CompaniesContactsFormSet(instance=self.instance)
-
-        printing_company_instance = PrintingCompanies.objects.filter(id=self.instance).first()
-        if printing_company_instance:
-            self.printing_machines_formset = self.PrintingMachinesForm(instance=printing_company_instance)
-        else:
-            self.printing_machines_formset = None
+        self.delivery_preset_formset = self.DeliveryPresetsFormSet(instance=self.instance)
+        if self.instance.pk:
+            printing_company_instance = PrintingCompanies.objects.filter(id=self.instance).first()
+            if printing_company_instance:
+                self.printing_machines_formset = self.PrintingMachinesForm(instance=printing_company_instance)
+            else:
+                self.printing_machines_formset = None
 
         # Указываем обязательные поля
         required_fields = ['full_name', 'name',]
@@ -682,22 +699,20 @@ class CompaniesCardViewForm(forms.ModelForm):
                 company_client = CompanyClients.objects.filter(id=self.instance).first()
                 if company_client:
                     self.fields['is_client'].initial = True  # Устанавливаем флажок как активный
-                    self.fields['is_client'].widget.attrs['disabled'] = False  # Делаем поле активным
+                    self.fields['is_client'].widget.attrs['readonly'] = True
                 else:
                     self.fields['is_client'].initial = False  # Снимаем флажок
-                    self.fields['is_client'].widget.attrs['disabled'] = True  # Делаем поле неактивным
+                    self.fields['is_client'].widget.attrs['readonly'] = False
 
                 printing_company = PrintingCompanies.objects.filter(id=self.instance).first()
                 if printing_company:
                     self.fields['is_printing_company'].initial = True
-                    self.fields['is_printing_company'].widget.attrs['disabled'] = False  # Делаем поле активным
+                    self.fields['is_printing_company'].widget.attrs['readonly'] = True
                 else:
                     self.fields['is_printing_company'].initial = False
-                    self.fields['is_printing_company'].widget.attrs['disabled'] = True
+                    self.fields['is_printing_company'].widget.attrs['readonly'] = False
 
             else:
                 self.fields['delivery_preset'].queryset = DeliveryPresets.objects.none()
                 self.fields['contact'].queryset = Contacts.objects.none()
-
-
 

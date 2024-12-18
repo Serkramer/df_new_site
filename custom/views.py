@@ -4,6 +4,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 
 from django.shortcuts import render
 from dal import autocomplete
+from django.views import View
 from django.views.generic import TemplateView, FormView
 
 from web_project import TemplateLayout
@@ -115,64 +116,120 @@ class ContactAutocomplete(autocomplete.Select2QuerySetView):
         return qs
 
 
-class CompaniesCardView(FormView):
+class CompaniesCardView(TemplateView):
     template_name = 'custom/companies_card.html'
     form_class = CompaniesCardViewForm
 
-    def get_initial(self):
-        """
-        Устанавливает начальные данные для формы при редактировании.
-        """
-        initial = super().get_initial()
-        company_id = self.kwargs.get('id')  # Получаем id из URL
-        if company_id:
-            company = get_object_or_404(Companies, id=company_id)
-            initial.update({
-                'full_name': company.full_name,
-                'name': company.name,
-                'okpo': company.okpo,
-                'delivery_preset': company.delivery_preset,
-                'number': company.number,
-                # Другие поля, если нужно
-            })
-        return initial
-
-    def get_form_kwargs(self):
-        """
-        Передает instance в форму для редактирования объекта.
-        """
-        kwargs = super().get_form_kwargs()
-        company_id = self.kwargs.get('id')
-        if company_id:
-            kwargs['instance'] = get_object_or_404(Companies, id=company_id)
-        return kwargs
-
-    def form_valid(self, form):
-        """
-        Сохраняем данные формы и formset.
-        """
-        form.instance = form.save()  # Сохраняем компанию
-        clients_formset = form.clients_formset
-        printing_company_formset = form.printing_company_formset
-        company_contacts_formset = form.company_contacts_formset
-        if company_contacts_formset.is_valid():
-            company_contacts_formset.save()
-        if printing_company_formset.is_valid():
-            printing_company_formset.save()
-        if clients_formset.is_valid():
-            clients_formset.save()  # Сохраняем данные из formset
-
-        if form.printing_machines_formset:
-            if form.printing_machines_formset.is_valid():
-                form.printing_machines_formset.save()
-        return redirect('company_card')  # Перенаправление после сохранения
-
     def get_context_data(self, **kwargs):
         """
-        Добавляем контекст для шаблона.
+        Добавляем контекст для отображения в шаблоне.
         """
         context = TemplateLayout.init(self, super().get_context_data(**kwargs))
         company_id = self.kwargs.get('id')
-        context['title'] = 'Редагувати компанію' if company_id else 'Додати компанію'
+        company = get_object_or_404(Companies, id=company_id) if company_id else None
+
+        # Основная форма
+        form = self.form_class(instance=company)
+
+        # Формсеты
+        clients_formset = self.form_class.CompanyClientsFormSet(instance=company)
+        printing_company_formset = self.form_class.PrintingCompaniesFormSet(instance=company)
+        company_contacts_formset = self.form_class.CompaniesContactsFormSet(instance=company)
+        delivery_preset_formset = self.form_class.DeliveryPresetsFormSet(instance=company)
+
+        context.update({
+            'company': company,
+            'form': form,
+            'clients_formset': clients_formset,
+            'printing_company_formset': printing_company_formset,
+            'company_contacts_formset': company_contacts_formset,
+            'delivery_preset_formset': delivery_preset_formset,
+            'title': 'Редагувати компанію' if company_id else 'Додати компанію',
+        })
         return context
 
+    def post(self, request, *args, **kwargs):
+        """
+        Обрабатываем POST-запрос: валидация и сохранение данных.
+        """
+        action = request.POST.get('action')
+        company_id = self.kwargs.get('id')
+        company = get_object_or_404(Companies, id=company_id) if company_id else None
+
+        # Основная форма
+        form = self.form_class(request.POST, instance=company)
+
+        # Формсеты
+        clients_formset = self.form_class.CompanyClientsFormSet(request.POST, instance=company)
+        printing_company_formset = self.form_class.PrintingCompaniesFormSet(request.POST, instance=company)
+        company_contacts_formset = self.form_class.CompaniesContactsFormSet(request.POST, instance=company)
+        delivery_preset_formset = self.form_class.DeliveryPresetsFormSet(request.POST, instance=company)
+
+        # Обработка действий
+        if action == 'save_company':
+            if form.is_valid():
+                form.save()
+                return redirect('custom:edit_company_card', id=form.instance.id)
+            else:
+                print("Форма компании не прошла валидацию")
+                print(form.errors)
+
+        elif action == 'save_client':
+
+            # Получаем экземпляры формы без сохранения в базе данных
+
+            instances = clients_formset.save(commit=False)
+            # Переприсваиваем объект компании всем экземплярам
+
+            for instance in instances:
+                instance.company = company  # Связываем объект CompanyClients с объектом компании
+            # Выполняем валидацию на этом этапе
+            if clients_formset.is_valid():
+                # Сохраняем все экземпляры
+                for instance in instances:
+                    instance.save()  # Сохраняем каждый экземпляр в базе данных
+
+                clients_formset.save_m2m()  # Сохраняем многие ко многим связи
+
+                return redirect('custom:edit_company_card', id=company.id)
+
+            else:
+
+                print("Клиенты: ошибки в формсете")
+                print(clients_formset.errors)
+
+        elif action == 'save_printing_company':
+            if printing_company_formset.is_valid():
+                printing_company_formset.save()
+                return redirect('custom:edit_company_card', id=company.id)
+            else:
+                print("Печать: ошибки в формсете")
+                print(printing_company_formset.errors)
+
+        elif action == 'save_company_contacts':
+            if company_contacts_formset.is_valid():
+                company_contacts_formset.save()
+                return redirect('custom:edit_company_card', id=company.id)
+            else:
+                print("Контакты: ошибки в формсете")
+                print(company_contacts_formset.errors)
+
+        elif action == 'save_delivery_presets':
+            if delivery_preset_formset.is_valid():
+                delivery_preset_formset.save()
+                return redirect('custom:edit_company_card', id=company.id)
+            else:
+                print("Доставка: ошибки в формсете")
+                print(delivery_preset_formset.errors)
+
+        # Если форма или формсет не прошли валидацию, передаем их обратно в шаблон
+        context = self.get_context_data(**kwargs)
+        context.update({
+            'company': company,
+            'form': form,
+            'clients_formset': clients_formset,
+            'printing_company_formset': printing_company_formset,
+            'company_contacts_formset': company_contacts_formset,
+            'delivery_preset_formset': delivery_preset_formset,
+        })
+        return self.render_to_response(context)
