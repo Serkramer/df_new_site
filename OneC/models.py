@@ -47,7 +47,7 @@ class CompanyWithNuances(models.Model):
                                    default="Кліше")
     unique_order_name = models.BooleanField(verbose_name="Є нюанси в назві замовлення", default=False)
     add_prepress_in_square = models.BooleanField(verbose_name="Додавати додруківку у площу", default=True)
-
+    prepress = models.BooleanField(verbose_name="Включати в площу додрукарську підготовку", default=True)
 
     def get_company(self):
         return Companies.objects.using('custom').get(id=self.company_id)

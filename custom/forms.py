@@ -521,19 +521,29 @@ class DeliveryPresetsForm(forms.ModelForm):
             )
         instance = super().save(commit=False)
 
-        if commit:
-            # Сохранение адреса
-            address_data = {
-                'street': self.cleaned_data['street'],
-                'build': self.cleaned_data['build'],
-                'post_office_ref': self.cleaned_data['post_office_ref'],
-                'settlement_ref': self.cleaned_data['settlement_ref'],
-            }
+        address_data = {
+            'street': self.cleaned_data.get('street'),
+            'build': self.cleaned_data.get('build'),
+            'post_office_ref': self.cleaned_data.get('post_office_ref'),
+            'settlement_ref': self.cleaned_data.get('settlement_ref'),
+        }
+
+        if address_data['post_office_ref']:
+            address_data['post_office_ref'] = address_data['post_office_ref'].ref
+        if address_data['settlement_ref']:
+            address_data['settlement_ref'] = address_data['settlement_ref'].ref
+
+        if instance.address_id:
+            # Обновление адреса
             address, created = Addresses.objects.update_or_create(
                 id=instance.address_id, defaults=address_data
             )
-            instance.address = address
-            instance.save()
+        else:
+            # Создание нового адреса
+            address = Addresses.objects.create(**address_data)
+
+        instance.address = address
+        instance.save()
 
         return instance
 

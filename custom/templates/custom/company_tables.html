@@ -1,0 +1,143 @@
+{% extends layout_path %}
+
+{% load static %}
+{% load i18n %}
+
+{% block title %}DataTables - Tables{% endblock %}
+
+{% block vendor_css %}
+{{ block.super }}
+<link rel="stylesheet" href="{% static 'vendor/libs/datatables-bs5/datatables.bootstrap5.css' %}" />
+<link rel="stylesheet" href="{% static 'vendor/libs/datatables-responsive-bs5/responsive.bootstrap5.css' %}" />
+<link rel="stylesheet" href="{% static 'vendor/libs/datatables-select-bs5/select.bootstrap5.css' %}" />
+<link rel="stylesheet" href="{% static 'vendor/libs/datatables-checkboxes-jquery/datatables.checkboxes.css' %}" />
+<link rel="stylesheet" href="{% static 'vendor/libs/datatables-fixedcolumns-bs5/fixedcolumns.bootstrap5.css' %}" />
+<link rel="stylesheet" href="{% static 'vendor/libs/datatables-fixedheader-bs5/fixedheader.bootstrap5.css' %}" />
+{% endblock vendor_css %}
+
+{% block vendor_js %}
+{{ block.super }}
+<script src="{% static 'vendor/libs/datatables-bs5/datatables-bootstrap5.js' %}"></script>
+{% endblock vendor_js %}
+
+{% block page_js %}
+{{ block.super }}
+<script>
+
+$(function () {
+  let dt_scrollable_table = $('.dt-scrollableTable');
+
+  // Scrollable
+  // --------------------------------------------------------------------
+
+  if (dt_scrollable_table.length) {
+    let dt_scrollableTable = dt_scrollable_table.DataTable({
+      ajax: '{% url "custom:companies_table_data" %}',
+      columns: [
+        { data: '' },
+        { data: 'name' },
+        { data: 'full_name' },
+        { data: 'okpo' },
+        { data: 'delivery' },
+        { data: 'number' },
+        { data: 'group' },
+        { data: 'is_verified' },
+
+        { data: 'is_outdated' },
+        { data: 'full_name' }
+      ],
+      columnDefs: [
+        {
+          // Label
+          targets: -2,
+          render: function (data, type, full, meta) {
+            let $status_number = full['status'];
+            let $status = {
+              1: { title: 'Current', class: 'bg-label-primary' },
+              2: { title: 'Professional', class: ' bg-label-success' },
+              3: { title: 'Rejected', class: ' bg-label-danger' },
+              4: { title: 'Resigned', class: ' bg-label-warning' },
+              5: { title: 'Applied', class: ' bg-label-info' }
+            };
+            if (typeof $status[$status_number] === 'undefined') {
+              return data;
+            }
+            return (
+              '<span class="badge rounded-pill ' +
+              $status[$status_number].class +
+              '">' +
+              $status[$status_number].title +
+              '</span>'
+            );
+          }
+        },
+        {
+          // Actions
+          targets: 0,
+          title: 'Дія',
+          searchable: false,
+          orderable: false,
+          render: function (data, type, full, meta) {
+            let editUrl = '/custom/company-card/' + full.id + '/';
+            return (
+              '<div class="d-inline-block">' +
+              '<a href="javascript:;" class="btn btn-sm btn-text-secondary rounded-pill btn-icon dropdown-toggle hide-arrow" data-bs-toggle="dropdown"><i class="ri-more-2-line"></i></a>' +
+              '<div class="dropdown-menu dropdown-menu-end m-0">' +
+              '<a href="javascript:;" class="dropdown-item">Details</a>' +
+              '<a href="javascript:;" class="dropdown-item">Archive</a>' +
+              '<div class="dropdown-divider"></div>' +
+              '<a href="javascript:;" class="dropdown-item text-danger delete-record">Видалити</a>' +
+              '</div>' +
+              '</div>' +
+              '<a href="' + editUrl + '" class="btn btn-sm btn-text-secondary rounded-pill btn-icon item-edit"><i class="ri-edit-box-line"></i></a>'
+            );
+          }
+        }
+      ],
+      // Scroll options
+      scrollY: '700px',
+      scrollX: true,
+      dom: '<"row"<"col-sm-12 col-md-6"l><"col-sm-12 col-md-6 d-flex justify-content-center justify-content-md-end"f>>t<"row"<"col-sm-12 col-md-6"i><"col-sm-12 col-md-6"p>>',
+      language: {
+        paginate: {
+          next: '<i class="ri-arrow-right-s-line"></i>',
+          previous: '<i class="ri-arrow-left-s-line"></i>'
+        }
+      }
+    });
+  }
+});
+
+</script>
+
+
+{% endblock page_js %}
+
+{% block content %}
+
+<!-- Scrollable -->
+<div class="card">
+  <h5 class="card-header text-center text-md-start pb-md-0">Таблиця компаній</h5>
+  <div class="card-datatable text-nowrap">
+    <table class="dt-scrollableTable table table-bordered">
+      <thead>
+        <tr>
+          <th>Дія</th>
+          <th>Назва</th>
+          <th>Повна назва</th>
+          <th>ЄРДПО</th>
+          <th>Доставка за умовчанням</th>
+          <th>Тел. номер юр особи</th>
+          <th>Група компаній</th>
+          <th>Перевірений</th>
+          <th>Є замовником</th>
+          <th>Є друкарською компанією</th>
+        </tr>
+      </thead>
+    </table>
+  </div>
+</div>
+<!--/ Scrollable -->
+
+
+{% endblock %}

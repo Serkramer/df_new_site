@@ -1,3 +1,4 @@
+from django.http import JsonResponse
 from django.shortcuts import render, get_object_or_404, redirect
 
 # Create your views here.
@@ -114,6 +115,60 @@ class ContactAutocomplete(autocomplete.Select2QuerySetView):
             )
 
         return qs
+
+
+class CompaniesTableView(TemplateView):
+    template_name = 'custom/company_tables.html'
+
+    def get_context_data(self, **kwargs):
+        context = TemplateLayout.init(self, super().get_context_data(**kwargs))
+        context['title'] = 'Компанії'
+        return context
+
+
+class CompaniesTableDataView(View):
+    def get(self, request, *args, **kwargs):
+        draw = int(request.GET.get('draw', 1))
+        start = int(request.GET.get('start', 0))
+        length = int(request.GET.get('length', Companies.objects.all().count()))
+        search_value = request.GET.get('search[value]', '').strip()
+        companies_queryset = Companies.objects.all().order_by('name')
+
+        if search_value:
+            companies_queryset = companies_queryset.filter(
+                Q(name__icontains=search_value),
+                Q(full_name__icontains=search_value),
+                Q(number__icontains=search_value),
+                Q(okpo__icontains=search_value)
+            )
+
+        records_total = Companies.objects.count()
+        records_filtered = companies_queryset.count()
+        companies = companies_queryset[start:start + length]
+
+        data = [
+            {
+                'id': company.id,
+                'full_name': company.full_name if company.full_name else '-',
+                'name': company.name if company.name else '-',
+                'okpo': company.okpo if company.okpo else '-',
+                'is_verified': company.is_verified,
+                'is_outdated': company.is_outdated,
+                'number': company.number if company.number else '-',
+                'delivery': company.delivery_preset.__str__() if company.delivery_preset else '-',
+                'group': company.company_group.name if company.company_group else '-',
+
+
+            } for company in companies
+        ]
+
+        response = {'data': data,
+                    'draw': draw,
+                    'recordsTotal': records_total,
+                    'recordsFiltered': records_filtered,
+                    }
+
+        return JsonResponse(response)
 
 
 class CompaniesCardView(TemplateView):
