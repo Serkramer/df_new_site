@@ -134,6 +134,7 @@ class CompaniesTableDataView(View):
         search_value = request.GET.get('search[value]', '').strip()
         companies_queryset = Companies.objects.all().order_by('name')
 
+
         if search_value:
             companies_queryset = companies_queryset.filter(
                 Q(name__icontains=search_value),
@@ -154,6 +155,8 @@ class CompaniesTableDataView(View):
                 'okpo': company.okpo if company.okpo else '-',
                 'is_verified': company.is_verified,
                 'is_outdated': company.is_outdated,
+                'is_printing_company': company.is_printing_company(),
+                'is_client': company.is_client(),
                 'number': company.number if company.number else '-',
                 'delivery': company.delivery_preset.__str__() if company.delivery_preset else '-',
                 'group': company.company_group.name if company.company_group else '-',

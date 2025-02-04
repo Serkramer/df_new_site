@@ -590,6 +590,14 @@ class Companies(models.Model):
     def __str__(self):
         return f"{self.name}"
 
+    def is_printing_company(self):
+        printing_company = PrintingCompanies.objects.filter(id=self).exists()
+        return printing_company
+
+    def is_client(self):
+        client = CompanyClients.objects.filter(id=self).exists()
+        return client
+
 
 class CompaniesContacts(models.Model):
     comment = models.CharField(max_length=255, blank=True, null=True, verbose_name='Коментар')
